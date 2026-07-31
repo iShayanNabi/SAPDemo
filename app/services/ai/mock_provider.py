@@ -53,6 +53,12 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_contract_analysis(payload), ensure_ascii=False)
         elif task == "contract_answer":
             text = json.dumps(_contract_answer(payload), ensure_ascii=False)
+        elif task == "test_case_generation":
+            text = json.dumps(_test_case_generation(payload), ensure_ascii=False)
+        elif task == "test_case_regeneration":
+            text = json.dumps(
+                _test_case_generation(payload, regenerated=True), ensure_ascii=False
+            )
         else:
             text = json.dumps(
                 {
@@ -104,6 +110,10 @@ def _infer_task(prompt: str) -> str:
         return "contract_answer"
     if "contract review" in lowered or "contract analysis" in lowered:
         return "contract_analysis"
+    if "redraft the single sap test case" in lowered:
+        return "test_case_regeneration"
+    if "test case" in lowered or "test_case" in lowered:
+        return "test_case_generation"
     if "finding" in lowered:
         return "explain_finding"
     return "unknown"
@@ -756,4 +766,240 @@ def _contract_answer(payload: dict[str, Any]) -> dict[str, Any]:
         "recommended_actions": [
             "Open the cited page in the original document before relying on this answer."
         ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# SAP Test Case Generator
+# ---------------------------------------------------------------------------
+
+#: Step outlines the mock provider writes from, one per test type.
+#:
+#: These are deliberately *not* the templates in the module configuration. The
+#: template build is the deterministic fallback; this is what a drafted case
+#: looks like. Keeping the two voices distinct is what lets a test - and a
+#: reader - tell "the provider drafted this" from "the provider was unavailable
+#: and the template filled in", which would otherwise be indistinguishable in
+#: mock mode.
+_MOCK_STEP_OUTLINES: dict[str, list[tuple[str, str]]] = {
+    "sit": [
+        ("Open the transaction used for {process} in {product} as {role}.",
+         "The initial screen is displayed and ready for entry."),
+        ("Create the document for {process} with the data listed under Test data.",
+         "The entry is accepted with no error message."),
+        ("Save the document and note the number the system returns.",
+         "A document number is issued and the save is confirmed."),
+        ("Follow the document flow through {module} and check each follow-on document.",
+         "Every follow-on document exists with the status the design expects."),
+        ("Compare the resulting values with the business rules recorded for {process}.",
+         "The values agree with the business rules without manual correction."),
+    ],
+    "uat": [
+        ("As {role}, start {process} the way it is started on a normal working day.",
+         "The starting point is reachable without technical help."),
+        ("Work through {process} using the business data listed under Test data.",
+         "Each screen can be completed with the information a business user holds."),
+        ("Check that the wording on screen matches how the business describes {process}.",
+         "The labels and messages are recognisable to the business."),
+        ("Produce the document or report the business expects at the end.",
+         "The output contains the values the business needs and is readable."),
+        ("Record whether the business accepts this step, and why.",
+         "An acceptance decision with a reason is recorded against the case."),
+    ],
+    "negative": [
+        ("Open the transaction used for {process} as {role}.",
+         "The transaction is ready for entry."),
+        ("Enter data that breaks exactly one rule: {focus}.",
+         "The invalid value is accepted into the field so the check runs on save."),
+        ("Try to save the document.",
+         "The system refuses to save."),
+        ("Note the message type, number and text the system issues.",
+         "The message names the field at fault and says what is wrong."),
+        ("Check that nothing was posted and no follow-on document exists.",
+         "No document number was issued and {module} is unchanged."),
+    ],
+    "integration": [
+        ("Check that the connection to {integration} is active and the monitor is clear.",
+         "The connection test succeeds and no unrelated message is queued."),
+        ("Run {process} in {product} so the interface to {integration} is triggered.",
+         "The document is created and the interface call is raised."),
+        ("Find the message in the interface monitor and record its id and status.",
+         "Exactly one message exists for this run, with a successful status."),
+        ("Compare the payload with the interface specification, field by field.",
+         "Every mapped field carries the expected value, format and unit."),
+        ("Confirm {integration} processed it and the status returned to {product}.",
+         "The receiving system holds the record and the SAP document shows the status."),
+    ],
+    "regression": [
+        ("Open the recorded baseline for {process} taken before the change.",
+         "The baseline lists the document numbers, values and statuses to reproduce."),
+        ("Confirm only the change under test is present in the client.",
+         "The transport log shows the expected change and nothing else."),
+        ("Run {process} again with the data that produced the baseline.",
+         "The process completes as it did before the change."),
+        ("Compare the result with the baseline, paying attention to {focus}.",
+         "Every compared value matches, or the difference is explained by the change."),
+        ("Look for new messages, warnings or dumps the baseline run did not produce.",
+         "No new message, warning or dump appears."),
+    ],
+    "security": [
+        ("Check the controls documented for {process} against what is active in the client.",
+         "Every documented control is present and switched on."),
+        ("As a permitted user, run {process} and note what {focus} exposes on screen.",
+         "Only the data the security concept allows is visible."),
+        ("Repeat the attempt with an account that has no business need for {process}.",
+         "Access is refused and no sensitive data is shown, not even in an error."),
+        ("Open the audit log and find the entries for both attempts.",
+         "Both attempts are logged with user, timestamp and object."),
+        ("Check the alternative entry points listed in the security concept.",
+         "Each one applies the same control."),
+    ],
+    "authorization": [
+        ("Assign only the role under test to the test user for {process}.",
+         "The user holds exactly one role and the assignment is active."),
+        ("Run {process} inside the permitted scope.",
+         "The process completes and every required authorisation object is granted."),
+        ("Repeat the run for the case {focus} is meant to prevent.",
+         "The system refuses the action with an authorisation error."),
+        ("Record the failed check from the authorisation trace or SU53.",
+         "The refusal names the authorisation object and the field value."),
+        ("Try to reach the same function through another transaction or app.",
+         "Every alternative entry point applies the same check."),
+    ],
+    "data_migration": [
+        ("Record the source record count and control totals for {process}.",
+         "The source figures are signed off as the reconciliation baseline."),
+        ("Run the load into {product} with the agreed migration object and mapping.",
+         "The load completes and produces a log of loaded and rejected records."),
+        ("Reconcile the loaded counts and control totals against the source.",
+         "Loaded plus rejected equals the source count and the totals agree."),
+        ("Spot-check the field mapping on the documented sample, covering {focus}.",
+         "Every sampled field holds the correctly mapped and converted value."),
+        ("Work through the error file, correct the rejects and reload them.",
+         "Each rejected record has a stated reason and the reload closes the difference."),
+    ],
+}
+
+_MOCK_FALLBACK_STEPS: list[tuple[str, str]] = [
+    ("Prepare the preconditions listed for this test case.",
+     "The starting state matches the preconditions."),
+    ("Carry out {process} in {product} ({module}) covering {focus}.",
+     "The process behaves as the process description states."),
+    ("Record the result and compare it with the expected result below.",
+     "The observed result matches the expected result."),
+]
+
+
+def _test_case_generation(
+    payload: dict[str, Any], *, regenerated: bool = False
+) -> dict[str, Any]:
+    """Draft one test case per planned slot, with no API key and no network.
+
+    Every case is built from the process context the caller supplied and from
+    the slot the deterministic planner produced. The mock never invents a slot,
+    never changes a priority and never adds an SAP transaction code that the
+    context did not name - which are exactly the constraints the real providers
+    are held to by the prompt.
+    """
+    context: dict[str, Any] = payload.get("context", {}) or {}
+    slots: list[dict[str, Any]] = payload.get("slots", []) or []
+    instruction = str(payload.get("reviewer_instruction", "") or "").strip()
+
+    return {
+        "test_cases": [
+            _mock_test_case(context, slot, instruction=instruction, regenerated=regenerated)
+            for slot in slots
+            if isinstance(slot, dict) and slot.get("slot_id")
+        ]
+    }
+
+
+def _mock_test_case(
+    context: dict[str, Any],
+    slot: dict[str, Any],
+    *,
+    instruction: str = "",
+    regenerated: bool = False,
+) -> dict[str, Any]:
+    """Build one mock test case from the context and one planned slot."""
+    process = str(context.get("business_process") or "the business process")
+    product = str(context.get("sap_product") or "the SAP system")
+    module = str(context.get("sap_module") or "the module")
+    description = str(context.get("process_description") or "").strip()
+    roles = [str(item) for item in (context.get("user_roles") or []) if str(item).strip()]
+    integrations = [
+        str(item) for item in (context.get("integrations") or []) if str(item).strip()
+    ]
+    systems = [str(item) for item in (context.get("systems_involved") or []) if str(item).strip()]
+    rules = [str(item) for item in (context.get("business_rules") or []) if str(item).strip()]
+    preconditions = [
+        str(item) for item in (context.get("preconditions") or []) if str(item).strip()
+    ]
+    data_requirements = [
+        str(item) for item in (context.get("test_data_requirements") or []) if str(item).strip()
+    ]
+
+    test_type = str(slot.get("test_type") or "sit")
+    type_label = str(slot.get("test_type_label") or test_type.upper())
+    focus = str(slot.get("focus") or "the standard path")
+
+    values = {
+        "process": process,
+        "product": product,
+        "module": module,
+        "focus": focus,
+        "role": roles[0] if roles else "the assigned business user",
+        "integration": integrations[0] if integrations else "the connected external system",
+        "system": systems[0] if systems else "the SAP test client",
+    }
+
+    outline = _MOCK_STEP_OUTLINES.get(test_type, _MOCK_FALLBACK_STEPS)
+    steps = [
+        {
+            "action": action.format(**values),
+            "expected_result": expected.format(**values),
+        }
+        for action, expected in outline
+    ]
+
+    first_sentence = description.split(".")[0].strip()
+    objective = (
+        f"Check that {process} in {product} ({module}) handles {focus} as described"
+        + (f": {first_sentence}." if first_sentence else ".")
+    )
+    if instruction:
+        objective += f" Reviewer instruction applied: {instruction}"
+
+    case_preconditions = preconditions[:3] + [
+        f"The test client is configured for {process} as described for this suite.",
+    ]
+    case_test_data = data_requirements[:3] + [
+        f"One data set that exercises {focus}.",
+    ]
+    if rules:
+        case_test_data.append(f"Values that satisfy the business rule: {rules[0]}")
+
+    comments = (
+        "Drafted by the mock AI provider from the process description entered in this "
+        "application. No language model was called and nothing here has been executed in an "
+        "SAP system."
+    )
+    if regenerated:
+        comments = "Redrafted by the mock AI provider. " + comments
+
+    return {
+        "slot_id": slot.get("slot_id"),
+        # Deliberately a different shape from the configured template title
+        # ("<type>: <process> - <focus>"), so a reader can see at a glance
+        # which cases were drafted and which the template had to fill.
+        "title": f"{focus[:1].upper()}{focus[1:]} - {process} ({type_label})",
+        "objective": objective,
+        "preconditions": case_preconditions,
+        "test_data": case_test_data,
+        "steps": steps,
+        "expected_result": (
+            f"{process} behaves as described for {focus}, and the result agrees with the "
+            f"business rules recorded for this suite."
+        ),
+        "comments": comments,
     }

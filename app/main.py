@@ -186,11 +186,20 @@ def index() -> dict[str, object]:
                 "status": "available",
                 "base_path": f"{settings.api_v1_prefix}/contracts",
             },
+            {
+                "id": "inventory_predictor",
+                "name": "Inventory Predictor",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/inventory",
+            },
+            {
+                "id": "test_case_generator",
+                "name": "SAP Test Case Generator",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/test-cases",
+            },
         ],
-        "planned_modules": [
-            "inventory_predictor", "test_case_generator", "blueprint_generator",
-            "interview_coach",
-        ],
+        "planned_modules": ["blueprint_generator", "interview_coach"],
         "disclaimer": (
             "Demo application. Not connected to any SAP system; no output has been validated "
             "in a live SAP environment."

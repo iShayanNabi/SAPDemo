@@ -214,6 +214,59 @@ future, distinct from `rule_based` findings about a file. The optional `ai_narra
 too little history is returned with `status: insufficient_data` and its warning rather than being
 dropped or estimated.
 
+### Module 8 - SAP Test Case Generator
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/test-cases/generate` | Generate a suite from a business process description |
+| GET | `/api/v1/test-cases/suites/{suite_id}` | One suite with its coverage, summary and test cases |
+| PUT | `/api/v1/test-cases/{test_case_id}` | Edit one test case (partial) |
+| DELETE | `/api/v1/test-cases/{test_case_id}` | Delete one test case |
+| POST | `/api/v1/test-cases/{test_case_id}/regenerate` | Redraft one test case's script |
+| GET | `/api/v1/test-cases/suites/{suite_id}/export` | Download the suite (`xlsx\|csv\|json\|pdf`) |
+| POST | `/api/v1/test-cases/suites/{suite_id}/test-cases` | Add a test case by hand |
+| POST | `/api/v1/test-cases/{test_case_id}/duplicate` | Copy a test case into a new row |
+| POST | `/api/v1/test-cases/{test_case_id}/approve` | Approve or un-approve a test case |
+| POST | `/api/v1/test-cases/{test_case_id}/execution` | Record a pass/fail result |
+| GET | `/api/v1/test-cases/{test_case_id}` | One test case |
+| GET | `/api/v1/test-cases/suites` | List generated suites, newest first |
+| GET | `/api/v1/test-cases/catalog` | The eight test types, the limits and the deterministic rules |
+| GET | `/api/v1/test-cases/sample` | Load one fictional demo process definition (`name=`) |
+| GET | `/api/v1/test-cases/sample/info` | Describe the demo process definitions |
+| GET | `/api/v1/test-cases/ai-status` | Active AI provider (never a key) |
+
+The `generate` body is `{context, test_case_count, test_types, suite_name?, default_owner?,
+use_ai?}`, where `context` carries the twelve process inputs: `sap_product`, `sap_module`,
+`business_process`, `process_description`, `preconditions`, `business_rules`, `systems_involved`,
+`integrations`, `user_roles` and `test_data_requirements`. Every list also accepts a
+newline-separated string, which is what a form sends.
+
+- **`test_types` order matters.** Types are covered in the order given. When `test_case_count` is
+  smaller than the number of types, the ones listed last go without a case and come back in
+  `uncovered_test_types` with a note - they are never dropped silently.
+- **`use_ai: false` still returns a complete suite**, built from the configured templates and
+  labelled `rule_based`. So does a provider outage; the failure lands in `ai.error` and in
+  `generation_issues`.
+- **`generation_issues`** lists every drafting problem that was recovered from, with a `stage` of
+  `provider`, `payload` or `content`. An empty list means nothing needed repairing.
+
+Each test case carries two provenance fields: `output_origin` (`rule_based`, `ai_generated` or
+`mock_ai` - what produced the words) and `source` (`ai_generated`, `template`, `manual` or
+`duplicated` - how the row entered the suite). `validation_notes` lists what the deterministic
+repair had to fix in a drafted case.
+
+Editing has consequences the response reports rather than hides:
+
+- editing any script field clears `approved_by`/`approved_at` and returns the case to `draft`;
+- a verdict recorded before a script change is kept and flagged with `execution_is_stale`, counted
+  in `summary.stale_execution_count`, and cleared when the test is run again;
+- deleting a case returns `lost_test_types` - the types the suite no longer covers at all;
+- changing a case's test type reissues its identifier, because the identifier encodes the type.
+
+`POST /test-cases/{id}/regenerate` takes `{instruction?, test_type?, use_ai?,
+keep_execution_record?}`. It keeps the identifier and the sequence, always clears the approval, and
+keeps the execution record unless told otherwise.
+
 ---
 
 ## Health

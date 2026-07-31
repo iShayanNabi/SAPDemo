@@ -560,3 +560,140 @@ def build_contract_answer_request(
         temperature=0.2,
         expects_json=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# SAP Test Case Generator
+# ---------------------------------------------------------------------------
+
+#: Bump when the test case wording changes. Stored on every generated suite.
+TEST_CASE_PROMPT_VERSION = "test_case_generator_v1.0.0"
+
+#: How much of each context list travels to the provider. The lists are user
+#: supplied and can be long; the payload has to stay small enough that the
+#: *slots* - the thing the response is keyed on - always survive intact.
+MAX_CONTEXT_LIST_ITEMS = 15
+
+#: Output budget per requested test case, and the ceiling for a whole suite.
+#: A suite of 20 cases needs far more output than a one-paragraph narrative, so
+#: this module sizes its own budget instead of using the shared default.
+TOKENS_PER_TEST_CASE = 600
+MAX_TEST_CASE_TOKENS = 16_000
+
+#: This module is the only one whose AI output *is* the deliverable rather than
+#: a commentary on one, so the wording below is stricter than the narrative
+#: prompts in two specific ways: it forbids inventing SAP objects the user did
+#: not name, and it forbids filling a test case's execution record.
+TEST_CASE_SYSTEM = (
+    "You are an experienced SAP test lead drafting test cases for a project test plan.\n"
+    "A DETERMINISTIC planner has ALREADY decided how many test cases exist, what each one "
+    "is called, which test type it belongs to, which aspect of the process it focuses on and "
+    "how urgent it is. You write the wording of each case and nothing else.\n\n"
+    "Hard rules:\n"
+    "1. Return exactly one test case for every slot in the data block, keyed by its "
+    "'slot_id'. Never invent a slot, never merge two slots, never skip one.\n"
+    "2. Never state that a transaction code, table, program, BAdI, IDoc type or Fiori app "
+    "exists unless the data block names it. Write 'the transaction used for <process>' "
+    "instead of guessing a code. A confidently wrong transaction code costs a tester an "
+    "afternoon.\n"
+    "3. Write steps a tester can follow without asking a question: one action per step, in "
+    "order, each with the result the tester should see.\n"
+    "4. Stay inside the slot's test type and focus. A negative test must fail; a UAT case is "
+    "written for a business user, not a consultant; an integration case must cross a system "
+    "boundary.\n"
+    "5. Never fill in an actual result, a pass/fail outcome, an evidence reference, a status "
+    "or an approval. Those describe an execution that has not happened.\n"
+    "6. Do not claim any test has been executed or validated in a live SAP system. Nothing "
+    "here has been.\n"
+    "7. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"test_cases": [{"slot_id": "TC-SIT-001", "title": "...", "objective": "...", '
+    '"preconditions": ["..."], "test_data": ["..."], "steps": [{"action": "...", '
+    '"test_data": "...", "expected_result": "..."}], "expected_result": "...", '
+    '"comments": ""}]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def _trim_context(context: dict[str, Any]) -> dict[str, Any]:
+    """Cap every list in the process context so the slots always fit."""
+    trimmed: dict[str, Any] = {}
+    for key, value in context.items():
+        if isinstance(value, list):
+            trimmed[key] = value[:MAX_CONTEXT_LIST_ITEMS]
+        else:
+            trimmed[key] = value
+    return trimmed
+
+
+def _test_case_token_budget(slot_count: int) -> int:
+    """Size the output budget to the number of cases actually requested."""
+    return max(1200, min(TOKENS_PER_TEST_CASE * max(slot_count, 1), MAX_TEST_CASE_TOKENS))
+
+
+def build_test_case_generation_request(
+    context: dict[str, Any],
+    slots: list[dict[str, Any]],
+    *,
+    max_tokens: int | None = None,
+) -> AIRequest:
+    """Build the request that drafts a whole suite of test cases.
+
+    The slots are the contract: the response is matched back to them by
+    ``slot_id``, so a slot that comes back missing or unrecognised is filled
+    from the deterministic template rather than lost.
+    """
+    payload = {
+        "task": "test_case_generation",
+        "context": _trim_context(context),
+        "slots": slots,
+    }
+    user_prompt = (
+        "Draft one SAP test case for each slot below, using the process context supplied.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions, with one entry per slot_id."
+    )
+    return AIRequest(
+        system_prompt=TEST_CASE_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=TEST_CASE_PROMPT_VERSION,
+        max_tokens=max_tokens or _test_case_token_budget(len(slots)),
+        temperature=0.3,
+        expects_json=True,
+    )
+
+
+def build_test_case_regeneration_request(
+    context: dict[str, Any],
+    slot: dict[str, Any],
+    *,
+    instruction: str | None = None,
+    previous_title: str | None = None,
+    max_tokens: int = 1600,
+) -> AIRequest:
+    """Build the request that redrafts a single test case.
+
+    The reviewer's instruction is user text, so it travels inside the data block
+    with everything else rather than being interpolated into the system prompt.
+    """
+    payload = {
+        "task": "test_case_regeneration",
+        "context": _trim_context(context),
+        "slots": [slot],
+        "reviewer_instruction": instruction or "",
+        "previous_title": previous_title or "",
+    }
+    user_prompt = (
+        "Redraft the single SAP test case below. Keep its slot_id, its test type and its "
+        "focus; improve the wording and follow the reviewer instruction if one is given.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions, containing exactly one entry."
+    )
+    return AIRequest(
+        system_prompt=TEST_CASE_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=TEST_CASE_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.3,
+        expects_json=True,
+    )

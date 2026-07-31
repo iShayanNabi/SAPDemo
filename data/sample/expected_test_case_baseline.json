@@ -1,0 +1,365 @@
+{
+  "description": "What the deterministic half of the engine produces for each demo process, with AI drafting switched off. Recorded by scripts/generate_test_case_sample_data.py.",
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "processes": {
+    "p2p_standard_po": {
+      "requested_test_types": [
+        "sit",
+        "uat",
+        "negative",
+        "integration",
+        "regression"
+      ],
+      "requested_count": 10,
+      "allocation": {
+        "sit": 2,
+        "uat": 2,
+        "negative": 2,
+        "integration": 2,
+        "regression": 2
+      },
+      "uncovered_test_types": [],
+      "keyword_hits": [
+        "goods receipt",
+        "invoice",
+        "payment",
+        "posting",
+        "release strategy"
+      ],
+      "integration_count": 4,
+      "role_count": 4,
+      "test_case_count": 10,
+      "note_count": 0,
+      "test_cases": [
+        {
+          "test_case_id": "TC-SIT-001",
+          "test_type": "sit",
+          "priority": "critical",
+          "focus": "end-to-end happy path",
+          "owner": "Process consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-SIT-002",
+          "test_type": "sit",
+          "priority": "critical",
+          "focus": "document flow and follow-on documents",
+          "owner": "Process consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-UAT-001",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "business acceptance of the standard case",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-UAT-002",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "usability for the day-to-day user",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-001",
+          "test_type": "negative",
+          "priority": "high",
+          "focus": "mandatory field left empty",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-002",
+          "test_type": "negative",
+          "priority": "high",
+          "focus": "value outside the allowed tolerance",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-INT-001",
+          "test_type": "integration",
+          "priority": "high",
+          "focus": "outbound message to the connected system",
+          "owner": "Integration consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-INT-002",
+          "test_type": "integration",
+          "priority": "high",
+          "focus": "inbound message into SAP",
+          "owner": "Integration consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-REG-001",
+          "test_type": "regression",
+          "priority": "medium",
+          "focus": "core process unchanged after the transport",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-REG-002",
+          "test_type": "regression",
+          "priority": "medium",
+          "focus": "existing configuration still applied",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        }
+      ]
+    },
+    "pm_notification": {
+      "requested_test_types": [
+        "sit",
+        "uat",
+        "negative"
+      ],
+      "requested_count": 6,
+      "allocation": {
+        "sit": 2,
+        "uat": 2,
+        "negative": 2
+      },
+      "uncovered_test_types": [],
+      "keyword_hits": [],
+      "integration_count": 0,
+      "role_count": 1,
+      "test_case_count": 6,
+      "note_count": 0,
+      "test_cases": [
+        {
+          "test_case_id": "TC-SIT-001",
+          "test_type": "sit",
+          "priority": "high",
+          "focus": "end-to-end happy path",
+          "owner": "Process consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-SIT-002",
+          "test_type": "sit",
+          "priority": "high",
+          "focus": "document flow and follow-on documents",
+          "owner": "Process consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-UAT-001",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "business acceptance of the standard case",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-UAT-002",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "usability for the day-to-day user",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-001",
+          "test_type": "negative",
+          "priority": "medium",
+          "focus": "mandatory field left empty",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-002",
+          "test_type": "negative",
+          "priority": "medium",
+          "focus": "value outside the allowed tolerance",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        }
+      ]
+    },
+    "migration_vendor": {
+      "requested_test_types": [
+        "data_migration",
+        "sit",
+        "negative",
+        "authorization",
+        "security",
+        "regression"
+      ],
+      "requested_count": 4,
+      "allocation": {
+        "data_migration": 1,
+        "sit": 1,
+        "negative": 1,
+        "authorization": 1
+      },
+      "uncovered_test_types": [
+        "security",
+        "regression"
+      ],
+      "keyword_hits": [
+        "payment",
+        "tax"
+      ],
+      "integration_count": 1,
+      "role_count": 2,
+      "test_case_count": 4,
+      "note_count": 1,
+      "test_cases": [
+        {
+          "test_case_id": "TC-MIG-001",
+          "test_type": "data_migration",
+          "priority": "critical",
+          "focus": "record count and control total reconciliation",
+          "owner": "Data migration lead",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-SIT-001",
+          "test_type": "sit",
+          "priority": "critical",
+          "focus": "end-to-end happy path",
+          "owner": "Process consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-001",
+          "test_type": "negative",
+          "priority": "high",
+          "focus": "mandatory field left empty",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-AUT-001",
+          "test_type": "authorization",
+          "priority": "medium",
+          "focus": "the role grants every object the process needs",
+          "owner": "Authorisation administrator",
+          "step_count": 5,
+          "source": "template"
+        }
+      ]
+    },
+    "fiori_approval": {
+      "requested_test_types": [
+        "uat",
+        "authorization",
+        "security",
+        "negative"
+      ],
+      "requested_count": 8,
+      "allocation": {
+        "uat": 2,
+        "authorization": 2,
+        "security": 2,
+        "negative": 2
+      },
+      "uncovered_test_types": [],
+      "keyword_hits": [],
+      "integration_count": 1,
+      "role_count": 6,
+      "test_case_count": 8,
+      "note_count": 0,
+      "test_cases": [
+        {
+          "test_case_id": "TC-UAT-001",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "business acceptance of the standard case",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-UAT-002",
+          "test_type": "uat",
+          "priority": "high",
+          "focus": "usability for the day-to-day user",
+          "owner": "Business process owner",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-AUT-001",
+          "test_type": "authorization",
+          "priority": "high",
+          "focus": "the role grants every object the process needs",
+          "owner": "Authorisation administrator",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-AUT-002",
+          "test_type": "authorization",
+          "priority": "high",
+          "focus": "the process is refused without the role",
+          "owner": "Authorisation administrator",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-SEC-001",
+          "test_type": "security",
+          "priority": "high",
+          "focus": "logon and password policy",
+          "owner": "Security consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-SEC-002",
+          "test_type": "security",
+          "priority": "high",
+          "focus": "visibility of sensitive data",
+          "owner": "Security consultant",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-001",
+          "test_type": "negative",
+          "priority": "medium",
+          "focus": "mandatory field left empty",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        },
+        {
+          "test_case_id": "TC-NEG-002",
+          "test_type": "negative",
+          "priority": "medium",
+          "focus": "value outside the allowed tolerance",
+          "owner": "Test analyst",
+          "step_count": 5,
+          "source": "template"
+        }
+      ]
+    }
+  }
+}

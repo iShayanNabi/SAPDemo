@@ -56,7 +56,7 @@ modules = [
     ("5. Supplier Risk Copilot", "Available", "Score suppliers across ten risk categories with a transparent weighted model, then ask questions answered from the loaded records with citations."),
     ("6. Contract Assistant", "Available", "Extract clauses, key dates, obligations and risks from PDF, DOCX and TXT contracts, each with a page reference, an excerpt and a confidence score, then ask questions answered with citations."),
     ("7. Inventory Predictor", "Available", "Forecast demand with five explainable statistical models chosen per material by backtesting, project stock levels forward, and get shortage dates, reorder plans and stock classifications - no AI produces any number."),
-    ("8. SAP Test Case Generator", "Planned", "Generate test cases from process descriptions."),
+    ("8. SAP Test Case Generator", "Available", "Describe an SAP business process and get a structured, editable test suite across eight test types. The identifiers, the type coverage, the priorities and the step numbering are deterministic; only the wording of each case is drafted by AI, and each case says which produced it. Edit, approve, record execution results and export to CSV, XLSX, JSON or PDF."),
     ("9. SAP Blueprint Generator", "Planned", "Draft configuration blueprints."),
     ("10. SAP Interview Coach", "Planned", "Practice questions and structured feedback."),
 ]

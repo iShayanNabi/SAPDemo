@@ -398,6 +398,48 @@ def contract_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def test_case_config():
+    """The default Test Case Generator configuration."""
+    from app.modules.test_case_generator.thresholds import get_test_case_config
+
+    return get_test_case_config()
+
+
+def _test_case_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_test_case_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def test_case_processes() -> dict:
+    """The bundled fictional SAP process definitions."""
+    import json
+
+    path = _test_case_sample("sample_test_case_processes.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def test_case_manifest() -> dict:
+    """The documented test case generator scenarios."""
+    import json
+
+    path = _test_case_sample("test_case_scenario_manifest.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def test_case_baseline() -> dict:
+    """The recorded deterministic output for the demo processes."""
+    import json
+
+    path = _test_case_sample("expected_test_case_baseline.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"

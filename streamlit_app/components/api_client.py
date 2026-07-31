@@ -644,3 +644,134 @@ class ApiClient:
         return self.download_bytes(
             f"/contracts/{contract_id}/export", {"format": export_format}
         )
+
+    # -- SAP Test Case Generator ------------------------------------------
+    def test_case_generate(
+        self,
+        context: dict[str, Any],
+        *,
+        test_types: list[str],
+        test_case_count: int,
+        suite_name: str | None = None,
+        default_owner: str | None = None,
+        use_ai: bool = True,
+    ) -> dict[str, Any]:
+        """Generate a suite of SAP test cases from a process description."""
+        payload: dict[str, Any] = {
+            "context": context,
+            "test_types": test_types,
+            "test_case_count": test_case_count,
+            "use_ai": use_ai,
+        }
+        if suite_name:
+            payload["suite_name"] = suite_name
+        if default_owner:
+            payload["default_owner"] = default_owner
+        return self._request("POST", "/test-cases/generate", json=payload)
+
+    def test_case_suite(self, suite_id: str) -> dict[str, Any]:
+        """Fetch one suite with its test cases, coverage and summary."""
+        return self._request("GET", f"/test-cases/suites/{suite_id}")
+
+    def test_case_suites(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List generated suites, newest first."""
+        return self._request(
+            "GET", "/test-cases/suites", params={"limit": limit, "offset": offset}
+        )
+
+    def test_case(self, test_case_id: str) -> dict[str, Any]:
+        """Fetch one test case."""
+        return self._request("GET", f"/test-cases/{test_case_id}")
+
+    def test_case_update(self, test_case_id: str, changes: dict[str, Any]) -> dict[str, Any]:
+        """Apply a partial edit to one test case."""
+        return self._request("PUT", f"/test-cases/{test_case_id}", json=changes)
+
+    def test_case_delete(self, test_case_id: str) -> dict[str, Any]:
+        """Delete one test case and learn what coverage the suite lost."""
+        return self._request("DELETE", f"/test-cases/{test_case_id}")
+
+    def test_case_regenerate(
+        self,
+        test_case_id: str,
+        *,
+        instruction: str | None = None,
+        test_type: str | None = None,
+        use_ai: bool = True,
+        keep_execution_record: bool = True,
+    ) -> dict[str, Any]:
+        """Redraft one test case's script."""
+        payload: dict[str, Any] = {
+            "use_ai": use_ai,
+            "keep_execution_record": keep_execution_record,
+        }
+        if instruction:
+            payload["instruction"] = instruction
+        if test_type:
+            payload["test_type"] = test_type
+        return self._request("POST", f"/test-cases/{test_case_id}/regenerate", json=payload)
+
+    def test_case_add(self, suite_id: str, test_case: dict[str, Any]) -> dict[str, Any]:
+        """Add one test case to an existing suite."""
+        return self._request(
+            "POST", f"/test-cases/suites/{suite_id}/test-cases", json=test_case
+        )
+
+    def test_case_duplicate(self, test_case_id: str) -> dict[str, Any]:
+        """Duplicate one test case."""
+        return self._request("POST", f"/test-cases/{test_case_id}/duplicate")
+
+    def test_case_approve(
+        self, test_case_id: str, approved_by: str, *, approved: bool = True,
+        comments: str | None = None,
+    ) -> dict[str, Any]:
+        """Approve or un-approve one test case."""
+        payload: dict[str, Any] = {"approved_by": approved_by, "approved": approved}
+        if comments:
+            payload["comments"] = comments
+        return self._request("POST", f"/test-cases/{test_case_id}/approve", json=payload)
+
+    def test_case_execution(
+        self,
+        test_case_id: str,
+        *,
+        execution_result: str,
+        actual_result: str = "",
+        executed_by: str | None = None,
+        evidence_reference: str | None = None,
+        comments: str | None = None,
+    ) -> dict[str, Any]:
+        """Record the outcome of running one test case."""
+        payload: dict[str, Any] = {
+            "execution_result": execution_result,
+            "actual_result": actual_result,
+        }
+        if executed_by:
+            payload["executed_by"] = executed_by
+        if evidence_reference is not None:
+            payload["evidence_reference"] = evidence_reference
+        if comments is not None:
+            payload["comments"] = comments
+        return self._request("POST", f"/test-cases/{test_case_id}/execution", json=payload)
+
+    def test_case_catalog(self) -> dict[str, Any]:
+        """Fetch the test types, the limits and the deterministic rules."""
+        return self._request("GET", "/test-cases/catalog")
+
+    def test_case_ai_status(self) -> dict[str, Any]:
+        """Report which AI provider the generator would use."""
+        return self._request("GET", "/test-cases/ai-status")
+
+    def test_case_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional process definitions."""
+        return self._request("GET", "/test-cases/sample/info")
+
+    def test_case_sample(self, name: str) -> dict[str, Any]:
+        """Load one bundled fictional process definition."""
+        return self._request("GET", "/test-cases/sample", params={"name": name})
+
+    def test_case_export(self, suite_id: str, export_format: str) -> bytes:
+        """Download a test suite report."""
+        return self.download_bytes(
+            f"/test-cases/suites/{suite_id}/export", {"format": export_format}
+        )

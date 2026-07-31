@@ -180,6 +180,27 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/contract_assistant/config/contract_rules.json")
 
+    try:
+        from app.modules.test_case_generator.thresholds import get_test_case_config
+        from app.schemas.test_case_generator import TEST_TYPE_ORDER
+
+        test_case_config = get_test_case_config()
+        missing_types = [
+            item.value for item in TEST_TYPE_ORDER if item.value not in test_case_config.test_types
+        ]
+        if missing_types:
+            print(f"{FAIL} test types without a configuration: {missing_types}")
+            problems.append("Fix app/modules/test_case_generator/config/test_case_rules.json")
+        else:
+            print(
+                f"{PASS} test case generator configuration "
+                f"v{test_case_config.config_version}: {len(test_case_config.test_types)} test "
+                f"types, up to {test_case_config.generation.max_test_cases} cases per suite"
+            )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/test_case_generator/config/test_case_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -236,6 +257,17 @@ def main() -> int:
     else:
         print(f"{WARN} contracts: not generated yet")
         warnings.append("Run: python scripts/generate_contract_sample_data.py")
+
+    # The test case generator ships process definitions, not rows.
+    processes = settings.sample_dir / "sample_test_case_processes.json"
+    if processes.is_file():
+        import json as _json
+
+        count = len(_json.loads(processes.read_text(encoding="utf-8")).get("processes", []))
+        print(f"{PASS} test case processes: {count} demo process definitions available")
+    else:
+        print(f"{WARN} test case processes: not generated yet")
+        warnings.append("Run: python scripts/generate_test_case_sample_data.py")
 
     # 8. Document extraction capability
     print("\nDocument extraction")

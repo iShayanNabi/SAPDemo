@@ -22,7 +22,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 5 | Supplier Risk Copilot | **Implemented** |
 | 6 | Contract Assistant | **Implemented** |
 | 7 | Inventory Predictor | **Implemented** |
-| 8 | SAP Test Case Generator | Planned |
+| 8 | SAP Test Case Generator | **Implemented** |
 | 9 | SAP Blueprint Generator | Planned |
 | 10 | SAP Interview Coach | Planned |
 
@@ -64,6 +64,7 @@ app/
   services/      ai/  documents/  exports/  files/  tabular/
   modules/       po_risk/  spend/  supplier_reco/  invoice_validator/
                  supplier_risk/  contract_assistant/  inventory/
+                 test_case_generator/
 streamlit_app/   pages/  components/
 data/            sample/  uploads/  exports/
 tests/           unit/  api/  integration/
@@ -250,13 +251,14 @@ python scripts/generate_invoice_sample_data.py
 python scripts/generate_supplier_risk_sample_data.py
 python scripts/generate_contract_sample_data.py
 python scripts/generate_inventory_sample_data.py
+python scripts/generate_test_case_sample_data.py
 
 # run
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 1011 tests
+pytest                                  # 1165 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -331,6 +333,58 @@ structure. Compiling `[A-Z]` case-insensitively silently turns "this line is in 
 opposite. Clause specs carry `negation_patterns` that veto a primary hit in the same sentence.
 Any clause whose absence is meaningful needs them.
 
+### A generated artefact needs a deterministic skeleton
+
+Modules 1-7 use AI to *explain* something code computed. Module 8 is the first where the AI output
+**is** the deliverable, and the line still has to be drawn - just earlier. The plan comes first:
+how many test cases each requested type gets, what each is called, which aspect of the process it
+covers and how urgent it is are all decided by `planning.py` before a provider is contacted. Only
+then is anything drafted, and the response is matched back to the plan by `slot_id`.
+
+That ordering buys three things no amount of prompt wording can:
+
+- **The same request produces the same suite** - identifiers, coverage and priorities - with a real
+  model, with the mock, or with `use_ai=false`. Only the prose can move.
+- **Every failure has somewhere to fall back to.** No key, provider down, non-JSON, wrong shape,
+  missing slot, unknown slot, blank title, no steps, two hundred steps, misnumbered steps: each
+  ends with a complete test case built from the configured templates and the problem *reported*.
+  The unit of recovery is one slot, so one bad case never costs the other nineteen.
+- **Validation happens twice, for different reasons.** Pydantic checks the *shape* at the provider
+  boundary, and it is deliberately permissive about content - rejecting a whole suite because one
+  objective came back blank is a worse outcome than filling that objective from the template. The
+  *content* is then repaired field by field against the configured limits, and every repair is
+  recorded on the case as a `validation_note`. Renumbering the steps belongs in that second pass:
+  the order steps arrive in is trusted, the numbers they carry are not.
+
+**When AI writes the artefact, code writes its skeleton.** Reuse this for module 9.
+
+### The user's order is information
+
+`allocate()` answers two questions with two different rules, and the split is the point. *Which
+types survive when there are fewer cases than types?* The order the caller listed them in - their
+first choice beats a project-wide weight, so a migration process that lists `data_migration` first
+keeps its migration tests. *Who gets the remainder when the count does not divide evenly?* The
+configured weights. Getting this backwards was caught by the sample generator: the demo migration
+process lost its headline test type to a weight table.
+
+### Two fields that describe the same thing must be asserted together
+
+Module 8's two real bugs were both **pairs**. No single field was wrong; the pair was a lie, and a
+green suite could not see it because every assertion looked at one field at a time:
+
+- a test case whose title and every step had been replaced by hand still read *approved by Ingrid* -
+  regenerating cleared the approval, a `PUT` edit did not, so the same situation was handled two
+  ways. Fixed: any script edit clears the approval, exactly as regenerating does; an administrative
+  edit (owner, status, evidence, comments) does not.
+- after that fix, the summary read *1 executed, 1 failed* while every status read *draft*: the
+  verdict had been reached against a script that no longer existed. Deleting it would throw away
+  something a tester wrote; keeping it silently would let a manager export a failure against a test
+  nobody can find. Fixed with `execution_is_stale` - kept, flagged, counted separately, carried
+  into every export, and cleared by re-running the test.
+
+**Assert the relationship, not each field.** Both were found in seconds by driving the real API and
+reading one response top to bottom.
+
 ---
 
 ## Lesson worth carrying forward
@@ -399,6 +453,11 @@ only appeared when the API was driven by hand:
   figure is still reported next to it for comparison with the material master. **A recommendation
   that contradicts the same engine's own prediction is worse than no recommendation** - and the
   contradiction was only visible reading two fields side by side in a real response.
+
+- Module 8: two green-suite bugs, both **pairs of fields** rather than a wrong value - a hand-edited
+  test case that kept the approval its rewritten script had never earned, and a suite summary
+  reporting a failure against steps that no longer existed. See "Two fields that describe the same
+  thing must be asserted together" above.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

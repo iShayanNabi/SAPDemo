@@ -21,6 +21,7 @@ from app.api.v1 import (
     spend,
     supplier_reco,
     supplier_risk,
+    test_cases,
 )
 
 logger = get_logger(__name__)
@@ -61,3 +62,4 @@ api_router.include_router(invoice_validator.router)
 api_router.include_router(supplier_risk.router)
 api_router.include_router(contracts.router)
 api_router.include_router(inventory.router)
+api_router.include_router(test_cases.router)

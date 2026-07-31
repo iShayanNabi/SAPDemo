@@ -1,0 +1,108 @@
+{
+  "description": "Documented expectations for the Test Case Generator demo processes. Every condition below is asserted by tests/integration/test_test_case_sample_data.py.",
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "processes": [
+    {
+      "name": "p2p_standard_po",
+      "title": "Procure to Pay - standard purchase order",
+      "summary": "The financially sensitive, heavily integrated process. Its description mentions invoices, goods receipts and payments, it names four integrations and four roles, so every configured priority escalation signal fires.",
+      "suggested_test_types": [
+        "sit",
+        "uat",
+        "negative",
+        "integration",
+        "regression"
+      ],
+      "suggested_test_case_count": 10
+    },
+    {
+      "name": "pm_notification",
+      "title": "Plant maintenance - raise a maintenance notification",
+      "summary": "The negative control. One role, no integration, no financial vocabulary, so no escalation rule fires and every test case keeps its test type's base priority.",
+      "suggested_test_types": [
+        "sit",
+        "uat",
+        "negative"
+      ],
+      "suggested_test_case_count": 6
+    },
+    {
+      "name": "migration_vendor",
+      "title": "Vendor master migration - cutover load",
+      "summary": "A cutover load, deliberately requested with more test types than test cases so the uncovered-type path is exercised: the generator drops the lightest types and says so instead of silently ignoring them.",
+      "suggested_test_types": [
+        "data_migration",
+        "sit",
+        "negative",
+        "authorization",
+        "security",
+        "regression"
+      ],
+      "suggested_test_case_count": 4
+    },
+    {
+      "name": "fiori_approval",
+      "title": "Fiori purchase requisition approval",
+      "summary": "An approval app with six roles and no financial posting. Only the access-related test types escalate, which is what the role-count rule is for.",
+      "suggested_test_types": [
+        "uat",
+        "authorization",
+        "security",
+        "negative"
+      ],
+      "suggested_test_case_count": 8
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "TCG-S001",
+      "process": "p2p_standard_po",
+      "condition": "All three priority escalation signals fire",
+      "expectation": "The process description contains configured escalation keywords, four integrations are named (>= the threshold of 3) and four roles are named (>= the threshold of 4).",
+      "assert": "keyword_hits is not empty, integration_count >= 3, role_count >= 4"
+    },
+    {
+      "id": "TCG-S002",
+      "process": "p2p_standard_po",
+      "condition": "System integration tests are escalated above their base priority",
+      "expectation": "SIT has a base priority of high and the keyword rule applies to it, so every SIT case in this suite is critical.",
+      "assert": "every sit test case has priority 'critical'"
+    },
+    {
+      "id": "TCG-S003",
+      "process": "pm_notification",
+      "condition": "Nothing escalates for a quiet process",
+      "expectation": "No escalation keyword appears, no integration is named and one role is named, so every case keeps its test type's configured base priority.",
+      "assert": "keyword_hits is empty and every test case priority equals the configured base priority of its type"
+    },
+    {
+      "id": "TCG-S004",
+      "process": "migration_vendor",
+      "condition": "More test types requested than test cases",
+      "expectation": "Six types are requested and four cases are asked for, so the two types listed last receive no case, are reported as uncovered and produce a note. The headline type of the process - data migration, listed first - is kept.",
+      "assert": "uncovered_test_types == ['security', 'regression'], note_count >= 1, and a data_migration case exists"
+    },
+    {
+      "id": "TCG-S005",
+      "process": "fiori_approval",
+      "condition": "Only the access test types escalate on role count",
+      "expectation": "Six roles are named, so authorization and security escalate one level; the process description contains no financial keyword, so UAT does not.",
+      "assert": "authorization and security cases are above their base priority while uat cases are at theirs"
+    },
+    {
+      "id": "TCG-S006",
+      "process": "all",
+      "condition": "Every planned case is complete without any AI",
+      "expectation": "With drafting switched off, every case is built from the configured templates and still has at least the configured minimum number of steps.",
+      "assert": "every test case has source 'template' and step_count >= min_steps"
+    },
+    {
+      "id": "TCG-S007",
+      "process": "all",
+      "condition": "Identifiers are unique and typed",
+      "expectation": "Each identifier follows the configured template and carries its test type's id_code, numbered from 1 within the type.",
+      "assert": "test_case_id values are unique per suite and match the type's id_code"
+    }
+  ]
+}
