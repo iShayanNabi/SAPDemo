@@ -15,6 +15,7 @@ from app.models.session import engine
 from app.schemas.common import ApiResponse, HealthStatus
 from app.api.v1 import (
     contracts,
+    inventory,
     invoice_validator,
     po_risk,
     spend,
@@ -59,3 +60,4 @@ api_router.include_router(supplier_reco.recommendations_router)
 api_router.include_router(invoice_validator.router)
 api_router.include_router(supplier_risk.router)
 api_router.include_router(contracts.router)
+api_router.include_router(inventory.router)

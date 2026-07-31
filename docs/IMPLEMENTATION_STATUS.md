@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 6 of 10 |
-| Tests | 902 passing (537 unit, 208 API, 157 integration) |
-| Python source | ~38,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 7 of 10 |
+| Tests | 1,011 passing (600 unit, 242 API, 169 integration) |
+| Python source | ~45,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -424,25 +424,6 @@ generator now reproduces it byte for byte.
 
 ---
 
-## Modules 5-10 - not started
-
-No code exists for these yet. Nothing has been stubbed, and there are no placeholder pages or
-non-functional buttons.
-
-| # | Module | Deterministic part | AI part |
-| --- | --- | --- | --- |
-| 5 | Supplier Risk Copilot | Metric retrieval | Question answering over retrieved facts |
-| 6 | Contract Assistant | Document parsing | Clause extraction, summarisation |
-| 7 | Inventory Predictor | Statistical forecasting (statsmodels) | Explaining a forecast |
-| 8 | SAP Test Case Generator | Template and coverage checks | Test case drafting |
-| 9 | SAP Blueprint Generator | Structure validation | Blueprint drafting |
-| 10 | SAP Interview Coach | Question bank, scoring rubric | Feedback on an answer |
-
-Each will reuse the foundation rather than duplicate it. Estimated effort per module is smaller
-than module 1, because the shared layers already exist.
-
----
-
 ## Module 6 - Contract Assistant - complete
 
 ### Requirements
@@ -558,7 +539,112 @@ documentation set.
 
 ---
 
-## Known limitations
+## Module 7 - Inventory Predictor - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| All 16 listed input fields | Done - `field_definitions.py`, plus `supplier_name`; every one carries SAP aliases (MATNR, MAKTX, WERKS, LGORT, LABST, PLIFZ, MINBE, EISBE, LIFNR, EINDT) |
+| Simple moving average | Done - `forecasting.py::simple_moving_average` |
+| Weighted moving average | Done - configurable weights, normalised and reported if they did not sum to 1 |
+| Simple exponential smoothing | Done - with grid-searched alpha |
+| Holt trend | Done - with optional damping |
+| Holt-Winters seasonal "when enough data exists" | Done - additive; requires two full seasons **and** a measurable seasonal signal |
+| Automatic model selection using backtesting | Done - `selection.py`, rolling-origin holdout, every candidate scored on the same periods |
+| No LLM generates numerical forecasts | Done - the whole engine is pure Python; the prompt forbids it explicitly and the mock provider only templates computed figures |
+| Demand forecast | Done - per period, with dates |
+| Future inventory level | Done - daily walk, reported per period with a best/worst band |
+| Forecast horizon | Done - configurable, capped, defaulted |
+| Confidence interval | Done - per-model standard-error growth, z from the configured level |
+| Predicted shortage date | Done - a real date interpolated inside the period |
+| Overstock risk | Done - from days of cover, with the excess quantified |
+| Recommended reorder date | Done - forward-looking trigger on the inventory position |
+| Recommended reorder quantity | Done - order-up-to level minus the projected position |
+| Recommended safety stock | Done - `z x sigma x sqrt(lead time / period length)`, compared with the material master |
+| Slow-moving classification | Done - from annualised turnover and zero-demand share |
+| Dead-stock indicator | Done - trailing zero-demand periods with stock on hand |
+| Model used | Done - plus its parameters and every candidate that lost |
+| Model assumptions | Done - stated per method in the configuration, returned on every item |
+| Data-quality warnings | Done - file level and per material |
+| Forecast accuracy (MAE, RMSE, MAPE or a safe alternative) | Done - MAE, RMSE, MAPE (only when defined), sMAPE, MASE, bias |
+| Four API routes | Done - upload, forecast, get, export, plus items, item detail, list, datasets, fields, methods, sample, ai-status |
+| Streamlit page with all ten listed elements | Done - upload, material/plant filters, forecast settings, model selection, forecast chart, confidence range, shortage alerts, reorder recommendations, accuracy metrics, data-quality warnings, export |
+| 24+ months, multiple materials and plants | Done - 30 monthly periods, 16 series, 15 materials, 3 plants |
+| Seasonal, trend, stable, intermittent, shortage, overstock, slow-moving scenarios | Done - 14 documented anchors |
+| Tests for all nine listed areas | Done - 109 new tests |
+
+### What was built
+
+| Piece | Location |
+| --- | --- |
+| Field contract (17 fields) | `app/modules/inventory/field_definitions.py` |
+| Period inference and grid | `app/modules/inventory/periods.py` |
+| Row and series normalisation | `app/modules/inventory/normalizer.py` |
+| The five models | `app/modules/inventory/forecasting.py` |
+| Accuracy metrics | `app/modules/inventory/accuracy.py` |
+| Demand profiling, eligibility, backtesting | `app/modules/inventory/selection.py` |
+| Stock projection, reorder policy, classification | `app/modules/inventory/projection.py` |
+| Orchestration with per-series isolation | `app/modules/inventory/engine.py` |
+| Thresholds (JSON + Pydantic) | `app/modules/inventory/config/inventory_rules.json`, `thresholds.py` |
+| Persistence | `app/models/inventory.py`, migration `d4a7c1e8f206` |
+| API | `app/api/v1/inventory.py`, `app/schemas/inventory.py` |
+| Exports | `app/services/exports/inventory_report_builder.py` (6-sheet workbook) |
+| UI | `streamlit_app/pages/7_Inventory_Predictor.py` |
+| Sample data | `scripts/generate_inventory_sample_data.py` |
+
+### Verified by hand
+
+- `uvicorn` started, real HTTP calls for upload, forecast, item detail, item filters, all three
+  export formats, methods and fields.
+- The XLSX opens: 6 sheets, 93 forecast rows, a populated reorder plan.
+- Alembic `upgrade head` -> `downgrade -1` on a scratch database; the four tables appear and go.
+- The three sample formats produce identical forecasts, and two runs over the same file are
+  byte-identical.
+
+### Bug found by driving the API - the self-contradicting recommendation
+
+The test suite was green when the engine recommended ordering material 100001 on **1 November** for
+a shortage it had itself predicted on **15 November**, with a **21-day** lead time. The order could
+not have arrived in time, and no test noticed because every individual figure was defensible.
+
+The cause: the reorder point was built from the demand expected over the lead time **starting at
+the as-of date**. Material 100001 peaks in November, so July's quiet demand (235 units over 21 days)
+set a reorder point of 263 - far too low for the 405 units that actually move in 21 November days.
+
+Fixed by evaluating the trigger **forward from each day** of the projection: the inventory position
+is compared against the demand expected over the lead time from that day. The reorder date moved to
+23 October, 23 days ahead of the shortage. The static policy figure is still reported, next to the
+figure that actually triggered, so the material-master comparison is unchanged and the difference is
+explained in the rationale. `test_the_reorder_date_leaves_enough_time_for_a_seasonal_material` now
+asserts the invariant.
+
+### Two selection bugs, both invisible to a green suite
+
+- **Incomparable backtests.** Fold counts were shrunk per model, so Holt-Winters was scored on
+  three held-out periods while a moving average was scored on six. The winner was partly an artefact
+  of the split. The fold plan is now decided once per series from the most demanding eligible model.
+- **A seasonal model fitted to noise.** Twelve monthly factors fitted to 30 observations explain
+  ~12/30 of the variance by chance, so a stable, seasonless material scored a convincing 0.39 on a
+  plain R-squared and Holt-Winters won its backtest by 2.4x on pure luck. Two guards were added: an
+  **adjusted** R-squared gate that charges the model for every factor it fits (the same series then
+  scores 0.39 against a 0.50 bar and the method is not offered, with the reason stated), and a
+  complexity margin so a model with more parameters must beat the simpler one by a stated
+  percentage. Periods missing from the file are excluded from the measurement - the missing-periods
+  anchor scored a spurious 0.64 from its zero-filled gaps, and scores 0.00 once they are excluded.
+
+### Design notes carried forward
+
+- **Statistics, not AI, and the prompt says so.** The requirement lists "explaining a forecast" as
+  the AI part. The system prompt forbids the model from producing, adjusting or extrapolating any
+  figure, and the payload carries only computed results. The mock provider - the default - is a text
+  template over those same numbers.
+- **`forecast` as an output origin.** Module 7 is the first to use it. A statistical estimate about
+  the future is a different kind of claim from a `rule_based` finding about a file, and the label
+  keeps that visible through the API and the UI.
+- **Honest degradation at every level.** Too little history, no stock column, an undated open PO, a
+  gap in the periods, a series that raises - each produces a stated result rather than a silent
+  omission or an invented number.
 
 **Module 1**
 
@@ -637,6 +723,28 @@ documentation set.
   the sentence that carries the modal verb, not as the full list.
 - Nothing here is legal advice, and no output has been checked by a lawyer.
 
+**Module 7 - Inventory Predictor**
+
+- The five methods are the explainable ones by design. ARIMA, ETS state-space models and
+  machine-learning forecasters are not offered, so a series whose structure none of the five
+  captures will be forecast by whichever of them backtests least badly.
+- The seasonal model is additive only. A material whose seasonal swing scales with its level -
+  where the peak is *twice* the trough rather than *200 units above* it - is fitted less well.
+- Prediction intervals assume the model's one-step errors are independent and normally
+  distributed, and the seasonal interval reuses the Holt formula, so it does not account for the
+  seasonal indexes themselves being estimated. Both are stated on the output.
+- Safety stock scales a per-period sigma to the lead time with `sqrt(L)`, which assumes
+  period-to-period errors are independent. **Lead-time variability is not modelled at all** - the
+  input contract carries a single lead time per material, not a distribution.
+- The reorder quantity is a periodic order-up-to level. There is no economic order quantity, no
+  price break, no container or pallet rounding beyond a single configurable multiple, and no
+  capacity or budget constraint.
+- Overdue open purchase-order quantities are excluded from the projection rather than reforecast to
+  a new arrival date, which makes the projection the more cautious of the two readings.
+- Turnover uses the average *ending* inventory of the last year of periods, not a daily average
+  stock balance.
+- No cost or currency field: overstock is quantified in units and days of cover, never in money.
+
 **Project-wide**
 
 - No authentication or authorisation - the lab is local-only.
@@ -649,21 +757,42 @@ documentation set.
 
 ---
 
+## Modules 8-10 - not started
+
+No code exists for these yet. Nothing has been stubbed, and there are no placeholder pages or
+non-functional buttons.
+
+| # | Module | Deterministic part | AI part |
+| --- | --- | --- | --- |
+| 8 | SAP Test Case Generator | Template and coverage checks | Test case drafting |
+| 9 | SAP Blueprint Generator | Structure validation | Blueprint drafting |
+| 10 | SAP Interview Coach | Question bank, scoring rubric | Feedback on an answer |
+
+Each will reuse the foundation rather than duplicate it. Estimated effort per module is smaller
+than module 1, because the shared layers already exist.
+
+---
+
 ## Recommended next step
 
-**Module 7 - Inventory Predictor.** It is the last major module that is purely deterministic, and
-it is the one the existing data best supports: modules 1, 2 and 4 already carry order quantities,
-delivery dates and lead times, so a demand and stock forecast can be built on data the lab already
-generates rather than a seventh sample dataset invented from nothing. It also introduces the
-`forecast` output origin, which exists in `OutputOrigin` but no module has produced yet, and
-`statsmodels`/`scikit-learn`, which are installed but unused.
+**Module 8 - SAP Test Case Generator.** It is the next module in the plan, and the first where AI
+does the substantive work rather than only rephrasing a computed result - which makes the
+deterministic/AI boundary the design question again: coverage checks, template validation and
+traceability are code, and the test-case prose is the model's. Everything it needs already exists:
+the AI abstraction, prompt versioning, structured validation, exports and the response envelope.
 
-Two smaller pieces of work are worth weighing against it:
+Three smaller pieces of work are worth weighing against it:
 
-- **Feed module 6 back into module 5.** The Contract Assistant now extracts notice periods,
-  auto-renewal terms, liability caps and penalty exposure from the document itself. Module 5's
-  contract risk category still scores from a status label and an expiry date. Joining them would
-  make contract risk materially sharper, and it is the first real cross-module data flow in the lab.
+- **Feed module 7 back into module 5.** The predictor now produces a per-supplier picture of which
+  materials are heading for a shortage and which are dead on the shelf. Module 5's delivery and
+  operational risk categories score from stored counts. Joining them would make supply risk
+  materially sharper.
+- **Lead-time variability.** The single most valuable extension to module 7 itself: the input
+  contract carries one lead time per material, so safety stock covers demand variability only. A
+  lead-time distribution would let the standard formula
+  `z * sqrt(L*sigma_d^2 + d^2*sigma_L^2)` replace the demand-only one, and it is a bounded change
+  to `projection.py` plus two fields.
+
 - **The operational backlog** listed under limitations - authentication, a job queue and a
-  PostgreSQL run. Six modules now share one database and one upload table, so the cost of adding
+  PostgreSQL run. Seven modules now share one database and one upload table, so the cost of adding
   authentication grows with every module rather than staying flat.

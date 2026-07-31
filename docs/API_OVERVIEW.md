@@ -170,6 +170,50 @@ separate field and never replaces a computed figure.
 Risk scores run **0 = no risk to 100 = maximum risk**. A supplier whose data supports fewer than
 three categories has `overall_score: null` rather than a score computed from a fragment.
 
+### Module 7 - Inventory Predictor
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/inventory/upload` | Upload an inventory history and load it into a dataset |
+| POST | `/api/v1/inventory/forecast` | Forecast demand and plan replenishment |
+| GET | `/api/v1/inventory/forecasts/{forecast_id}` | One forecast run with its materials |
+| GET | `/api/v1/inventory/forecasts/{forecast_id}/export` | Download the report (`xlsx\|csv\|json`) |
+| GET | `/api/v1/inventory/forecasts/{forecast_id}/items` | Materials in a run, filtered and paged |
+| GET | `/api/v1/inventory/forecasts/{forecast_id}/item` | One material's full forecast (`material`, `plant`, `storage_location?`) |
+| GET | `/api/v1/inventory/forecasts` | List past runs, newest first |
+| GET | `/api/v1/inventory/datasets` | List uploaded inventory datasets |
+| GET | `/api/v1/inventory/fields` | Canonical inventory fields and their SAP aliases |
+| GET | `/api/v1/inventory/methods` | Every forecasting method with its assumptions, plus selection rules, reorder formulae and stock thresholds |
+| GET | `/api/v1/inventory/sample` | Download the demo history (`format=csv\|xlsx\|json`) |
+| GET | `/api/v1/inventory/sample/info` | Describe the demo dataset |
+| GET | `/api/v1/inventory/ai-status` | Active AI provider (never a key) |
+
+The `forecast` body is `{dataset_id?, horizon_periods?, confidence_level?, model?, as_of_date?,
+materials?, plants?, generate_ai_summary?}`. A dataset is uploaded once and can be forecast
+repeatedly: changing the horizon, the confidence level or the model needs no re-upload.
+
+- `model` is `auto` (default) or one of the five methods. A forced method that cannot be applied to
+  a material falls back to automatic selection **for that material only**, and the response says
+  why.
+- `confidence_level` must be one of the levels with a configured z-score (see
+  `/inventory/methods`); an unconfigured level is rejected rather than silently defaulting to 1.96.
+- `as_of_date` defaults to the end of each material's own history, so a historical file is analysed
+  as at its own end rather than as at today.
+
+The item list supports `material`, `plant`, `supplier_id`, `model`, `status`, `movement_class`,
+`shortage_only`, `reorder_only`, `overstock_only`, `dead_stock_only` and
+`sort=shortage|reorder|demand|accuracy|material`. Material and plant are **query** parameters on
+the item detail route, not path segments, because a material number can contain a slash.
+
+Every forecast figure is labelled `output_origin: forecast` - a statistical estimate about the
+future, distinct from `rule_based` findings about a file. The optional `ai_narrative` keeps its own
+`ai_generated`/`mock_ai` label and never produces a number.
+
+`mape` is `null` whenever the comparison window contains a zero-demand period, with
+`mape_unavailable_reason` explaining why; `smape` and `mase` are always present. A material with
+too little history is returned with `status: insufficient_data` and its warning rather than being
+dropped or estimated.
+
 ---
 
 ## Health

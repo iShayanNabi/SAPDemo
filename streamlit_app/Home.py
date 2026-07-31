@@ -55,7 +55,7 @@ modules = [
     ("4. Invoice Validator", "Available", "Three-way match invoices against POs and goods receipts with configurable tolerances."),
     ("5. Supplier Risk Copilot", "Available", "Score suppliers across ten risk categories with a transparent weighted model, then ask questions answered from the loaded records with citations."),
     ("6. Contract Assistant", "Available", "Extract clauses, key dates, obligations and risks from PDF, DOCX and TXT contracts, each with a page reference, an excerpt and a confidence score, then ask questions answered with citations."),
-    ("7. Inventory Predictor", "Planned", "Statistical demand and stock forecasting."),
+    ("7. Inventory Predictor", "Available", "Forecast demand with five explainable statistical models chosen per material by backtesting, project stock levels forward, and get shortage dates, reorder plans and stock classifications - no AI produces any number."),
     ("8. SAP Test Case Generator", "Planned", "Generate test cases from process descriptions."),
     ("9. SAP Blueprint Generator", "Planned", "Draft configuration blueprints."),
     ("10. SAP Interview Coach", "Planned", "Practice questions and structured feedback."),

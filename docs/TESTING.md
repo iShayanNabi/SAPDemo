@@ -1,12 +1,12 @@
 # Testing
 
-**456 tests, about 100 seconds, no network and no API key.**
+**1,011 tests, about 115 seconds, no network and no API key.**
 
 ```bash
 pytest                              # everything
-pytest tests/unit                   # 270
-pytest tests/api                    # 112
-pytest tests/integration            # 74
+pytest tests/unit                   # 600
+pytest tests/api                    # 242
+pytest tests/integration            # 169
 pytest -k duplicate -v              # by name
 pytest tests/unit/test_rules.py::test_split_purchase_detected
 ```
@@ -17,9 +17,9 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 381 | Does each rule, metric and score produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, security and the AI abstraction behave? |
-| `tests/api` | 170 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
-| `tests/integration` | 113 | Over the full demo datasets, is every documented anomaly, scenario and supplier anchor actually detected, end to end through HTTP? |
+| `tests/unit` | 600 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
+| `tests/api` | 242 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
+| `tests/integration` | 169 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
 
 | File | Covers |
 | --- | --- |
@@ -45,6 +45,10 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_contract_qa.py` | Question intent routing, answers and citations, prompt-injection resistance, AI-is-additive-only |
 | `tests/api/test_contract_api.py` | Contract endpoints, upload/analyse/clauses/questions/export, cross-format agreement |
 | `tests/integration/test_contract_sample_data.py` | All 21 documented contract scenarios, the recorded baseline, end-to-end through the API |
+| `tests/unit/test_inventory_forecasting.py` | The five models checked by hand, warm-up handling, interval growth, MAE/RMSE/MAPE/sMAPE/MASE, the MAPE-with-zeros refusal, period inference and calendar grids, seasonal-strength detection, model selection and eligibility |
+| `tests/unit/test_inventory_planning.py` | Shortage dates, open-PO handling and expediting, safety stock and reorder point formulas, order quantities, confidence intervals, overstock/slow-moving/dead-stock classification, missing periods, insufficient data, series isolation, configuration-driven behaviour |
+| `tests/api/test_inventory_api.py` | Inventory endpoints, upload/forecast/items/detail/export, filters, forced models, rejected inputs |
+| `tests/integration/test_inventory_sample_data.py` | All 14 documented inventory anchors, the recorded baseline, repeat-run determinism, cross-format agreement |
 
 ### Isolation
 

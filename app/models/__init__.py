@@ -8,6 +8,12 @@ from app.models.contract_assistant import (
     ContractPage,
     ContractRisk,
 )
+from app.models.inventory import (
+    InventoryDatasetRow,
+    InventoryForecast,
+    InventoryForecastItem,
+    InventoryRecord,
+)
 from app.models.invoice_validator import InvoiceException, InvoiceValidation
 from app.models.po_risk import PoAnalysis, PoFinding, PoRecord, UploadedFile
 from app.models.spend import SpendAnalysis, SpendOpportunity, SpendTransaction
@@ -49,4 +55,8 @@ __all__ = [
     "ContractClause",
     "ContractRisk",
     "ContractObligation",
+    "InventoryDatasetRow",
+    "InventoryRecord",
+    "InventoryForecast",
+    "InventoryForecastItem",
 ]

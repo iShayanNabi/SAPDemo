@@ -281,6 +281,57 @@ def supplier_risk_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def inventory_config():
+    """The default Inventory Predictor configuration."""
+    from app.modules.inventory.thresholds import get_inventory_config
+
+    return get_inventory_config()
+
+
+def _inventory_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_inventory_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def inventory_sample_csv_path() -> Path:
+    """Path of the generated inventory history CSV."""
+    return _inventory_sample("sample_inventory_history.csv")
+
+
+@pytest.fixture(scope="session")
+def inventory_sample_xlsx_path() -> Path:
+    """Path of the generated inventory history XLSX."""
+    return _inventory_sample("sample_inventory_history.xlsx")
+
+
+@pytest.fixture(scope="session")
+def inventory_sample_json_path() -> Path:
+    """Path of the generated inventory history JSON."""
+    return _inventory_sample("sample_inventory_history.json")
+
+
+@pytest.fixture(scope="session")
+def inventory_scenario_manifest() -> dict:
+    """The documented inventory anchors and the reference date."""
+    import json
+
+    path = _inventory_sample("inventory_scenario_manifest.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def inventory_baseline() -> dict:
+    """The recorded engine output for the inventory sample dataset."""
+    import json
+
+    path = _inventory_sample("expected_inventory_baseline.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def contract_config():
     """The default Contract Assistant configuration."""
     from app.modules.contract_assistant.thresholds import get_contract_config

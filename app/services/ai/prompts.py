@@ -90,6 +90,7 @@ def _wrap_untrusted(payload: dict[str, Any]) -> str:
             for key in (
                 "sample_findings", "top_rules", "top_suppliers",
                 "clauses", "risks", "missing_clauses", "citations",
+                "shortage_items", "overstock_items",
             )
             if isinstance(cleaned.get(key), list) and cleaned[key]
         ]
@@ -367,6 +368,70 @@ def build_supplier_risk_summary_request(
         system_prompt=SUPPLIER_RISK_SUMMARY_SYSTEM,
         user_prompt=user_prompt,
         prompt_version=SUPPLIER_RISK_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        expects_json=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Inventory Predictor
+# ---------------------------------------------------------------------------
+
+#: Bump when the inventory wording changes. Stored on every forecast run.
+INVENTORY_PROMPT_VERSION = "inventory_forecast_narrative_v1.0.0"
+
+#: The inventory case has a failure mode the other modules do not: a language
+#: model is very willing to produce a number that *looks* like a forecast. Rule 2
+#: below is therefore absolute, and the payload deliberately carries only figures
+#: the statistical engine has already computed.
+INVENTORY_SUMMARY_SYSTEM = (
+    "You are a supply planner explaining an inventory forecast to a materials manager.\n"
+    "A DETERMINISTIC statistical engine has ALREADY produced every number: the demand "
+    "forecast, its confidence range, the projected stock levels, the shortage dates, the "
+    "reorder dates and quantities, the safety stock and the accuracy metrics. Your job is to "
+    "explain what they mean and what to do about them.\n\n"
+    "Hard rules:\n"
+    "1. Never invent a material, plant, quantity, date or percentage. Use only the data block.\n"
+    "2. NEVER produce, adjust, extrapolate or 'correct' a forecast figure yourself. You are not "
+    "a forecasting model. If a number is not in the data block, it does not exist.\n"
+    "3. A forecast is an estimate with a stated confidence range, and a projected shortage date "
+    "is a planning indication. Never describe either as certain, guaranteed or committed.\n"
+    "4. Where the engine reports poor accuracy, a short history, missing periods or an "
+    "insufficient-data status, say so - do not present that material's forecast as reliable.\n"
+    "5. Do not claim the data comes from a live SAP system or was validated in SAP.\n"
+    "6. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"summary": "3-5 sentences", "key_findings": ["..."], "recommended_actions": ["..."]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def build_inventory_summary_request(
+    forecast_summary: dict[str, Any],
+    shortage_items: list[dict[str, Any]],
+    overstock_items: list[dict[str, Any]],
+    accuracy_summary: dict[str, Any],
+    *,
+    max_tokens: int = 1200,
+) -> AIRequest:
+    """Build the request for the inventory forecast narrative."""
+    payload = {
+        "task": "inventory_forecast",
+        "forecast_summary": forecast_summary,
+        "shortage_items": shortage_items[:10],
+        "overstock_items": overstock_items[:10],
+        "accuracy_summary": accuracy_summary,
+    }
+    user_prompt = (
+        "Explain this already-computed inventory forecast for the materials manager.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions."
+    )
+    return AIRequest(
+        system_prompt=INVENTORY_SUMMARY_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=INVENTORY_PROMPT_VERSION,
         max_tokens=max_tokens,
         temperature=0.2,
         expects_json=True,

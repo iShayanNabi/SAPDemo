@@ -47,6 +47,8 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_invoice_validation(payload), ensure_ascii=False)
         elif task == "supplier_risk":
             text = json.dumps(_supplier_risk(payload), ensure_ascii=False)
+        elif task == "inventory_forecast":
+            text = json.dumps(_inventory_forecast(payload), ensure_ascii=False)
         elif task == "contract_analysis":
             text = json.dumps(_contract_analysis(payload), ensure_ascii=False)
         elif task == "contract_answer":
@@ -96,6 +98,8 @@ def _infer_task(prompt: str) -> str:
         return "invoice_validation"
     if "supplier risk" in lowered or "risk assessment" in lowered:
         return "supplier_risk"
+    if "inventory forecast" in lowered or "demand forecast" in lowered:
+        return "inventory_forecast"
     if "contract answer" in lowered or "contract question" in lowered:
         return "contract_answer"
     if "contract review" in lowered or "contract analysis" in lowered:
@@ -502,6 +506,130 @@ def _supplier_risk(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": " ".join(sentences),
         "key_findings": key_findings,
         "recommended_actions": recommended_actions,
+    }
+
+
+def _inventory_forecast(payload: dict[str, Any]) -> dict[str, Any]:
+    """Build the mock inventory narrative from the statistical results.
+
+    Every quantity, date and metric below is copied out of the payload the
+    forecasting engine already produced. The mock never forecasts anything - it
+    is a text template over numbers that were computed before it ran, which is
+    the same rule the real providers are held to by the prompt.
+    """
+    summary_data: dict[str, Any] = payload.get("forecast_summary", {}) or {}
+    shortages: list[dict[str, Any]] = payload.get("shortage_items", []) or []
+    overstocks: list[dict[str, Any]] = payload.get("overstock_items", []) or []
+    accuracy: dict[str, Any] = payload.get("accuracy_summary", {}) or {}
+
+    series_count = summary_data.get("series_count", 0)
+    forecast_count = summary_data.get("forecast_count", 0)
+    horizon = summary_data.get("horizon_periods", 0)
+    shortage_count = summary_data.get("shortage_count", 0)
+    reorder_now = summary_data.get("reorder_now_count", 0)
+    overstock_count = summary_data.get("overstock_count", 0)
+    dead_stock = summary_data.get("dead_stock_count", 0)
+    insufficient = summary_data.get("insufficient_data_count", 0)
+    model_usage: dict[str, Any] = summary_data.get("model_usage", {}) or {}
+
+    sentences = [
+        f"The predictor forecast {forecast_count:,} of {series_count:,} material/plant "
+        f"combinations {horizon} period(s) ahead."
+    ]
+    if model_usage:
+        leader = max(model_usage, key=lambda key: model_usage[key])
+        sentences.append(
+            f"{model_usage[leader]} of them were best served by the "
+            f"{leader.replace('_', ' ')} model, chosen by backtesting each method on periods it "
+            "had not seen."
+        )
+    if shortage_count:
+        sentences.append(
+            f"{shortage_count} material(s) are projected to run out of stock inside the "
+            f"horizon, and {reorder_now} need a replenishment order raised now."
+        )
+    else:
+        sentences.append("No material is projected to run out of stock inside the horizon.")
+    if overstock_count or dead_stock:
+        sentences.append(
+            f"{overstock_count} material(s) carry an overstock risk and {dead_stock} are "
+            "classified as dead stock."
+        )
+    if insufficient:
+        sentences.append(
+            f"{insufficient} material(s) have too little history to forecast and were reported "
+            "as such rather than estimated."
+        )
+    sentences.append(
+        "Every figure is a statistical estimate from the uploaded history, not a commitment, "
+        "and none of it has been validated in a live SAP environment."
+    )
+
+    key_findings: list[str] = []
+    for item in shortages[:3]:
+        material = item.get("material")
+        plant = item.get("plant")
+        shortage_date = item.get("predicted_shortage_date")
+        quantity = item.get("recommended_reorder_quantity")
+        finding = f"{material} at plant {plant} is projected to run out on {shortage_date}"
+        if quantity is not None:
+            finding += f"; the recommended replenishment quantity is {quantity:g}"
+        if item.get("expedite_recommended"):
+            finding += ", and an open purchase order is expected too late to prevent it"
+        key_findings.append(finding + ".")
+    for item in overstocks[:2]:
+        cover = item.get("days_of_cover")
+        cover_text = f"{cover:g} days of cover" if cover is not None else "no projected demand"
+        key_findings.append(
+            f"{item.get('material')} at plant {item.get('plant')} holds {cover_text} "
+            f"({item.get('overstock_risk')} overstock risk)."
+        )
+
+    mean_smape = accuracy.get("mean_smape")
+    mean_mase = accuracy.get("mean_mase")
+    if mean_smape is not None:
+        accuracy_note = f"Average sMAPE across the forecast materials is {float(mean_smape):.1f}%"
+        if mean_mase is not None:
+            accuracy_note += (
+                f", and the mean MASE of {float(mean_mase):.2f} means the models "
+                + ("beat" if float(mean_mase) < 1 else "did not beat")
+                + " a naive same-as-last-period forecast"
+            )
+        key_findings.append(accuracy_note + ".")
+
+    actions = []
+    if reorder_now:
+        actions.append(
+            f"Raise replenishment orders for the {reorder_now} material(s) already at or below "
+            "their reorder point."
+        )
+    if shortage_count:
+        actions.append(
+            "Review the projected shortage dates against open purchase orders and expedite the "
+            "deliveries that are expected too late."
+        )
+    if overstock_count:
+        actions.append(
+            "Review the overstocked materials for excess quantity before the next buying cycle."
+        )
+    if dead_stock:
+        actions.append(
+            "Decide what to do with the dead-stock materials: no demand has been recorded "
+            "against them for the whole dead-stock window."
+        )
+    if insufficient:
+        actions.append(
+            "Extend the history for the materials that have too few periods to forecast."
+        )
+    actions.append(
+        "Check the recommended safety stock against the material master figure where the two "
+        "disagree."
+    )
+
+    return {
+        "summary": " ".join(sentences),
+        "key_findings": key_findings,
+        "recommended_actions": actions[:5],
     }
 
 

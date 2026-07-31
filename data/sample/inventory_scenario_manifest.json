@@ -1,0 +1,196 @@
+{
+  "generated_with_seed": 20260901,
+  "as_of_date": "2026-07-01",
+  "baseline_horizon_periods": 6,
+  "history_start": "2024-01-01",
+  "history_end": "2026-06-01",
+  "period_count": 30,
+  "frequency": "monthly",
+  "row_count": 450,
+  "series_count": 16,
+  "material_count": 15,
+  "plant_count": 3,
+  "data_origin": "demo_data",
+  "scenarios": [
+    {
+      "scenario_id": "INV-S001",
+      "name": "Seasonal demand",
+      "material": "100001",
+      "plant": "1000",
+      "description": "Demand follows a repeating annual shape peaking in November, on a steady level, with 3% noise. Thirty monthly periods give two complete seasons plus the periods the backtest holds back.",
+      "expects": "Holt-Winters is eligible and wins the backtest, so 'holt_winters_seasonal' is the selected model and the forecast reproduces the seasonal shape.",
+      "assert": {
+        "model": "holt_winters_seasonal",
+        "status": "forecast"
+      }
+    },
+    {
+      "scenario_id": "INV-S002",
+      "name": "Upward trend",
+      "material": "100002",
+      "plant": "1000",
+      "description": "Demand rises by about 9 units every period from a base of 120, with no seasonal component.",
+      "expects": "A trend-aware model is selected - Holt - and the forecast keeps rising rather than flattening at the last level.",
+      "assert": {
+        "model": "holt_linear_trend",
+        "status": "forecast",
+        "forecast_rising": true
+      }
+    },
+    {
+      "scenario_id": "INV-S003",
+      "name": "Stable demand",
+      "material": "100003",
+      "plant": "1000",
+      "description": "Demand sits at about 300 units with 4% noise, no trend and no season.",
+      "expects": "A level-only method is selected - a moving average or simple exponential smoothing - never a trend or seasonal model.",
+      "assert": {
+        "model_in": [
+          "simple_moving_average",
+          "weighted_moving_average",
+          "simple_exponential_smoothing"
+        ],
+        "status": "forecast"
+      }
+    },
+    {
+      "scenario_id": "INV-S004",
+      "name": "Intermittent demand",
+      "material": "100004",
+      "plant": "1000",
+      "description": "Demand occurs in roughly one period in four and is variable when it does occur.",
+      "expects": "The demand profile is classified as intermittent or lumpy, the trend and seasonal models are ruled ineligible with a stated reason, and MAPE is unavailable because the comparison window contains zero-demand periods.",
+      "assert": {
+        "is_intermittent": true,
+        "model_in": [
+          "simple_moving_average",
+          "weighted_moving_average",
+          "simple_exponential_smoothing"
+        ],
+        "seasonal_model_ineligible": true
+      }
+    },
+    {
+      "scenario_id": "INV-S005",
+      "name": "Shortage inside the horizon",
+      "material": "100005",
+      "plant": "1000",
+      "description": "Steady demand of about 210 a month against a closing stock of 95 units and no open purchase order.",
+      "expects": "A shortage date is predicted inside the horizon, an order is flagged as needed immediately, and a reorder quantity is recommended.",
+      "assert": {
+        "has_shortage": true,
+        "shortage_within_horizon": true,
+        "order_urgency": "immediate"
+      }
+    },
+    {
+      "scenario_id": "INV-S006",
+      "name": "Overstock",
+      "material": "100006",
+      "plant": "1000",
+      "description": "Steady demand of about 90 a month against a closing stock of 4,200 units - well over three years of cover.",
+      "expects": "Days of cover exceed the critical overstock threshold, the overstock risk is high, an excess quantity is quantified and no shortage is predicted.",
+      "assert": {
+        "overstock_risk": "high",
+        "has_shortage": false,
+        "has_excess_quantity": true
+      }
+    },
+    {
+      "scenario_id": "INV-S007",
+      "name": "Slow-moving stock",
+      "material": "100007",
+      "plant": "2000",
+      "description": "Demand of about 18 units occurs in three periods out of four, against a stock level that turns over well under twice a year.",
+      "expects": "The material is classified as slow-moving.",
+      "assert": {
+        "is_slow_moving": true
+      }
+    },
+    {
+      "scenario_id": "INV-S008",
+      "name": "Dead stock",
+      "material": "100008",
+      "plant": "2000",
+      "description": "Demand stops completely fourteen periods before the end of the history, while 260 units remain on hand.",
+      "expects": "The material is flagged as dead stock, with at least twelve consecutive zero-demand periods and stock still on hand.",
+      "assert": {
+        "is_dead_stock": true,
+        "min_trailing_zero_periods": 12
+      }
+    },
+    {
+      "scenario_id": "INV-S009",
+      "name": "Missing periods",
+      "material": "100009",
+      "plant": "2000",
+      "description": "Three periods (August and September 2024, August 2025) have no row in the file at all.",
+      "expects": "The gaps are detected, reported as a 'missing_periods' warning, and filled so the periods either side keep their real positions on the time axis - the history is still thirty periods long.",
+      "assert": {
+        "missing_period_count": 3,
+        "warning_code": "missing_periods"
+      }
+    },
+    {
+      "scenario_id": "INV-S010",
+      "name": "Too little history",
+      "material": "100010",
+      "plant": "2000",
+      "description": "Only the last three periods of history are present.",
+      "expects": "The material is returned with status 'insufficient_data' and an explanatory warning rather than being dropped or forecast from three points.",
+      "assert": {
+        "status": "insufficient_data",
+        "warning_code": "insufficient_history"
+      }
+    },
+    {
+      "scenario_id": "INV-S011",
+      "name": "Open purchase order expected too late",
+      "material": "100011",
+      "plant": "2000",
+      "description": "Closing stock of 150 units against demand of about 260 a month, with 900 units on order but not expected for 95 days.",
+      "expects": "A shortage is predicted before the delivery arrives, and the recommendation is to expedite the existing order rather than to raise another one.",
+      "assert": {
+        "has_shortage": true,
+        "expedite_recommended": true
+      }
+    },
+    {
+      "scenario_id": "INV-S012",
+      "name": "Demand only, no stock column",
+      "material": "100012",
+      "plant": "3000",
+      "description": "The extract carries demand and movements but no inventory balances.",
+      "expects": "The demand forecast and its accuracy are still produced, the projection reports itself unavailable with a reason, and no shortage date or reorder quantity is invented.",
+      "assert": {
+        "status": "forecast",
+        "projection_available": false,
+        "warning_code": "no_ending_inventory"
+      }
+    },
+    {
+      "scenario_id": "INV-S013",
+      "name": "Periods that do not balance",
+      "material": "100013",
+      "plant": "3000",
+      "description": "Two periods have an ending inventory 37 units above what starting inventory plus receipts minus issues gives.",
+      "expects": "The loader raises a file-level 'balance_mismatch' data-quality issue naming the affected rows, and still forecasts the material.",
+      "assert": {
+        "file_issue_type": "balance_mismatch",
+        "status": "forecast"
+      }
+    },
+    {
+      "scenario_id": "INV-S014",
+      "name": "Same material, second plant",
+      "material": "100001",
+      "plant": "3000",
+      "description": "Material 100001 is also stocked in plant 3000, where demand is lower, steadier and has no seasonal shape.",
+      "expects": "The two plants are forecast as separate series with their own models - the seasonal model wins in plant 1000 and a level-only method wins in plant 3000.",
+      "assert": {
+        "separate_series": true,
+        "model_not": "holt_winters_seasonal"
+      }
+    }
+  ]
+}
