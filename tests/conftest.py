@@ -33,6 +33,10 @@ from app.models.base import Base  # noqa: E402
 from app.models.session import SessionLocal, engine, init_db  # noqa: E402
 from app.modules.po_risk.thresholds import PoRiskConfig, get_rule_config  # noqa: E402
 from app.modules.spend.thresholds import SpendConfig, get_spend_config  # noqa: E402
+from app.modules.supplier_reco.thresholds import (  # noqa: E402
+    SupplierRecoConfig,
+    get_supplier_reco_config,
+)
 
 SAMPLE_DIR = PROJECT_ROOT / "data" / "sample"
 
@@ -102,6 +106,61 @@ def spend_sample_json_path() -> Path:
     if not path.is_file():
         pytest.skip("Run 'python scripts/generate_spend_sample_data.py' first.")
     return path
+
+
+@pytest.fixture(scope="session")
+def supplier_reco_config() -> SupplierRecoConfig:
+    """The default supplier recommendation configuration."""
+    return get_supplier_reco_config()
+
+
+@pytest.fixture(scope="session")
+def supplier_sample_csv_path() -> Path:
+    """Path of the generated supplier sample CSV."""
+    path = SAMPLE_DIR / "sample_suppliers.csv"
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def supplier_sample_xlsx_path() -> Path:
+    """Path of the generated supplier sample XLSX."""
+    path = SAMPLE_DIR / "sample_suppliers.xlsx"
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def supplier_sample_json_path() -> Path:
+    """Path of the generated supplier sample JSON."""
+    path = SAMPLE_DIR / "sample_suppliers.json"
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def supplier_scenario_manifest() -> dict:
+    """The documented supplier anchors and the canonical requirement."""
+    import json
+
+    path = SAMPLE_DIR / "supplier_scenario_manifest.json"
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_sample_data.py' first.")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def supplier_baseline() -> dict:
+    """The recorded engine output for the canonical requirement."""
+    import json
+
+    path = SAMPLE_DIR / "expected_supplier_baseline.json"
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_sample_data.py' first.")
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="session")

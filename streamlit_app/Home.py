@@ -51,7 +51,7 @@ st.subheader("Modules")
 modules = [
     ("1. Purchase Order Risk Checker", "Available", "Upload SAP-style PO data, detect risks with transparent rules, export reports."),
     ("2. Spend Analytics Dashboard", "Available", "Analyse spend, find leakage and savings opportunities, drill into transactions."),
-    ("3. Supplier Recommendation Engine", "Planned", "Rank suppliers for a demand."),
+    ("3. Supplier Recommendation Engine", "Available", "Rank eligible suppliers for a requirement with transparent weighted scoring."),
     ("4. Invoice Validator", "Planned", "Three-way match and invoice anomaly detection."),
     ("5. Supplier Risk Copilot", "Planned", "Question answering over supplier risk data."),
     ("6. Contract Assistant", "Planned", "Clause extraction and contract summarisation."),

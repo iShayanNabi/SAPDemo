@@ -202,3 +202,58 @@ def build_spend_summary_request(
         temperature=0.2,
         expects_json=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# Supplier Recommendation Engine
+# ---------------------------------------------------------------------------
+
+#: Bump when the supplier recommendation wording changes.
+SUPPLIER_RECO_PROMPT_VERSION = "supplier_reco_narrative_v1.0.0"
+
+SUPPLIER_RECO_SUMMARY_SYSTEM = (
+    "You are a procurement analyst explaining a supplier recommendation to a category buyer.\n"
+    "A DETERMINISTIC engine has ALREADY ranked the suppliers using a transparent weighted-scoring "
+    "model. Your job is to explain that ranking in business language, not to re-rank anything.\n\n"
+    "Hard rules:\n"
+    "1. Never invent suppliers, scores, prices or figures. Use only the data block.\n"
+    "2. Never change the ranking or the scores. The engine's order is final.\n"
+    "3. Estimated costs and delivery dates are indicative planning figures, not quotations or "
+    "commitments. Describe them as such.\n"
+    "4. Do not claim the data comes from a live SAP system or was validated in SAP.\n"
+    "5. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"summary": "3-5 sentences", "key_findings": ["..."], "recommended_actions": ["..."]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def build_supplier_reco_summary_request(
+    requirement: dict[str, Any],
+    weights: dict[str, Any],
+    ranking_summary: dict[str, Any],
+    top_suppliers: list[dict[str, Any]],
+    *,
+    max_tokens: int = 1200,
+) -> AIRequest:
+    """Build the request for the supplier recommendation narrative."""
+    payload = {
+        "task": "supplier_recommendation",
+        "requirement": requirement,
+        "weights": weights,
+        "ranking_summary": ranking_summary,
+        "top_suppliers": top_suppliers[:5],
+    }
+    user_prompt = (
+        "Summarise this already-computed supplier ranking for the buyer.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions."
+    )
+    return AIRequest(
+        system_prompt=SUPPLIER_RECO_SUMMARY_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=SUPPLIER_RECO_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        expects_json=True,
+    )

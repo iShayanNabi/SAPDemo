@@ -1,0 +1,76 @@
+{
+  "generated_with_seed": 20260301,
+  "data_origin": "demo_data",
+  "supplier_count": 55,
+  "canonical_requirement": {
+    "material": "MAT-1000",
+    "material_description": "Precision component, grade A",
+    "material_group": "MG10",
+    "quantity": 100,
+    "unit_of_measure": "PC",
+    "plant": "1010",
+    "company_code": "1000",
+    "required_delivery_date": "2026-10-01",
+    "order_date": "2026-08-01",
+    "target_price": 120,
+    "currency": "EUR",
+    "preferred_region": "EU",
+    "risk_tolerance": "medium",
+    "sustainability_requirement": null,
+    "contract_requirement": false,
+    "minimum_quality_score": null,
+    "minimum_available_capacity": null
+  },
+  "note": "Fictional supplier catalogue. Most suppliers are ordinary candidates; the anchor suppliers below are placed deliberately so every documented eligibility and ranking behaviour can be asserted against the canonical requirement.",
+  "scenarios": [
+    {
+      "scenario_id": "SR-01",
+      "name": "Lowest cost bidder",
+      "supplier_id": "0000300001",
+      "description": "The cheapest eligible supplier for the canonical requirement (unit price 55 EUR).",
+      "expects": "With all weight on cost this supplier ranks #1; under the default weights it is eligible but does not necessarily win."
+    },
+    {
+      "scenario_id": "SR-02",
+      "name": "High-risk supplier",
+      "supplier_id": "0000300002",
+      "description": "Risk score 85. Passes every other constraint for the canonical requirement.",
+      "expects": "Ineligible at 'low' and 'medium' risk tolerance; eligible at 'high' tolerance."
+    },
+    {
+      "scenario_id": "SR-03",
+      "name": "Does not supply the material",
+      "supplier_id": "0000300003",
+      "description": "An otherwise excellent supplier that does not list MAT-1000.",
+      "expects": "Ineligible for the canonical requirement because of the material-match filter."
+    },
+    {
+      "scenario_id": "SR-04",
+      "name": "Weak ESG score",
+      "supplier_id": "0000300004",
+      "description": "ESG score 35, below a typical sustainability floor.",
+      "expects": "Eligible for the canonical requirement; ineligible once a sustainability requirement of 70 is set."
+    },
+    {
+      "scenario_id": "SR-05",
+      "name": "No active contract",
+      "supplier_id": "0000300005",
+      "description": "Contract status 'None'.",
+      "expects": "Eligible for the canonical requirement; ineligible once a contract requirement is set."
+    },
+    {
+      "scenario_id": "SR-06",
+      "name": "Insufficient capacity",
+      "supplier_id": "0000300006",
+      "description": "Available capacity 40, below the canonical requested quantity of 100.",
+      "expects": "Ineligible for the canonical requirement because capacity cannot cover the quantity."
+    },
+    {
+      "scenario_id": "SR-07",
+      "name": "Contract expiring before delivery",
+      "supplier_id": "0000300007",
+      "description": "Holds an active contract, but it expires 2026-09-01, before the canonical required delivery date of 2026-10-01.",
+      "expects": "Eligible for the canonical requirement, but its contract score is penalised to the 'expiring' level and its risks list the lapse."
+    }
+  ]
+}

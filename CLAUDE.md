@@ -17,7 +17,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | --- | --- | --- |
 | 1 | Purchase Order Risk Checker | **Implemented** |
 | 2 | Spend Analytics Dashboard | **Implemented** |
-| 3 | Supplier Recommendation Engine | Planned |
+| 3 | Supplier Recommendation Engine | **Implemented** |
 | 4 | Invoice Validator | Planned |
 | 5 | Supplier Risk Copilot | Planned |
 | 6 | Contract Assistant | Planned |
@@ -62,7 +62,7 @@ React or Next.js site must be able to use the same FastAPI backend without rewri
 app/
   api/v1/        core/        models/       schemas/
   services/      ai/  exports/  files/  tabular/
-  modules/       po_risk/  spend/
+  modules/       po_risk/  spend/  supplier_reco/
 streamlit_app/   pages/  components/
 data/            sample/  uploads/  exports/
 tests/           unit/  api/  integration/
@@ -228,6 +228,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python scripts/generate_sample_data.py
 python scripts/generate_spend_sample_data.py
+python scripts/generate_supplier_sample_data.py
 python scripts/verify_setup.py
 
 # run
@@ -235,7 +236,7 @@ uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 394 tests
+pytest                                  # 456 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -254,6 +255,13 @@ only appeared when the API was driven by hand:
   items, 0 findings".
 - Module 2: a SQLAlchemy aggregate referenced the outer table instead of the subquery, so
   drill-down reported **329,444,859 EUR for 7 transactions**.
+
+- Module 3: the sample generator wrote the contract status as the literal string `"None"` for
+  no-contract suppliers. The file reader (`_clean_cell`) treats `"none"` as a null placeholder, so
+  the value survived in the generator's in-memory baseline but became `null` after the CSV
+  round-trip the API performs. The recorded baseline disagreed with the API by one contract score.
+  Fix: use `"No contract"` (a real label), and compute the baseline by reading the written file
+  back through the real reader/normaliser, not from in-memory rows.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

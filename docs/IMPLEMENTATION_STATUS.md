@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 2 of 10 |
-| Tests | 394 passing (239 unit, 95 API, 60 integration) |
-| Python source | ~18,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 3 of 10 |
+| Tests | 456 passing (270 unit, 112 API, 74 integration) |
+| Python source | ~22,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -184,14 +184,78 @@ services), `app/modules/po_risk/rules/pricing.py`, `streamlit_app/Home.py`,
 
 ---
 
-## Modules 3-10 - not started
+## Module 3 - Supplier Recommendation Engine - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| Requirement input (16 fields) | Done - `RequirementSchema` |
+| Supplier data (18 fields + currency) | Done - `field_definitions.py`, reuses the shared registry |
+| CSV, XLSX, JSON supplier upload | Done - into a persisted catalogue |
+| 9 separate normalized scores | Done - cost, delivery, quality, capacity, risk, ESG, contract, geographic, past performance |
+| User-modifiable weights, validated to 100% | Done - rejected with a 422 otherwise |
+| Documented scoring formulas | Done - `GET /supplier-recommendations/scoring` and the config file |
+| Eligibility filters applied before ranking | Done - 7 filters, each with a reason |
+| Full result structure (rank, scores, cost, delivery, advantages, risks, explanation) | Done |
+| AI summarises but never determines the ranking | Done - deterministic engine, separate narrative fields |
+| 4 required API routes | Done, plus fields, catalogs, scoring, sample, sample/info, ai-status, export, list |
+| Streamlit page with all 10 required elements | Done |
+| >=50 varied sample suppliers | Done - 55 with 7 documented anchors |
+| Tests: eligibility, weights, normalization, ranking, cost, lead-time, contract, risk tolerance, determinism, API | Done - 62 new tests |
+
+### Files created
+
+```text
+app/modules/supplier_reco/
+  field_definitions.py    19 supplier fields, reuses the shared registry
+  thresholds.py           Pydantic-validated configuration loader + Weights
+  requirement.py          the purchasing requirement dataclass
+  normalizer.py           list splitting, base currency, canonical records
+  eligibility.py          the 7 hard constraints, each with a reason
+  scoring.py              the 9 normalized scores + weighted overall
+  engine.py               eligibility -> scoring -> ranking -> advantages/risks/explanation
+  ai_narrative.py         optional narrative layer
+  service.py              orchestration and persistence
+  config/supplier_reco_rules.json every weight, formula and threshold
+
+app/api/v1/supplier_reco.py               two routers (suppliers, supplier-recommendations)
+app/models/supplier_reco.py               4 tables
+app/schemas/supplier_reco.py              request/response contract
+app/services/exports/supplier_reco_report_builder.py   5-sheet XLSX, CSV, JSON
+streamlit_app/pages/3_Supplier_Recommendations.py
+scripts/generate_supplier_sample_data.py
+tests/unit/test_supplier_scoring.py, tests/unit/test_supplier_eligibility.py
+tests/api/test_supplier_reco_api.py
+tests/integration/test_supplier_sample_data.py
+migrations/versions/a16bad79dd24_supplier_recommendation_schema.py
+```
+
+### Verification performed
+
+- Full suite: 456 passed. The 394 module 1+2 tests passed unchanged.
+- Live `uvicorn` run: health, supplier upload (55 suppliers), list, detail, recommend (30/55
+  eligible), weight-validation 422, get, all three exports, scoring, ai-status (no key leak).
+- The canonical-requirement ranking reproduces `expected_supplier_baseline.json` exactly through
+  HTTP, and repeated runs are byte-identical.
+- Alembic `upgrade head` -> `downgrade -1` -> `upgrade head` on a scratch database; all 11 tables
+  created on a fresh database.
+
+### Bugs found and fixed during the build
+
+| Bug | Found by | Fix |
+| --- | --- | --- |
+| The generator's recorded baseline disagreed with the API: contract status `"None"` is nulled by the file reader on the CSV round-trip, so it scored `unknown` (40) via the API but `none` (20) in the in-memory baseline | **Baseline reproduction check, not the unit tests** | Use the label `"No contract"`, and compute the baseline by reading the written file back through the real reader/normaliser |
+
+---
+
+## Modules 4-10 - not started
 
 No code exists for these yet. Nothing has been stubbed, and there are no placeholder pages or
 non-functional buttons.
 
 | # | Module | Deterministic part | AI part |
 | --- | --- | --- | --- |
-| 3 | Supplier Recommendation Engine | Weighted scoring, ranking | Explaining a ranking |
 | 4 | Invoice Validator | Three-way match, tolerances | Explaining a mismatch |
 | 5 | Supplier Risk Copilot | Metric retrieval | Question answering over retrieved facts |
 | 6 | Contract Assistant | Document parsing | Clause extraction, summarisation |
@@ -227,6 +291,20 @@ than module 1, because the shared layers already exist.
 - Analysis is synchronous; a multi-million-row spend cube would need a job queue.
 - Tail classification is pure Pareto; it does not consider strategic importance.
 
+**Module 3**
+
+- Relative scores (cost, lead time, capacity when no quantity is given, past performance) are
+  min-max normalised across the *eligible pool*, so adding or removing a supplier can shift the
+  scores of the others. This is transparent and documented, but it means a score is a
+  within-shortlist comparison, not an absolute rating.
+- Missing supplier attributes score 0 (conservative). A supplier that simply did not report a
+  field is penalised as if it were the worst.
+- Estimated costs and delivery dates are indicative planning figures from the supplier data, not
+  quotations; the estimated delivery date needs a planned order date to be computed.
+- The supplier catalogue is global and unversioned beyond the upload; a recommendation references a
+  catalogue by id but does not snapshot it.
+- Currency conversion uses fixed configured rates.
+
 **Project-wide**
 
 - No authentication or authorisation - the lab is local-only.
@@ -246,10 +324,6 @@ time and adds a genuinely new capability: joining two uploaded files rather than
 That is the next real test of the foundation, and it is the natural companion to modules 1 and 2 in
 a procurement story.
 
-**Module 3 (Supplier Recommendation Engine)** is the alternative: it consumes the supplier roll-up
-module 2 already produces, so it is the cheaper build. Weighted scoring and ranking are
-deterministic; AI would only explain a ranking.
-
-Worth weighing against both: the operational work listed under limitations - authentication, a job
-queue, and a PostgreSQL run. Two modules now share one database and one upload table, so the cost
-of adding authentication grows with each module rather than staying flat.
+Worth weighing against building the next module: the operational work listed under limitations -
+authentication, a job queue, and a PostgreSQL run. Three modules now share one database and one
+upload table, so the cost of adding authentication grows with each module rather than staying flat.

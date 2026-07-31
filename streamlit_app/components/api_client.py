@@ -215,3 +215,80 @@ class ApiClient:
     def spend_sample_file(self, file_format: str) -> bytes:
         """Download the bundled spend sample file."""
         return self.download_bytes("/spend/sample", {"format": file_format})
+
+    # -- Supplier Recommendation Engine ----------------------------------
+    def supplier_upload(self, filename: str, content: bytes, content_type: str) -> dict[str, Any]:
+        """Upload a supplier master file and load it into a catalogue."""
+        return self._request(
+            "POST", "/suppliers/upload", files={"file": (filename, content, content_type)}
+        )
+
+    def suppliers(self, **filters: Any) -> dict[str, Any]:
+        """List suppliers in a catalogue, with optional filters."""
+        params = {k: v for k, v in filters.items() if v not in (None, "", [])}
+        return self._request("GET", "/suppliers", params=params)
+
+    def supplier(self, supplier_id: str, catalog_id: str | None = None) -> dict[str, Any]:
+        """Fetch one supplier."""
+        params = {"catalog_id": catalog_id} if catalog_id else {}
+        return self._request("GET", f"/suppliers/{supplier_id}", params=params)
+
+    def supplier_catalogs(self) -> dict[str, Any]:
+        """List the uploaded supplier catalogues."""
+        return self._request("GET", "/suppliers/catalogs")
+
+    def supplier_fields(self) -> list[dict[str, Any]]:
+        """Fetch the supplier field catalogue."""
+        return self._request("GET", "/suppliers/fields")
+
+    def supplier_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled supplier demo catalogue."""
+        return self._request("GET", "/suppliers/sample/info")
+
+    def supplier_sample_file(self, file_format: str) -> bytes:
+        """Download the bundled supplier sample file."""
+        return self.download_bytes("/suppliers/sample", {"format": file_format})
+
+    def recommend_suppliers(
+        self,
+        requirement: dict[str, Any],
+        *,
+        catalog_id: str | None = None,
+        weights: dict[str, float] | None = None,
+        top_n: int | None = None,
+        generate_ai_summary: bool = True,
+        include_ineligible: bool = True,
+    ) -> dict[str, Any]:
+        """Run a supplier recommendation."""
+        payload: dict[str, Any] = {
+            "requirement": requirement,
+            "generate_ai_summary": generate_ai_summary,
+            "include_ineligible": include_ineligible,
+        }
+        if catalog_id:
+            payload["catalog_id"] = catalog_id
+        if weights is not None:
+            payload["weights"] = weights
+        if top_n:
+            payload["top_n"] = top_n
+        return self._request("POST", "/supplier-recommendations/recommend", json=payload)
+
+    def recommendation(self, recommendation_id: str) -> dict[str, Any]:
+        """Fetch one recommendation."""
+        return self._request("GET", f"/supplier-recommendations/{recommendation_id}")
+
+    def recommendations(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List previous recommendations."""
+        return self._request(
+            "GET", "/supplier-recommendations", params={"limit": limit, "offset": offset}
+        )
+
+    def supplier_scoring(self) -> dict[str, Any]:
+        """Fetch the documented scoring model."""
+        return self._request("GET", "/supplier-recommendations/scoring")
+
+    def recommendation_export(self, recommendation_id: str, export_format: str) -> bytes:
+        """Download a recommendation report."""
+        return self.download_bytes(
+            f"/supplier-recommendations/{recommendation_id}/export", {"format": export_format}
+        )
