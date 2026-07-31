@@ -41,6 +41,12 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   copilot.py  deterministic Q&A with citations   │
 │                   normalizer.py, thresholds.py, ai_narrative.py  │
 │                                                                  │
+│                   app/modules/test_case_generator/                │
+│                   planning.py    slots, ids, coverage, priority  │
+│                   builder.py     templates and draft repair      │
+│                   ai_generator.py structured drafting            │
+│                   engine.py      generate, summarise, coverage   │
+│                                                                  │
 │                   app/modules/inventory/                         │
 │                   periods.py     frequency inference, grids      │
 │                   forecasting.py the 5 statistical models        │
@@ -375,6 +381,8 @@ Four tables (`app/models/po_risk.py`):
 | `inventory_records` | normalised movement rows, so a dataset can be forecast repeatedly without the file |
 | `inventory_forecasts` | one row per run: horizon, confidence and service levels, model usage, portfolio summary, AI narrative |
 | `inventory_forecast_items` | one row per material/plant: model used, shortage and reorder dates, quantities, classification, accuracy, full engine payload |
+| `test_suites` | one row per generation run: the process context exactly as it was entered, the plan derived from it, the drafting provenance and everything that went wrong |
+| `test_cases` | one row per test case: the script fields and the execution fields, never written by the same operation |
 
 ``uploaded_files`` is shared by every module and carries a ``module`` column.
 

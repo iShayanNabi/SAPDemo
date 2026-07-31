@@ -1,0 +1,451 @@
+{
+  "config_version": "1.0.0",
+  "description": "SAP Test Case Generator configuration. Everything the generator decides deterministically - how many cases each test type gets, what their identifiers look like, what priority they carry and what a case looks like when no language model is available - is configured here rather than written in code. Editing this file changes the generated suite with no code change.",
+
+  "generation": {
+    "description": "Identifier scheme, size limits and the defaults every new test case starts from.",
+    "id_prefix": "TC",
+    "id_template": "{prefix}-{code}-{number:03d}",
+    "id_number_start": 1,
+    "max_test_cases": 50,
+    "default_test_case_count": 8,
+    "min_steps_per_case": 3,
+    "max_steps_per_case": 20,
+    "max_preconditions": 12,
+    "max_test_data_items": 12,
+    "max_title_chars": 200,
+    "max_objective_chars": 2000,
+    "max_step_chars": 1000,
+    "max_expected_result_chars": 2000,
+    "default_owner": "Unassigned",
+    "default_status": "draft",
+    "placeholder_defaults": {
+      "role": "the assigned business user",
+      "primary_system": "the SAP test client",
+      "integration": "the connected external system",
+      "test_data_requirement": "the test data recorded for this suite"
+    }
+  },
+
+  "allocation": {
+    "description": "How the requested number of test cases is shared out across the requested test types. Every requested type gets at least one case while cases remain, in the order the caller listed them - their first choice wins over any weight here. The weights below only decide who gets the remainder when the count does not divide evenly, so a suite of 10 leans towards the process tests rather than spreading flat.",
+    "weights": {
+      "sit": 5,
+      "uat": 4,
+      "negative": 4,
+      "integration": 3,
+      "regression": 3,
+      "security": 2,
+      "authorization": 2,
+      "data_migration": 2
+    }
+  },
+
+  "priority": {
+    "description": "Priority is derived, never guessed. Each type has a base priority; the escalation rules below raise it by at most one level when the process context says the process is financially or access sensitive.",
+    "default": "medium",
+    "max_escalation_steps": 1,
+    "escalate_keywords": [
+      "payment", "invoice", "posting", "general ledger", "gl account", "financial",
+      "revenue", "tax", "credit", "banking", "payroll", "settlement", "goods receipt",
+      "release strategy", "approval", "compliance", "audit", "gdpr", "personal data"
+    ],
+    "escalate_keyword_types": ["sit", "negative", "integration", "data_migration"],
+    "integration_escalation_threshold": 3,
+    "integration_escalation_types": ["integration"],
+    "role_escalation_threshold": 4,
+    "role_escalation_types": ["authorization", "security"]
+  },
+
+  "test_types": {
+    "sit": {
+      "label": "System Integration Test",
+      "id_code": "SIT",
+      "description": "Proves the configured process runs end to end inside SAP and produces the documents and postings the design calls for.",
+      "default_priority": "high",
+      "default_owner_role": "Process consultant",
+      "guidance": "Cover the configured end-to-end flow inside SAP: entry document, follow-on documents, statuses and postings. Stay on the designed path; invalid input belongs to the negative tests.",
+      "focus_areas": [
+        "end-to-end happy path",
+        "document flow and follow-on documents",
+        "cross-module postings",
+        "output and message determination",
+        "background job and batch processing"
+      ],
+      "objective_template": "Verify that {business_process} completes end to end in {sap_product} ({sap_module}) and that the {focus} behaves as designed.",
+      "precondition_templates": [
+        "The {sap_module} configuration for {business_process} is transported into the test client and is active.",
+        "The master data {business_process} needs exists in the test client and is not blocked."
+      ],
+      "test_data_templates": [
+        "One complete, valid document set for {business_process} covering the {focus}.",
+        "Master data references taken from {test_data_requirement}."
+      ],
+      "step_templates": [
+        {
+          "action": "Log on to {sap_product} as {role} and open the entry transaction used for {business_process}.",
+          "expected_result": "The transaction opens in the test client and the initial screen accepts input."
+        },
+        {
+          "action": "Enter the document data listed under Test data, covering the {focus}.",
+          "expected_result": "Every mandatory field accepts its value and the system raises no error message."
+        },
+        {
+          "action": "Save the document and record the document number the system returns.",
+          "expected_result": "The system confirms the save and issues a document number."
+        },
+        {
+          "action": "Open the document flow and check every follow-on document the {sap_module} configuration should create.",
+          "expected_result": "Each follow-on document exists with the expected status, quantity and value."
+        },
+        {
+          "action": "Reconcile the posted values against the business rules recorded for {business_process}.",
+          "expected_result": "The posted values match the business rules with no manual correction."
+        }
+      ],
+      "expected_result_template": "{business_process} completes without error, the document flow is complete, and the postings in {sap_module} match the business rules recorded for the {focus}."
+    },
+
+    "uat": {
+      "label": "User Acceptance Test",
+      "id_code": "UAT",
+      "description": "Lets the business confirm the process is usable and does what the business asked for, in business language rather than technical terms.",
+      "default_priority": "high",
+      "default_owner_role": "Business process owner",
+      "guidance": "Write for a business user, not a consultant. Describe the work the user does, the screens they see and the decision they make. Avoid table names, programs and technical objects.",
+      "focus_areas": [
+        "business acceptance of the standard case",
+        "usability for the day-to-day user",
+        "reporting and output for the business",
+        "approval and release from the business side",
+        "handling of a business exception"
+      ],
+      "objective_template": "Confirm that {role} can carry out {business_process} unaided and accepts the {focus} as fit for daily business use.",
+      "precondition_templates": [
+        "The acceptance client holds business-representative data for {business_process}.",
+        "{role} is available for the session and has been briefed on the process, not on the system."
+      ],
+      "test_data_templates": [
+        "Business data a real {business_process} case would use, drawn from {test_data_requirement}.",
+        "The output or report the business expects at the end of the process."
+      ],
+      "step_templates": [
+        {
+          "action": "Log on to the acceptance client as {role}, the role that performs {business_process} in daily work.",
+          "expected_result": "The user reaches the work area for {business_process} without technical assistance."
+        },
+        {
+          "action": "Carry out {business_process} with the business data listed under Test data, covering the {focus}.",
+          "expected_result": "The process can be completed using only the on-screen guidance the business will have in production."
+        },
+        {
+          "action": "Check that the screens, field labels and messages match the way the business describes {business_process}.",
+          "expected_result": "The wording is recognisable to the business and no step needs an unwritten workaround."
+        },
+        {
+          "action": "Produce the output the business expects at the end of the process and review its content.",
+          "expected_result": "The output contains the values the business needs, in a readable form."
+        },
+        {
+          "action": "Record the business decision to accept or reject this process step, with the reason.",
+          "expected_result": "The decision and its reason are captured against this test case."
+        }
+      ],
+      "expected_result_template": "{role} completes {business_process} without help, the output is what the business expects for the {focus}, and the business records an acceptance decision."
+    },
+
+    "negative": {
+      "label": "Negative Test",
+      "id_code": "NEG",
+      "description": "Proves the process refuses invalid input cleanly, tells the user why, and leaves no partial posting behind.",
+      "default_priority": "medium",
+      "default_owner_role": "Test analyst",
+      "guidance": "Each case must break exactly one rule and check three things: the system refuses the input, the message explains why, and nothing was posted. Never make the invalid case succeed.",
+      "focus_areas": [
+        "mandatory field left empty",
+        "value outside the allowed tolerance",
+        "invalid or blocked master data reference",
+        "duplicate document entry",
+        "action attempted in the wrong document status"
+      ],
+      "objective_template": "Verify that {business_process} rejects the invalid case '{focus}' with a clear message and posts nothing in {sap_module}.",
+      "precondition_templates": [
+        "A valid {business_process} document can be created in the test client, so any failure is caused by the invalid input alone.",
+        "The message and tolerance settings that apply to {business_process} are the ones intended for production."
+      ],
+      "test_data_templates": [
+        "One deliberately invalid data set covering the {focus}.",
+        "The equivalent valid data set, used to prove the refusal is caused by the invalid value."
+      ],
+      "step_templates": [
+        {
+          "action": "Log on as {role} and open the transaction used for {business_process}.",
+          "expected_result": "The transaction opens and accepts input."
+        },
+        {
+          "action": "Enter the invalid data set covering the {focus}, leaving every other field valid.",
+          "expected_result": "The invalid value is accepted into the field so that the check runs on save."
+        },
+        {
+          "action": "Attempt to save the document.",
+          "expected_result": "The system refuses to save."
+        },
+        {
+          "action": "Record the message the system issues, including its type, number and text.",
+          "expected_result": "The message identifies the field at fault and explains what is wrong in language the user can act on."
+        },
+        {
+          "action": "Confirm that no document was posted and no follow-on document was created.",
+          "expected_result": "No document number was issued and the data in {sap_module} is unchanged."
+        }
+      ],
+      "expected_result_template": "The system refuses the invalid input for the {focus} with a clear, actionable message, issues no document number, and leaves {sap_module} unchanged."
+    },
+
+    "integration": {
+      "label": "Integration Test",
+      "id_code": "INT",
+      "description": "Proves the message actually crosses the system boundary, carries the right fields, and comes back with a status.",
+      "default_priority": "medium",
+      "default_owner_role": "Integration consultant",
+      "guidance": "Name the interface, the direction and the monitor the tester should look in. Check the payload mapping field by field and confirm the status returns to SAP. A test that only checks the SAP side is not an integration test.",
+      "focus_areas": [
+        "outbound message to the connected system",
+        "inbound message into SAP",
+        "error and retry handling on the interface",
+        "field mapping between the two systems",
+        "reprocessing of a failed message"
+      ],
+      "objective_template": "Verify that {business_process} exchanges the expected message with {integration} and that the {focus} is handled as specified.",
+      "precondition_templates": [
+        "The connection to {integration} is configured and reachable from the test client.",
+        "The interface monitor is accessible and shows no unrelated messages from earlier runs."
+      ],
+      "test_data_templates": [
+        "One document that triggers the interface, covering the {focus}.",
+        "The interface specification listing the fields exchanged with {integration}."
+      ],
+      "step_templates": [
+        {
+          "action": "Confirm the connection to {integration} is active and clear the interface monitor of earlier messages.",
+          "expected_result": "The connection test succeeds and the monitor shows no messages relevant to this run."
+        },
+        {
+          "action": "Trigger {business_process} in {sap_product} so that the interface to {integration} is called.",
+          "expected_result": "The document is created and the interface call is raised."
+        },
+        {
+          "action": "Locate the message in the interface monitor and record its identifier, timestamp and status.",
+          "expected_result": "Exactly one message exists for this run, with a successful technical status."
+        },
+        {
+          "action": "Compare the payload field by field with the interface specification for the {focus}.",
+          "expected_result": "Every mapped field carries the expected value, format and unit."
+        },
+        {
+          "action": "Confirm {integration} processed the message and that the resulting status is visible again in {sap_product}.",
+          "expected_result": "The receiving system holds the record and the status is reflected on the SAP document."
+        }
+      ],
+      "expected_result_template": "The message for {business_process} reaches {integration} with the correct field mapping, is processed there, and its status is returned to {sap_product} for the {focus}."
+    },
+
+    "regression": {
+      "label": "Regression Test",
+      "id_code": "REG",
+      "description": "Proves a change did not break what already worked, by comparing against a recorded baseline rather than against an opinion.",
+      "default_priority": "medium",
+      "default_owner_role": "Test analyst",
+      "guidance": "Always compare against a recorded 'before' result. State exactly which values are compared. A regression test with no baseline is not a regression test.",
+      "focus_areas": [
+        "core process unchanged after the transport",
+        "existing configuration still applied",
+        "a previously fixed defect stays fixed",
+        "custom enhancement still active",
+        "existing reports still balance"
+      ],
+      "objective_template": "Verify that {business_process} still behaves exactly as it did before the change, with the {focus} unaffected.",
+      "precondition_templates": [
+        "A recorded baseline result for {business_process} from before the change is available, including document numbers, values and statuses.",
+        "The change being regression tested is imported into the test client and is the only difference from the baseline run."
+      ],
+      "test_data_templates": [
+        "The same data set that produced the recorded baseline for {business_process}.",
+        "The baseline result itself, for the field-by-field comparison of the {focus}."
+      ],
+      "step_templates": [
+        {
+          "action": "Open the recorded baseline for {business_process} and note the values that must be reproduced.",
+          "expected_result": "The baseline is complete enough to compare against: document numbers, values, statuses and messages."
+        },
+        {
+          "action": "Confirm the change under test is present in the client and no other change was imported with it.",
+          "expected_result": "The transport log shows the expected change and nothing unrelated."
+        },
+        {
+          "action": "Run {business_process} again with the same data used for the baseline.",
+          "expected_result": "The process completes in the same way it did before the change."
+        },
+        {
+          "action": "Compare the new result with the baseline field by field, paying particular attention to the {focus}.",
+          "expected_result": "Every compared value matches the baseline, or the difference is explained by the change under test."
+        },
+        {
+          "action": "Check for new messages, warnings or short dumps that the baseline run did not produce.",
+          "expected_result": "No new message, warning or dump appears."
+        }
+      ],
+      "expected_result_template": "{business_process} reproduces the recorded baseline exactly, apart from differences the change under test is meant to introduce, and the {focus} is unaffected."
+    },
+
+    "security": {
+      "label": "Security Test",
+      "id_code": "SEC",
+      "description": "Checks the controls around the process: who can reach sensitive data, whether refusals are logged, and whether the security concept is actually implemented.",
+      "default_priority": "medium",
+      "default_owner_role": "Security consultant",
+      "guidance": "Test the controls that are documented in the security concept, in the project's own test client. Describe checks and expected refusals - never techniques for defeating a control.",
+      "focus_areas": [
+        "logon and password policy",
+        "visibility of sensitive data",
+        "completeness of the audit log",
+        "protection of the process against unauthorised change",
+        "encryption of data in transit to connected systems"
+      ],
+      "objective_template": "Verify that the security controls documented for {business_process} are effective for the {focus}.",
+      "precondition_templates": [
+        "The approved security concept covering {business_process} is available and lists the controls to be checked.",
+        "A test account without a business need for {business_process} is available for the refusal check."
+      ],
+      "test_data_templates": [
+        "The list of controls the security concept requires for the {focus}.",
+        "One permitted account and one account with no business need for {business_process}."
+      ],
+      "step_templates": [
+        {
+          "action": "Confirm the security settings that apply to {business_process} match the approved security concept.",
+          "expected_result": "Each documented control is present and active in the test client."
+        },
+        {
+          "action": "As the permitted user, run {business_process} and record which data the {focus} exposes on screen and in output.",
+          "expected_result": "Only the data the security concept allows is visible."
+        },
+        {
+          "action": "Repeat the attempt with the account that has no business need for {business_process}.",
+          "expected_result": "Access is refused and no sensitive data is shown, not even in a preview or error message."
+        },
+        {
+          "action": "Open the audit log and locate the entries for both attempts.",
+          "expected_result": "Both the permitted use and the refused attempt are logged with user, timestamp and object."
+        },
+        {
+          "action": "Confirm the control cannot be bypassed through the alternative entry points listed in the security concept.",
+          "expected_result": "Every listed alternative entry point applies the same control."
+        }
+      ],
+      "expected_result_template": "The controls documented for the {focus} are in place: permitted use succeeds, unauthorised access is refused without leaking data, and both outcomes are recorded in the audit log."
+    },
+
+    "authorization": {
+      "label": "Authorization Test",
+      "id_code": "AUT",
+      "description": "Checks the role gives exactly the access the process needs - no more, and no less.",
+      "default_priority": "medium",
+      "default_owner_role": "Authorisation administrator",
+      "guidance": "Name the role under test and check both directions: the process works with the role, and the process is refused without it. Record the authorisation object and field values from the failed check.",
+      "focus_areas": [
+        "the role grants every object the process needs",
+        "the process is refused without the role",
+        "organisational level restriction (plant, company code, purchasing organisation)",
+        "segregation of duties between two roles",
+        "a display-only role cannot change anything"
+      ],
+      "objective_template": "Verify that the role used for {business_process} enforces the {focus} exactly as the authorisation concept defines it.",
+      "precondition_templates": [
+        "A test user exists to which only the role under test can be assigned.",
+        "The authorisation trace (or SU53) is available in the test client so a failed check can be evidenced."
+      ],
+      "test_data_templates": [
+        "The role under test and the authorisation concept entry describing the {focus}.",
+        "One document within the permitted organisational scope and one outside it."
+      ],
+      "step_templates": [
+        {
+          "action": "Assign only the role under test to {role} and confirm no other role is active for that user.",
+          "expected_result": "The user has exactly one role and the assignment is effective."
+        },
+        {
+          "action": "Run {business_process} within the permitted scope and confirm no authorisation check fails.",
+          "expected_result": "The process completes and the authorisation trace shows every required object as granted."
+        },
+        {
+          "action": "Repeat the run for the case the {focus} is meant to prevent.",
+          "expected_result": "The system refuses the action with an authorisation error."
+        },
+        {
+          "action": "Record the failed check from the authorisation trace or SU53, including object and field values.",
+          "expected_result": "The refusal names the authorisation object and the field value that caused it."
+        },
+        {
+          "action": "Confirm the same function cannot be reached through another transaction, report or Fiori app.",
+          "expected_result": "Every alternative entry point applies the same authorisation check."
+        }
+      ],
+      "expected_result_template": "The role permits {business_process} within its intended scope and is refused outside it, with the {focus} evidenced by a recorded authorisation check."
+    },
+
+    "data_migration": {
+      "label": "Data Migration Test",
+      "id_code": "MIG",
+      "description": "Proves the loaded data reconciles with the source: counts, control totals, field mapping and the error-correction cycle.",
+      "default_priority": "high",
+      "default_owner_role": "Data migration lead",
+      "guidance": "Always reconcile against the signed-off source extract. State the counts and control totals being compared and how rejected records are corrected and reloaded.",
+      "focus_areas": [
+        "record count and control total reconciliation",
+        "field-level value mapping",
+        "completeness of mandatory fields",
+        "duplicate detection after the load",
+        "reload of corrected records"
+      ],
+      "objective_template": "Verify that the migration of the data behind {business_process} into {sap_product} reconciles with the source for the {focus}.",
+      "precondition_templates": [
+        "The source extract for {business_process} is signed off and its record count and control totals are recorded.",
+        "The migration object and its field mapping template are available and match the agreed specification."
+      ],
+      "test_data_templates": [
+        "The signed-off source extract with its recorded counts and control totals.",
+        "A documented sample of records for the field-level check of the {focus}."
+      ],
+      "step_templates": [
+        {
+          "action": "Record the source record count and the control totals for {business_process} before the load.",
+          "expected_result": "The source figures are recorded and signed off as the reconciliation baseline."
+        },
+        {
+          "action": "Run the load into {sap_product} using the agreed migration object and field mapping template.",
+          "expected_result": "The load completes and produces a log listing the loaded and rejected records."
+        },
+        {
+          "action": "Compare the loaded record count and control totals against the source for the {focus}.",
+          "expected_result": "Loaded records plus rejected records equal the source count, and the control totals agree."
+        },
+        {
+          "action": "Spot-check the field mapping on the documented sample of records.",
+          "expected_result": "Every sampled field carries the correctly mapped and converted value."
+        },
+        {
+          "action": "Review the error file, correct the rejected records and reload them.",
+          "expected_result": "Every rejected record has a stated reason, and the reload closes the difference to the source."
+        }
+      ],
+      "expected_result_template": "The migrated data reconciles with the signed-off source for {business_process}: counts and control totals agree, the sampled field mapping is correct, and every rejected record is explained and reloaded for the {focus}."
+    }
+  },
+
+  "reporting": {
+    "disclaimer": "These test cases were drafted from the process description entered in this application. They have NOT been executed or validated in a live SAP system, and this application is not connected to one. Treat them as a starting draft that a test lead must review, adjust to the actual configuration and approve before use.",
+    "ai_note": "Test-case wording may be drafted by a language model. The test-case identifiers, the test-type allocation, the priorities, the step numbering and every execution record are produced by deterministic Python and are never decided by a model.",
+    "coverage_note": "Coverage below counts the test cases present in the suite per requested test type. It says nothing about how much of the SAP process is functionally covered."
+  }
+}

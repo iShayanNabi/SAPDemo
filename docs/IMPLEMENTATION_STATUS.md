@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 7 of 10 |
-| Tests | 1,011 passing (600 unit, 242 API, 169 integration) |
-| Python source | ~45,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 8 of 10 |
+| Tests | 1,165 passing (666 unit, 314 API, 185 integration) |
+| Python source | ~51,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -757,42 +757,145 @@ asserts the invariant.
 
 ---
 
-## Modules 8-10 - not started
+## Module 8 - SAP Test Case Generator - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| Collect all twelve process inputs | Done - product, module, process, description, preconditions, business rules, systems, integrations, roles, test-data requirements, case count, requested types |
+| Eight test types | Done - SIT, UAT, negative, integration, regression, security, authorization, data migration |
+| Full 15-field test-case structure | Done - id, type, title, objective, priority, preconditions, test data, numbered steps, expected result, owner, status, actual result, pass/fail, evidence reference, comments |
+| Pydantic validation of generated test cases | Done - shape validated before anything is saved, content repaired field by field afterwards |
+| Anthropic, OpenAI and mock providers | Done - the shared abstraction, unchanged |
+| Mock mode produces useful, predictable test cases with no key | Done - and it is the default |
+| Generate full suite | Done - `POST /test-cases/generate` |
+| Regenerate a selected test case | Done - `POST /test-cases/{id}/regenerate`, with an optional reviewer instruction |
+| Add, edit, delete, duplicate a row | Done - four endpoints, all with identifier and coverage consequences reported |
+| Approve a test | Done - `POST /test-cases/{id}/approve`, reversible |
+| Record execution results | Done - `POST /test-cases/{id}/execution` |
+| Six required API routes | Done, plus add, duplicate, approve, execution, get one, list, catalog, ai-status and the demo processes |
+| Streamlit page with all eight listed elements | Done - process form, test-type selection, generate, editable table, step editor, status tracking, execution results, export controls |
+| CSV, XLSX, JSON and PDF export | Done - four formats, one payload |
+| Tests for all nine listed areas | Done - 154 new tests |
+
+### What was built
+
+| Piece | Location |
+| --- | --- |
+| Schemas and the API contract | `app/schemas/test_case_generator.py` |
+| Thresholds (JSON + Pydantic) | `app/modules/test_case_generator/config/test_case_rules.json`, `thresholds.py` |
+| The deterministic plan | `app/modules/test_case_generator/planning.py` |
+| Template build and draft repair | `app/modules/test_case_generator/builder.py` |
+| AI drafting with structured validation | `app/modules/test_case_generator/ai_generator.py` |
+| Generation, coverage and summary arithmetic | `app/modules/test_case_generator/engine.py` |
+| Orchestration, CRUD and persistence | `app/modules/test_case_generator/service.py` |
+| Prompts and the mock drafting task | `app/services/ai/prompts.py`, `app/services/ai/mock_provider.py` |
+| Persistence | `app/models/test_case_generator.py`, migration `e5b3d90c7a41` |
+| API | `app/api/v1/test_cases.py` |
+| Exports (4 formats, 5-sheet workbook) | `app/services/exports/test_case_report_builder.py` |
+| UI | `streamlit_app/pages/8_Test_Case_Generator.py` |
+| Demo process definitions | `scripts/generate_test_case_sample_data.py` |
+
+### The design decision: plan first, draft second
+
+This is the first module whose AI output *is* the deliverable, so the deterministic/AI line is
+drawn before the provider is called rather than after. A `TestPlan` fixes the identifiers, the
+type allocation, the focus area of each case and its priority; only then is anything drafted, and
+the response is matched back to the plan by `slot_id`.
+
+Three properties follow, and each has a test:
+
+1. The same request produces the same identifiers, coverage and priorities with a real model, with
+   the mock, or with `use_ai=false`.
+2. Every failure mode - no key, provider down, non-JSON, wrong shape, missing slot, unknown slot,
+   blank title, no steps, 200 steps, misnumbered steps - ends with a complete, usable test case
+   built from the configured templates, and the problem reported rather than hidden.
+3. Priority discriminates between processes: it is derived from the type's configured base plus
+   escalation signals read out of the user's own process context, capped at one level.
+
+### Verified by hand
+
+- `uvicorn` started; real HTTP calls for generate, get, list, update, delete, regenerate,
+  duplicate, approve, execution, catalog, the demo processes and all four export formats.
+- The PDF was read back through the project's own `PdfTextExtractor`: 22 pages, extractable text,
+  the disclaimer and every test-case identifier present.
+- The Streamlit page driven end to end through `AppTest`: load a demo process, generate, all seven
+  sections render, four download buttons produce real payloads, no exception.
+- Alembic `upgrade head` -> `downgrade -1` on a scratch database; both tables' columns compared
+  against the ORM models.
+
+### Two bugs found by driving the API - the stale approval and the orphaned verdict
+
+Both were invisible to a fully green test suite and only appeared reading two fields of one real
+response side by side.
+
+**A rewritten test case still carried its old approval.** Regenerating cleared the approval,
+correctly - an approval describes the script that was read. A hand edit through `PUT` did not, so a
+test case whose title and every step had been replaced still read *approved by Ingrid* above steps
+Ingrid never saw. The engine was treating the same situation two different ways. Fixed: editing any
+script field (type, title, objective, preconditions, test data, steps, expected result) clears the
+approval and returns the case to draft, exactly as regenerating does. Editing only the
+administrative fields - owner, status, priority, evidence, comments - does not.
+
+**The suite reported a failure against steps that no longer existed.** After that fix the summary
+read *1 executed, 1 failed* while every status read *draft*: the verdict had been reached against a
+script that was subsequently rewritten. Deleting the record would throw away something a tester
+wrote; keeping it silently would let a test manager export a failure against a test nobody can
+find. Fixed with `execution_is_stale`: the record is kept, flagged on the case, counted separately
+in the summary as `stale_execution_count`, carried into the CSV, XLSX and PDF exports and warned
+about in the UI. Recording a new result clears it. Four API tests now pin the behaviour.
+
+### Known limitations of module 8
+
+- **Coverage is counted, not measured.** The coverage report says how many test cases exist per
+  test type. It says nothing about how much of the SAP process is functionally covered - no
+  traceability to a requirement, a Solution Manager node or a process step.
+- **No requirement or defect linkage.** A test case has no requirement id, no defect id and no link
+  to a test-management tool. The CSV is shaped for pasting into one, not for a round trip.
+- **No test-run history.** A test case carries its latest execution record only; re-running
+  overwrites the previous verdict rather than appending a run.
+- **The steps are stored as JSON**, so a step cannot be queried, filtered or reported on
+  independently of its test case. That is the right trade today - a step has no identity outside
+  its case - but a per-step execution tracker would need a table.
+- **The templates are English and SAP-generic.** They name the process, module, role and focus the
+  user supplied, but they cannot know a customer's transaction codes, screens or variants, and the
+  prompt forbids inventing them.
+- **A drafted test case is a draft.** Nothing checks that a step is possible in the described
+  configuration, and nothing has been executed in an SAP system.
+
+---
+
+## Modules 9-10 - not started
 
 No code exists for these yet. Nothing has been stubbed, and there are no placeholder pages or
 non-functional buttons.
 
 | # | Module | Deterministic part | AI part |
 | --- | --- | --- | --- |
-| 8 | SAP Test Case Generator | Template and coverage checks | Test case drafting |
 | 9 | SAP Blueprint Generator | Structure validation | Blueprint drafting |
 | 10 | SAP Interview Coach | Question bank, scoring rubric | Feedback on an answer |
 
 Each will reuse the foundation rather than duplicate it. Estimated effort per module is smaller
-than module 1, because the shared layers already exist.
+than module 1, because the shared layers already exist - and module 8's plan-first structure is
+directly reusable by module 9, whose output is also drafted rather than computed.
 
 ---
 
 ## Recommended next step
 
-**Module 8 - SAP Test Case Generator.** It is the next module in the plan, and the first where AI
-does the substantive work rather than only rephrasing a computed result - which makes the
-deterministic/AI boundary the design question again: coverage checks, template validation and
-traceability are code, and the test-case prose is the model's. Everything it needs already exists:
-the AI abstraction, prompt versioning, structured validation, exports and the response envelope.
+**Module 9 - SAP Blueprint Generator.** It is the next module in the plan and it is the closest
+sibling module 8 has: its output is also *drafted* rather than computed, so the structure module 8
+established transfers directly - decide the document's skeleton deterministically (sections, their
+order, what each must contain, what is missing), draft only the prose, validate the response
+against that skeleton, and fall back section by section when a draft is unusable.
 
-Three smaller pieces of work are worth weighing against it:
+Two smaller pieces of work are worth weighing against it:
 
 - **Feed module 7 back into module 5.** The predictor now produces a per-supplier picture of which
   materials are heading for a shortage and which are dead on the shelf. Module 5's delivery and
   operational risk categories score from stored counts. Joining them would make supply risk
   materially sharper.
-- **Lead-time variability.** The single most valuable extension to module 7 itself: the input
-  contract carries one lead time per material, so safety stock covers demand variability only. A
-  lead-time distribution would let the standard formula
-  `z * sqrt(L*sigma_d^2 + d^2*sigma_L^2)` replace the demand-only one, and it is a bounded change
-  to `projection.py` plus two fields.
-
 - **The operational backlog** listed under limitations - authentication, a job queue and a
-  PostgreSQL run. Seven modules now share one database and one upload table, so the cost of adding
-  authentication grows with every module rather than staying flat.
+  PostgreSQL run. Eight modules now share one database, so the cost of adding authentication grows
+  with every module rather than staying flat.

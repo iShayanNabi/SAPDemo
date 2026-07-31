@@ -29,6 +29,7 @@ from app.models.supplier_risk import (
     SupplierRiskProfileRow,
     SupplierRiskRecord,
 )
+from app.models.test_case_generator import TestCase, TestSuite
 
 __all__ = [
     "Base",
@@ -59,4 +60,6 @@ __all__ = [
     "InventoryRecord",
     "InventoryForecast",
     "InventoryForecastItem",
+    "TestSuite",
+    "TestCase",
 ]

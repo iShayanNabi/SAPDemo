@@ -22,7 +22,7 @@ are required.**
 | 5 | **Supplier Risk Copilot** | **Implemented** |
 | 6 | **Contract Assistant** | **Implemented** |
 | 7 | **Inventory Predictor** | **Implemented** |
-| 8 | SAP Test Case Generator | Planned |
+| 8 | **SAP Test Case Generator** | **Implemented** |
 | 9 | SAP Blueprint Generator | Planned |
 | 10 | SAP Interview Coach | Planned |
 
@@ -579,6 +579,92 @@ order**, with the reason, rather than raising a second one.
 
 ---
 
+## Module 8 - SAP Test Case Generator
+
+Describe an SAP business process; get a structured test suite you can edit, approve, execute and
+export. This is the first module where the AI output *is* the deliverable rather than a commentary
+on one, so the deterministic/AI split is drawn in a different place - and drawn hard.
+
+**Workflow:** process form -> test-type selection -> deterministic plan -> optional AI drafting ->
+field-by-field repair -> editable test-case table -> step editor -> approval -> execution results
+-> export.
+
+### What is decided by code, and what is written by a model
+
+| Decided by deterministic Python | Written by the AI provider |
+| --- | --- |
+| How many test cases each requested type receives | The title of each case |
+| Every test-case identifier and its numbering | The objective |
+| Which aspect of the process each case covers | The preconditions and test data |
+| The priority of every case | The wording of each step |
+| The step numbering | The expected result |
+| Every status, approval and execution record | |
+| The complete fallback case when a draft is unusable | |
+
+The consequence is the property the module is built around: **run the same request twice, with a
+real model or with none at all, and you get the same identifiers, the same type coverage and the
+same priorities.** Only the prose can differ - and every case says which produced it.
+
+### The eight test types
+
+| Type | ID | What it proves |
+| --- | --- | --- |
+| System Integration Test | `TC-SIT-nnn` | The configured process runs end to end inside SAP and produces the documents the design calls for |
+| User Acceptance Test | `TC-UAT-nnn` | The business can use it, in business language |
+| Negative Test | `TC-NEG-nnn` | Invalid input is refused cleanly, with a message, and nothing is posted |
+| Integration Test | `TC-INT-nnn` | The message crosses the system boundary, maps correctly and returns a status |
+| Regression Test | `TC-REG-nnn` | A change did not break what worked, measured against a recorded baseline |
+| Security Test | `TC-SEC-nnn` | The documented controls hold, refusals are logged and no data leaks |
+| Authorization Test | `TC-AUT-nnn` | The role grants exactly what the process needs - no more, no less |
+| Data Migration Test | `TC-MIG-nnn` | Loaded data reconciles with the signed-off source |
+
+### Priority is derived, never guessed
+
+Each type has a configured base priority, raised by at most one level when the process context says
+so: financial vocabulary in the description, three or more integrations, four or more roles. Which
+signals apply to which types is in the JSON. A quiet single-role process keeps every base priority;
+a payment-bearing, heavily integrated one pushes its process tests to critical - so the scale
+actually discriminates between two processes instead of marking everything urgent.
+
+### Every failure mode ends with a usable test case
+
+A test case is planned before anything is drafted, so there is always somewhere to put a fallback:
+
+| What went wrong | What happens |
+| --- | --- |
+| No API key, or `use_ai=false` | The configured templates write every case. The suite is complete and labelled `rule_based` |
+| The provider is down or times out | Same, plus the error is reported on the suite |
+| The response is not JSON, or is the wrong shape | Same |
+| The response skips a slot | That slot is filled from the template; the others keep their drafts |
+| A returned case names a slot that does not exist | It is discarded and reported |
+| A drafted case has a blank title, no steps, 200 steps or wrongly numbered steps | Repaired field by field against the configured limits, with every repair recorded on the case |
+
+### Editing rules worth knowing
+
+- **An identifier points at one test forever.** Delete `TC-SIT-002` and the next added case takes
+  `TC-SIT-004`. A gap in the numbering beats one name for two different tests.
+- **A script edit and an execution record are separate operations.** Regenerating never erases what
+  a tester recorded; recording a result never rewrites the script.
+- **Editing the script clears the approval.** An approval describes the script that was read.
+- **A verdict recorded against a script that has since changed is flagged, not deleted.** It stays
+  in the suite - a tester wrote it - marked as predating the current steps, and the flag clears
+  when the test is run again. A suite that reports "1 failed" against steps nobody can find is
+  worse than one that says so.
+- **Deleting the last case of a test type reports the coverage the suite just lost.**
+
+### Exports
+
+CSV (the test-case table, ready to paste into a test management tool), XLSX (Summary, Test Cases,
+Steps, Coverage and Methodology sheets), JSON (everything) and PDF (the readable test script, one
+section per case, with the execution record printed underneath).
+
+> **Drafts, not validated tests.** Every test case is drafted from a process description typed into
+> this application. Nothing has been executed or validated in a live SAP system, and the generator
+> is told never to name a transaction code, table or program the process description did not.
+
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -589,8 +675,10 @@ This separation is the core design decision of the project.
 | Severity and confidence | ✅ | ❌ never |
 | Calculations, aggregation, ranking | ✅ | ❌ never |
 | Forecasting demand and projecting stock | ✅ | ❌ never |
+| Planning a test suite: identifiers, coverage, priorities, numbering | ✅ | ❌ never |
 | Rewriting a finding in business language | | ✅ |
 | Executive summary | | ✅ |
+| Drafting the wording of a test case | | ✅ |
 
 **Mock mode is the default.** With no API key the lab uses a deterministic mock provider that
 templates the real rule results into narrative text. Output is labelled `mock_ai`, so nobody
@@ -689,6 +777,22 @@ in-memory strings.
 - `expected_inventory_baseline.json`, the exact model, shortage date and classification the current
   engine produces for every series
 
+`python scripts/generate_test_case_sample_data.py` produces the demo **process definitions** the
+Test Case Generator works from - this module has no dataset, its input is a form:
+
+- **four fictional SAP process definitions** (a Procure-to-Pay purchase order, a plant-maintenance
+  notification, a vendor-master migration cutover and a Fiori approval app), each ready to post
+  straight to `POST /api/v1/test-cases/generate`
+- each one is chosen so a deterministic decision is observable: all three priority escalation
+  signals firing, none firing, a shortfall of test cases against test types, and role-count
+  escalation touching only the access test types
+- **7 documented scenarios** in
+  [`data/sample/TEST_CASE_SCENARIO_MANIFEST.md`](data/sample/TEST_CASE_SCENARIO_MANIFEST.md)
+- `expected_test_case_baseline.json`, recorded with **AI drafting switched off**, so it pins the
+  identifiers, allocation, priorities, focus areas and step counts - the things that must not move
+  when a provider, a key or a model changes. Drafted prose is deliberately not baselined, because
+  it is the one part that is allowed to differ.
+
 ---
 
 ## Project layout
@@ -723,14 +827,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (1,011 tests, ~115s)
-pytest tests/unit         # 600 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, security, AI
-pytest tests/api          # 242 - endpoints against a temporary database
-pytest tests/integration  # 169 - full journeys over all seven sample datasets
+pytest                    # everything (1,165 tests, ~80s)
+pytest tests/unit         # 666 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, security, AI
+pytest tests/api          # 314 - endpoints against a temporary database
+pytest tests/integration  # 185 - full journeys over all eight sample datasets
 ```
 
-The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract and
-inventory manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract,
+inventory and test-case manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

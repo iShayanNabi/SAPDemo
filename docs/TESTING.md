@@ -1,12 +1,12 @@
 # Testing
 
-**1,011 tests, about 115 seconds, no network and no API key.**
+**1,165 tests, about 80 seconds, no network and no API key.**
 
 ```bash
 pytest                              # everything
-pytest tests/unit                   # 600
-pytest tests/api                    # 242
-pytest tests/integration            # 169
+pytest tests/unit                   # 666
+pytest tests/api                    # 314
+pytest tests/integration            # 185
 pytest -k duplicate -v              # by name
 pytest tests/unit/test_rules.py::test_split_purchase_detected
 ```
@@ -17,9 +17,9 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 600 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
-| `tests/api` | 242 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
-| `tests/integration` | 169 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
+| `tests/unit` | 666 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
+| `tests/api` | 314 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
+| `tests/integration` | 185 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
 
 | File | Covers |
 | --- | --- |
@@ -49,6 +49,10 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_inventory_planning.py` | Shortage dates, open-PO handling and expediting, safety stock and reorder point formulas, order quantities, confidence intervals, overstock/slow-moving/dead-stock classification, missing periods, insufficient data, series isolation, configuration-driven behaviour |
 | `tests/api/test_inventory_api.py` | Inventory endpoints, upload/forecast/items/detail/export, filters, forced models, rejected inputs |
 | `tests/integration/test_inventory_sample_data.py` | All 14 documented inventory anchors, the recorded baseline, repeat-run determinism, cross-format agreement |
+| `tests/unit/test_test_case_planning.py` | Test-type allocation, identifier issue and reissue, priority derivation and escalation caps, summary and coverage arithmetic, configuration-driven behaviour |
+| `tests/unit/test_test_case_generation.py` | Template build, mock drafting, structured-output validation, field-by-field repair, and every recovery path from a bad or missing draft |
+| `tests/api/test_test_case_api.py` | Test case endpoints: generate, read, edit, add, duplicate, delete, regenerate, approve, execute, all four export formats |
+| `tests/integration/test_test_case_sample_data.py` | All 7 documented test-case scenarios, the recorded deterministic baseline, repeat-run determinism |
 
 ### Isolation
 
@@ -280,6 +284,20 @@ the first time module 5's deliberate missing-data sample supplier was loaded.
 The lesson is about sample data rather than test structure: a dataset whose rows are all complete
 only ever exercises the happy path. `tests/unit/test_pipeline.py::test_integer_column_survives_a_blank_cell`
 is the regression test, and module 5's `SRK-09` anchor is the dataset row that keeps it honest.
+
+**The stale approval and the orphaned verdict** (module 8). Two states that no single assertion was
+wrong about, and that only read as bugs with two fields of one response side by side:
+
+- a test case whose title and every step had been replaced by hand still carried *approved by
+  Ingrid* - because regenerating cleared the approval and a `PUT` edit did not;
+- after fixing that, the suite summary read *1 executed, 1 failed* while every status read *draft*,
+  because the verdict had been reached against a script that no longer existed.
+
+Neither was a wrong number. Each field was individually correct and the pair was a lie. The
+regression tests are
+`tests/api/test_test_case_api.py::TestEditing::test_editing_the_script_clears_an_approval` and
+`::test_editing_the_script_marks_the_recorded_verdict_as_stale`. The general lesson: when two
+fields describe the same thing from different angles, assert the *relationship*, not each field.
 
 ---
 

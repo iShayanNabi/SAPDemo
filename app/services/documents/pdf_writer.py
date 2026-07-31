@@ -11,8 +11,13 @@ reference table - the minimum a conforming reader needs, and enough that the
 text comes back out through the same ``PdfTextExtractor`` a user's contract
 goes through.
 
-It is a *writer for fixtures*, not a reporting engine: no images, no tables, no
-styling beyond a bold-ish title size.
+It has a second consumer: the Test Case Generator's PDF export, which is a
+readable test script rather than a laid-out report - the same requirement, one
+column of text that a reviewer reads top to bottom.
+
+It is a *plain text PDF writer*, not a reporting engine: no images, no tables,
+no styling beyond a bold-ish title size. Anything needing a real layout belongs
+in a proper reporting library, not here.
 """
 
 from __future__ import annotations
