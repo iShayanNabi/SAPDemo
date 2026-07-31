@@ -43,6 +43,8 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_spend_summary(payload), ensure_ascii=False)
         elif task == "supplier_recommendation":
             text = json.dumps(_supplier_recommendation(payload), ensure_ascii=False)
+        elif task == "invoice_validation":
+            text = json.dumps(_invoice_validation(payload), ensure_ascii=False)
         else:
             text = json.dumps(
                 {
@@ -84,6 +86,8 @@ def _infer_task(prompt: str) -> str:
         return "spend_summary"
     if "supplier ranking" in lowered or "supplier recommendation" in lowered:
         return "supplier_recommendation"
+    if "invoice validation" in lowered or "invoice exception" in lowered:
+        return "invoice_validation"
     if "finding" in lowered:
         return "explain_finding"
     return "unknown"
@@ -328,4 +332,65 @@ def _supplier_recommendation(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": " ".join(sentences),
         "key_findings": key_findings,
         "recommended_actions": actions,
+    }
+
+
+def _invoice_validation(payload: dict[str, Any]) -> dict[str, Any]:
+    """Build the mock invoice-validation narrative from the deterministic KPIs.
+
+    Every number below is copied from the summary the engine already computed;
+    the mock provider never re-matches or recomputes anything.
+    """
+    summary_data: dict[str, Any] = payload.get("validation_summary", {}) or {}
+    top_rules: list[dict[str, Any]] = payload.get("top_rules", []) or []
+    top_suppliers: list[dict[str, Any]] = payload.get("top_suppliers", []) or []
+
+    severity = summary_data.get("severity_counts", {}) or {}
+    currency = summary_data.get("base_currency", "EUR")
+    invoice_count = summary_data.get("invoice_count", 0)
+    exceptions_count = summary_data.get("exceptions_count", 0)
+    matched = summary_data.get("fully_three_way_matched", 0)
+    exposure = summary_data.get("estimated_exposure_base", 0)
+    flagged_share = summary_data.get("flagged_value_share_pct", 0)
+
+    sentences = [
+        f"The validator checked {invoice_count:,} invoice line(s) against the uploaded purchase "
+        f"orders and goods receipts and raised {exceptions_count:,} exception(s).",
+        f"{severity.get('critical', 0)} are critical and {severity.get('high', 0)} are high "
+        f"severity; the flagged invoices represent {float(flagged_share):.1f}% of the invoiced "
+        f"value, and {matched:,} line(s) matched cleanly on all three documents.",
+        f"The estimated gross exposure across all exceptions is {float(exposure):,.0f} {currency}, "
+        "an upper bound because one invoice can raise several exceptions.",
+    ]
+    if top_rules:
+        leader = top_rules[0]
+        sentences.append(
+            f"The most frequent exception is '{leader.get('rule_name', leader.get('rule_id'))}' "
+            f"with {leader.get('count', 0)} occurrence(s)."
+        )
+
+    key_findings = [
+        f"{rule.get('rule_name', rule.get('rule_id'))}: {rule.get('count', 0)} exception(s), "
+        f"approximately {float(rule.get('exposure', 0)):,.0f} {currency} exposure"
+        for rule in top_rules[:5]
+    ] or ["No rule produced an exception for these files."]
+
+    if top_suppliers:
+        leader = top_suppliers[0]
+        key_findings.append(
+            f"Supplier {leader.get('supplier_id')} carries the most exceptions "
+            f"({leader.get('exceptions_count', 0)})."
+        )
+
+    actions = [
+        "Block the critical and high severity exceptions before the next payment run.",
+        "Reconcile price and quantity mismatches against the purchase order and goods receipt.",
+        "Confirm any duplicate invoices are not paid twice.",
+        "Obtain the missing purchase orders and goods receipts before releasing those invoices.",
+    ]
+
+    return {
+        "summary": " ".join(sentences),
+        "key_findings": key_findings,
+        "recommended_actions": actions[: max(2, min(4, len(actions)))],
     }

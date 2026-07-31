@@ -18,7 +18,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 1 | Purchase Order Risk Checker | **Implemented** |
 | 2 | Spend Analytics Dashboard | **Implemented** |
 | 3 | Supplier Recommendation Engine | **Implemented** |
-| 4 | Invoice Validator | Planned |
+| 4 | Invoice Validator | **Implemented** |
 | 5 | Supplier Risk Copilot | Planned |
 | 6 | Contract Assistant | Planned |
 | 7 | Inventory Predictor | Planned |
@@ -229,6 +229,7 @@ pip install -r requirements.txt
 python scripts/generate_sample_data.py
 python scripts/generate_spend_sample_data.py
 python scripts/generate_supplier_sample_data.py
+python scripts/generate_invoice_sample_data.py
 python scripts/verify_setup.py
 
 # run
@@ -236,7 +237,7 @@ uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 456 tests
+pytest                                  # 506 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -262,6 +263,15 @@ only appeared when the API was driven by hand:
   round-trip the API performs. The recorded baseline disagreed with the API by one contract score.
   Fix: use `"No contract"` (a real label), and compute the baseline by reading the written file
   back through the real reader/normaliser, not from in-memory rows.
+
+- Module 4: the requirement lists overlapping controls (quantity mismatch, three-way-match,
+  overbilling) that would double-count on the same line if defined naively. Running the sample
+  generator's baseline surfaced it: several anchors that should have raised one exception raised two.
+  Fix: give each rule a distinct trigger - IV-R006 compares billed vs *received*, IV-R012 billed vs
+  *accepted* (received minus rejected), IV-R013 cumulative billed vs *ordered* - and make value-based
+  overbilling a fallback only when a line has no ordered quantity, so a price mismatch does not also
+  read as overbilling. The generator prints which anchors are flagged, which is what caught the
+  incidental duplicate-invoice collisions among same-amount, same-date anchors.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

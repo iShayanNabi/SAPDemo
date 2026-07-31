@@ -292,3 +292,83 @@ class ApiClient:
         return self.download_bytes(
             f"/supplier-recommendations/{recommendation_id}/export", {"format": export_format}
         )
+
+    # -- Invoice Validator -----------------------------------------------
+    def invoice_upload(
+        self, dataset: str, filename: str, content: bytes, content_type: str
+    ) -> dict[str, Any]:
+        """Upload one of the three files (invoices, purchase orders, goods receipts)."""
+        return self._request(
+            "POST",
+            "/invoices/upload",
+            data={"dataset": dataset},
+            files={"file": (filename, content, content_type)},
+        )
+
+    def invoice_validate(
+        self,
+        invoice_upload_id: str,
+        *,
+        po_upload_id: str | None = None,
+        gr_upload_id: str | None = None,
+        invoice_mapping_overrides: dict[str, str] | None = None,
+        po_mapping_overrides: dict[str, str] | None = None,
+        gr_mapping_overrides: dict[str, str] | None = None,
+        tolerances: dict[str, Any] | None = None,
+        as_of_date: str | None = None,
+        enabled_rules: list[str] | None = None,
+        generate_ai_summary: bool = True,
+    ) -> dict[str, Any]:
+        """Run the three-way validation."""
+        payload: dict[str, Any] = {
+            "invoice_upload_id": invoice_upload_id,
+            "generate_ai_summary": generate_ai_summary,
+        }
+        if po_upload_id:
+            payload["po_upload_id"] = po_upload_id
+        if gr_upload_id:
+            payload["gr_upload_id"] = gr_upload_id
+        if invoice_mapping_overrides:
+            payload["invoice_mapping_overrides"] = invoice_mapping_overrides
+        if po_mapping_overrides:
+            payload["po_mapping_overrides"] = po_mapping_overrides
+        if gr_mapping_overrides:
+            payload["gr_mapping_overrides"] = gr_mapping_overrides
+        if tolerances:
+            payload["tolerances"] = tolerances
+        if as_of_date:
+            payload["as_of_date"] = as_of_date
+        if enabled_rules:
+            payload["enabled_rules"] = enabled_rules
+        return self._request("POST", "/invoices/validate", json=payload)
+
+    def invoice_validation(self, validation_id: str) -> dict[str, Any]:
+        """Fetch one validation."""
+        return self._request("GET", f"/invoices/validations/{validation_id}")
+
+    def invoice_exceptions(self, validation_id: str, **filters: Any) -> dict[str, Any]:
+        """Fetch exceptions with optional filters."""
+        params = {key: value for key, value in filters.items() if value not in (None, "", [])}
+        return self._request("GET", f"/invoices/validations/{validation_id}/exceptions", params=params)
+
+    def invoice_rules(self) -> dict[str, Any]:
+        """Fetch the invoice rule catalogue and active tolerances."""
+        return self._request("GET", "/invoices/rules")
+
+    def invoice_fields(self) -> dict[str, Any]:
+        """Fetch the three canonical field catalogues."""
+        return self._request("GET", "/invoices/fields")
+
+    def invoice_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled demo invoice datasets."""
+        return self._request("GET", "/invoices/sample/info")
+
+    def invoice_sample_file(self, dataset: str, file_format: str) -> bytes:
+        """Download one bundled demo invoice dataset."""
+        return self.download_bytes("/invoices/sample", {"dataset": dataset, "format": file_format})
+
+    def invoice_export(self, validation_id: str, export_format: str) -> bytes:
+        """Download a validation report."""
+        return self.download_bytes(
+            f"/invoices/validations/{validation_id}/export", {"format": export_format}
+        )

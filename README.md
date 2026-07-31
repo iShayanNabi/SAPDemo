@@ -18,7 +18,7 @@ are required.**
 | 1 | **Purchase Order Risk Checker** | **Implemented** |
 | 2 | **Spend Analytics Dashboard** | **Implemented** |
 | 3 | **Supplier Recommendation Engine** | **Implemented** |
-| 4 | Invoice Validator | Planned |
+| 4 | **Invoice Validator** | **Implemented** |
 | 5 | Supplier Risk Copilot | Planned |
 | 6 | Contract Assistant | Planned |
 | 7 | Inventory Predictor | Planned |
@@ -44,6 +44,7 @@ pip install -r requirements.txt
 python scripts/generate_sample_data.py            # PO risk
 python scripts/generate_spend_sample_data.py      # spend analytics
 python scripts/generate_supplier_sample_data.py   # supplier catalogue
+python scripts/generate_invoice_sample_data.py    # invoices, POs, goods receipts
 
 # 4. Check the installation
 python scripts/verify_setup.py
@@ -220,6 +221,63 @@ summarise the ranking, but **the ranking is entirely deterministic - AI never de
 
 ---
 
+## Module 4 - Invoice Validator
+
+Upload **three** files - invoices, purchase orders and goods receipts - and three-way match them
+with configurable deterministic rules. This is the first module that joins several uploaded
+datasets rather than analysing one.
+
+**Workflow:** upload each file (with its own column mapping) → set tolerances → validate → summary
+metrics → exception charts → filterable exception table → three-way-match comparison → export.
+
+**Supported files:** CSV, XLSX, JSON (up to 25 MB) for each of the three datasets. The invoice file
+is required; the purchase order and goods receipt files are optional, and the rules that depend on a
+missing dataset are reported as skipped rather than silently producing nothing.
+
+**Reuses the purchase-order model.** The PO dataset uses the 25 purchase-order fields from module 1
+(extended with a single `PO Status` field for closed-PO detection), so a PO extract with SAP
+technical headers maps automatically. Invoices (16 fields) and goods receipts (7 fields) add their
+own registries.
+
+### The 17 validation rules
+
+| Rule | Checks |
+| --- | --- |
+| IV-R001 | Duplicate invoices (same supplier, amount and date) |
+| IV-R002 | Duplicate invoice number for a supplier |
+| IV-R003 | Missing purchase order |
+| IV-R004 | Missing goods receipt |
+| IV-R005 | Price mismatch versus the PO |
+| IV-R006 | Quantity mismatch versus the receipt (or ordered quantity) |
+| IV-R007 | Tax mismatch versus the expected rate |
+| IV-R008 | Currency mismatch versus the PO |
+| IV-R009 | Supplier mismatch versus the PO |
+| IV-R010 | Freight above the policy ceiling |
+| IV-R011 | Payment-term mismatch versus the PO |
+| IV-R012 | Three-way-match exception (billed above the accepted quantity) |
+| IV-R013 | Overbilling (cumulative invoicing exceeds the ordered line) |
+| IV-R014 | Invoice dated before the purchase order |
+| IV-R015 | Invoice dated before the goods receipt |
+| IV-R016 | Future invoice date |
+| IV-R017 | Invoicing against a closed purchase order |
+
+Every threshold, the four tolerances (price, quantity, tax, freight), the expected tax rate, the
+freight ceiling and the closed-PO status list live in
+[`app/modules/invoice_validator/config/invoice_validator_rules.json`](app/modules/invoice_validator/config/invoice_validator_rules.json).
+The four tolerances can additionally be overridden per validation run through the API and the UI.
+
+### What each exception contains
+
+Exception ID · invoice number · supplier · purchase order · PO item · goods receipt · exception type
+· severity · expected value · actual value · difference · difference amount · a rule-based
+explanation · a recommended action. AI may summarise the exceptions, but **every exception is
+produced by deterministic Python - AI never decides one.**
+
+> **Difference amounts are indicative and describe the uploaded files only.** Nothing here has been
+> validated in a live SAP environment.
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -280,6 +338,16 @@ population is deliberately built *not* to trigger rules, which makes every findi
 - `expected_supplier_baseline.json`, the exact ranking the current engine produces for that
   requirement
 
+`python scripts/generate_invoice_sample_data.py` produces the invoice datasets:
+
+- **420 invoices**, **418 purchase order lines** and **417 goods receipts**, three formats each
+  (CSV technical headers, XLSX business labels, JSON snake_case)
+- most invoices match their PO and goods receipt cleanly and raise no exception; **17 documented
+  anchor invoices**, one per rule, are placed deliberately - listed in
+  [`data/sample/INVOICE_SCENARIO_MANIFEST.md`](data/sample/INVOICE_SCENARIO_MANIFEST.md) with a
+  fixed reference date for the future-date check
+- `expected_invoice_baseline.json`, the exact per-rule exception totals the current engine produces
+
 ---
 
 ## Project layout
@@ -294,6 +362,7 @@ app/
   modules/po_risk/ field definitions, rules, engine, service
   modules/spend/   field definitions, normaliser, metrics, analytics, filters, savings
   modules/supplier_reco/ field definitions, normaliser, eligibility, scoring, engine, service
+  modules/invoice_validator/ field definitions, normalisers, matching, rules, engine, service
 streamlit_app/     temporary UI - calls the API over HTTP
 data/              sample/, uploads/, exports/
 tests/             unit/, api/, integration/
@@ -310,14 +379,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (456 tests, ~100s)
-pytest tests/unit         # 270 - rules, metrics, savings, scoring, eligibility, mapping, parsing, security, AI
-pytest tests/api          # 112 - endpoints against a temporary database
-pytest tests/integration  # 74  - full journeys over all three sample datasets
+pytest                    # everything (506 tests, ~60s)
+pytest tests/unit         # 296 - rules, metrics, savings, scoring, eligibility, tolerances, mapping, parsing, security, AI
+pytest tests/api          # 129 - endpoints against a temporary database
+pytest tests/integration  # 81  - full journeys over all four sample datasets
 ```
 
-The integration suites read the anomaly, scenario and supplier manifests and assert that every
-documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario, supplier and invoice manifests and assert that
+every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

@@ -168,9 +168,14 @@ def index() -> dict[str, object]:
                 "status": "available",
                 "base_path": f"{settings.api_v1_prefix}/supplier-recommendations",
             },
+            {
+                "id": "invoice_validator",
+                "name": "Invoice Validator",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/invoices",
+            },
         ],
         "planned_modules": [
-            "invoice_validator",
             "supplier_risk_copilot", "contract_assistant", "inventory_predictor",
             "test_case_generator", "blueprint_generator", "interview_coach",
         ],

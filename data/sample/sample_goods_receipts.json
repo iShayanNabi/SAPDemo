@@ -1,0 +1,3757 @@
+{
+  "records": [
+    {
+      "gr_number": "5000000001",
+      "po_number": "4500000001",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000002",
+      "po_number": "4500000002",
+      "po_item": "00010",
+      "receipt_date": "2026-02-03",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000003",
+      "po_number": "4500000003",
+      "po_item": "00010",
+      "receipt_date": "2026-04-08",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000004",
+      "po_number": "4500000004",
+      "po_item": "00010",
+      "receipt_date": "2026-03-13",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000005",
+      "po_number": "4500000005",
+      "po_item": "00010",
+      "receipt_date": "2026-01-13",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000006",
+      "po_number": "4500000006",
+      "po_item": "00010",
+      "receipt_date": "2026-01-09",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000007",
+      "po_number": "4500000007",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 25.0,
+      "accepted_quantity": 25.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000008",
+      "po_number": "4500000008",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 31.0,
+      "accepted_quantity": 31.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000009",
+      "po_number": "4500000009",
+      "po_item": "00010",
+      "receipt_date": "2026-02-17",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000010",
+      "po_number": "4500000010",
+      "po_item": "00010",
+      "receipt_date": "2026-05-19",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000011",
+      "po_number": "4500000011",
+      "po_item": "00010",
+      "receipt_date": "2026-05-09",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000012",
+      "po_number": "4500000012",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000013",
+      "po_number": "4500000013",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 42.0,
+      "accepted_quantity": 42.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000014",
+      "po_number": "4500000014",
+      "po_item": "00010",
+      "receipt_date": "2026-03-05",
+      "received_quantity": 21.0,
+      "accepted_quantity": 21.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000015",
+      "po_number": "4500000015",
+      "po_item": "00010",
+      "receipt_date": "2026-04-27",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000016",
+      "po_number": "4500000016",
+      "po_item": "00010",
+      "receipt_date": "2026-05-13",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000017",
+      "po_number": "4500000017",
+      "po_item": "00010",
+      "receipt_date": "2026-04-05",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000018",
+      "po_number": "4500000018",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000019",
+      "po_number": "4500000019",
+      "po_item": "00010",
+      "receipt_date": "2026-03-01",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000020",
+      "po_number": "4500000020",
+      "po_item": "00010",
+      "receipt_date": "2026-02-08",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000021",
+      "po_number": "4500000021",
+      "po_item": "00010",
+      "receipt_date": "2026-05-20",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000022",
+      "po_number": "4500000022",
+      "po_item": "00010",
+      "receipt_date": "2026-03-12",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000023",
+      "po_number": "4500000023",
+      "po_item": "00010",
+      "receipt_date": "2026-02-05",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000024",
+      "po_number": "4500000024",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000025",
+      "po_number": "4500000025",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 48.0,
+      "accepted_quantity": 48.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000026",
+      "po_number": "4500000026",
+      "po_item": "00010",
+      "receipt_date": "2026-01-17",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000027",
+      "po_number": "4500000027",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000028",
+      "po_number": "4500000028",
+      "po_item": "00010",
+      "receipt_date": "2026-05-13",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000029",
+      "po_number": "4500000029",
+      "po_item": "00010",
+      "receipt_date": "2026-04-24",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000030",
+      "po_number": "4500000030",
+      "po_item": "00010",
+      "receipt_date": "2026-03-28",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000031",
+      "po_number": "4500000031",
+      "po_item": "00010",
+      "receipt_date": "2026-04-04",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000032",
+      "po_number": "4500000032",
+      "po_item": "00010",
+      "receipt_date": "2026-02-11",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000033",
+      "po_number": "4500000033",
+      "po_item": "00010",
+      "receipt_date": "2026-05-04",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000034",
+      "po_number": "4500000034",
+      "po_item": "00010",
+      "receipt_date": "2026-03-26",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000035",
+      "po_number": "4500000035",
+      "po_item": "00010",
+      "receipt_date": "2026-02-01",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000036",
+      "po_number": "4500000036",
+      "po_item": "00010",
+      "receipt_date": "2026-02-16",
+      "received_quantity": 14.0,
+      "accepted_quantity": 14.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000037",
+      "po_number": "4500000037",
+      "po_item": "00010",
+      "receipt_date": "2026-03-03",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000038",
+      "po_number": "4500000038",
+      "po_item": "00010",
+      "receipt_date": "2026-03-28",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000039",
+      "po_number": "4500000039",
+      "po_item": "00010",
+      "receipt_date": "2026-05-13",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000040",
+      "po_number": "4500000040",
+      "po_item": "00010",
+      "receipt_date": "2026-04-08",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000041",
+      "po_number": "4500000041",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000042",
+      "po_number": "4500000042",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000043",
+      "po_number": "4500000043",
+      "po_item": "00010",
+      "receipt_date": "2026-02-20",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000044",
+      "po_number": "4500000044",
+      "po_item": "00010",
+      "receipt_date": "2026-01-13",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000045",
+      "po_number": "4500000045",
+      "po_item": "00010",
+      "receipt_date": "2026-04-14",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000046",
+      "po_number": "4500000046",
+      "po_item": "00010",
+      "receipt_date": "2026-02-18",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000047",
+      "po_number": "4500000047",
+      "po_item": "00010",
+      "receipt_date": "2026-03-16",
+      "received_quantity": 19.0,
+      "accepted_quantity": 19.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000048",
+      "po_number": "4500000048",
+      "po_item": "00010",
+      "receipt_date": "2026-04-01",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000049",
+      "po_number": "4500000049",
+      "po_item": "00010",
+      "receipt_date": "2026-04-14",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000050",
+      "po_number": "4500000050",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000051",
+      "po_number": "4500000051",
+      "po_item": "00010",
+      "receipt_date": "2026-01-05",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000052",
+      "po_number": "4500000052",
+      "po_item": "00010",
+      "receipt_date": "2026-02-24",
+      "received_quantity": 48.0,
+      "accepted_quantity": 48.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000053",
+      "po_number": "4500000053",
+      "po_item": "00010",
+      "receipt_date": "2026-03-13",
+      "received_quantity": 14.0,
+      "accepted_quantity": 14.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000054",
+      "po_number": "4500000054",
+      "po_item": "00010",
+      "receipt_date": "2026-04-08",
+      "received_quantity": 44.0,
+      "accepted_quantity": 44.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000055",
+      "po_number": "4500000055",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000056",
+      "po_number": "4500000056",
+      "po_item": "00010",
+      "receipt_date": "2026-02-09",
+      "received_quantity": 3.0,
+      "accepted_quantity": 3.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000057",
+      "po_number": "4500000057",
+      "po_item": "00010",
+      "receipt_date": "2026-03-26",
+      "received_quantity": 6.0,
+      "accepted_quantity": 6.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000058",
+      "po_number": "4500000058",
+      "po_item": "00010",
+      "receipt_date": "2026-01-14",
+      "received_quantity": 59.0,
+      "accepted_quantity": 59.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000059",
+      "po_number": "4500000059",
+      "po_item": "00010",
+      "receipt_date": "2026-01-28",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000060",
+      "po_number": "4500000060",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000061",
+      "po_number": "4500000061",
+      "po_item": "00010",
+      "receipt_date": "2026-04-16",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000062",
+      "po_number": "4500000062",
+      "po_item": "00010",
+      "receipt_date": "2026-02-20",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000063",
+      "po_number": "4500000063",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000064",
+      "po_number": "4500000064",
+      "po_item": "00010",
+      "receipt_date": "2026-05-15",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000065",
+      "po_number": "4500000065",
+      "po_item": "00010",
+      "receipt_date": "2026-04-15",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000066",
+      "po_number": "4500000066",
+      "po_item": "00010",
+      "receipt_date": "2026-02-14",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000067",
+      "po_number": "4500000067",
+      "po_item": "00010",
+      "receipt_date": "2026-04-25",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000068",
+      "po_number": "4500000068",
+      "po_item": "00010",
+      "receipt_date": "2026-01-15",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000069",
+      "po_number": "4500000069",
+      "po_item": "00010",
+      "receipt_date": "2026-05-12",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000070",
+      "po_number": "4500000070",
+      "po_item": "00010",
+      "receipt_date": "2026-04-11",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000071",
+      "po_number": "4500000071",
+      "po_item": "00010",
+      "receipt_date": "2026-05-02",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000072",
+      "po_number": "4500000072",
+      "po_item": "00010",
+      "receipt_date": "2026-04-23",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000073",
+      "po_number": "4500000073",
+      "po_item": "00010",
+      "receipt_date": "2026-04-01",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000074",
+      "po_number": "4500000074",
+      "po_item": "00010",
+      "receipt_date": "2026-01-26",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000075",
+      "po_number": "4500000075",
+      "po_item": "00010",
+      "receipt_date": "2026-03-16",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000076",
+      "po_number": "4500000076",
+      "po_item": "00010",
+      "receipt_date": "2026-04-05",
+      "received_quantity": 52.0,
+      "accepted_quantity": 52.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000077",
+      "po_number": "4500000077",
+      "po_item": "00010",
+      "receipt_date": "2026-02-02",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000078",
+      "po_number": "4500000078",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000079",
+      "po_number": "4500000079",
+      "po_item": "00010",
+      "receipt_date": "2026-04-22",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000080",
+      "po_number": "4500000080",
+      "po_item": "00010",
+      "receipt_date": "2026-04-20",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000081",
+      "po_number": "4500000081",
+      "po_item": "00010",
+      "receipt_date": "2026-05-20",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000082",
+      "po_number": "4500000082",
+      "po_item": "00010",
+      "receipt_date": "2026-01-20",
+      "received_quantity": 38.0,
+      "accepted_quantity": 38.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000083",
+      "po_number": "4500000083",
+      "po_item": "00010",
+      "receipt_date": "2026-01-31",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000084",
+      "po_number": "4500000084",
+      "po_item": "00010",
+      "receipt_date": "2026-05-01",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000085",
+      "po_number": "4500000085",
+      "po_item": "00010",
+      "receipt_date": "2026-04-16",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000086",
+      "po_number": "4500000086",
+      "po_item": "00010",
+      "receipt_date": "2026-03-31",
+      "received_quantity": 31.0,
+      "accepted_quantity": 31.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000087",
+      "po_number": "4500000087",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000088",
+      "po_number": "4500000088",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000089",
+      "po_number": "4500000089",
+      "po_item": "00010",
+      "receipt_date": "2026-01-13",
+      "received_quantity": 20.0,
+      "accepted_quantity": 20.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000090",
+      "po_number": "4500000090",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000091",
+      "po_number": "4500000091",
+      "po_item": "00010",
+      "receipt_date": "2026-02-21",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000092",
+      "po_number": "4500000092",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000093",
+      "po_number": "4500000093",
+      "po_item": "00010",
+      "receipt_date": "2026-04-18",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000094",
+      "po_number": "4500000094",
+      "po_item": "00010",
+      "receipt_date": "2026-01-14",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000095",
+      "po_number": "4500000095",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000096",
+      "po_number": "4500000096",
+      "po_item": "00010",
+      "receipt_date": "2026-04-25",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000097",
+      "po_number": "4500000097",
+      "po_item": "00010",
+      "receipt_date": "2026-04-06",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000098",
+      "po_number": "4500000098",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 3.0,
+      "accepted_quantity": 3.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000099",
+      "po_number": "4500000099",
+      "po_item": "00010",
+      "receipt_date": "2026-01-13",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000100",
+      "po_number": "4500000100",
+      "po_item": "00010",
+      "receipt_date": "2026-01-14",
+      "received_quantity": 20.0,
+      "accepted_quantity": 20.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000101",
+      "po_number": "4500000101",
+      "po_item": "00010",
+      "receipt_date": "2026-02-07",
+      "received_quantity": 44.0,
+      "accepted_quantity": 44.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000102",
+      "po_number": "4500000102",
+      "po_item": "00010",
+      "receipt_date": "2026-05-04",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000103",
+      "po_number": "4500000103",
+      "po_item": "00010",
+      "receipt_date": "2026-02-08",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000104",
+      "po_number": "4500000104",
+      "po_item": "00010",
+      "receipt_date": "2026-04-10",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000105",
+      "po_number": "4500000105",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 14.0,
+      "accepted_quantity": 14.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000106",
+      "po_number": "4500000106",
+      "po_item": "00010",
+      "receipt_date": "2026-03-12",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000107",
+      "po_number": "4500000107",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000108",
+      "po_number": "4500000108",
+      "po_item": "00010",
+      "receipt_date": "2026-03-12",
+      "received_quantity": 42.0,
+      "accepted_quantity": 42.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000109",
+      "po_number": "4500000109",
+      "po_item": "00010",
+      "receipt_date": "2026-05-01",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000110",
+      "po_number": "4500000110",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 22.0,
+      "accepted_quantity": 22.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000111",
+      "po_number": "4500000111",
+      "po_item": "00010",
+      "receipt_date": "2026-04-03",
+      "received_quantity": 56.0,
+      "accepted_quantity": 56.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000112",
+      "po_number": "4500000112",
+      "po_item": "00010",
+      "receipt_date": "2026-04-20",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000113",
+      "po_number": "4500000113",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000114",
+      "po_number": "4500000114",
+      "po_item": "00010",
+      "receipt_date": "2026-05-08",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000115",
+      "po_number": "4500000115",
+      "po_item": "00010",
+      "receipt_date": "2026-05-13",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000116",
+      "po_number": "4500000116",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000117",
+      "po_number": "4500000117",
+      "po_item": "00010",
+      "receipt_date": "2026-04-20",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000118",
+      "po_number": "4500000118",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000119",
+      "po_number": "4500000119",
+      "po_item": "00010",
+      "receipt_date": "2026-01-22",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000120",
+      "po_number": "4500000120",
+      "po_item": "00010",
+      "receipt_date": "2026-03-23",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000121",
+      "po_number": "4500000121",
+      "po_item": "00010",
+      "receipt_date": "2026-01-31",
+      "received_quantity": 3.0,
+      "accepted_quantity": 3.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000122",
+      "po_number": "4500000122",
+      "po_item": "00010",
+      "receipt_date": "2026-05-11",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000123",
+      "po_number": "4500000123",
+      "po_item": "00010",
+      "receipt_date": "2026-05-11",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000124",
+      "po_number": "4500000124",
+      "po_item": "00010",
+      "receipt_date": "2026-04-01",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000125",
+      "po_number": "4500000125",
+      "po_item": "00010",
+      "receipt_date": "2026-02-24",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000126",
+      "po_number": "4500000126",
+      "po_item": "00010",
+      "receipt_date": "2026-05-01",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000127",
+      "po_number": "4500000127",
+      "po_item": "00010",
+      "receipt_date": "2026-03-02",
+      "received_quantity": 52.0,
+      "accepted_quantity": 52.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000128",
+      "po_number": "4500000128",
+      "po_item": "00010",
+      "receipt_date": "2026-04-12",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000129",
+      "po_number": "4500000129",
+      "po_item": "00010",
+      "receipt_date": "2026-03-05",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000130",
+      "po_number": "4500000130",
+      "po_item": "00010",
+      "receipt_date": "2026-04-09",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000131",
+      "po_number": "4500000131",
+      "po_item": "00010",
+      "receipt_date": "2026-05-22",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000132",
+      "po_number": "4500000132",
+      "po_item": "00010",
+      "receipt_date": "2026-04-26",
+      "received_quantity": 14.0,
+      "accepted_quantity": 14.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000133",
+      "po_number": "4500000133",
+      "po_item": "00010",
+      "receipt_date": "2026-05-04",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000134",
+      "po_number": "4500000134",
+      "po_item": "00010",
+      "receipt_date": "2026-04-26",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000135",
+      "po_number": "4500000135",
+      "po_item": "00010",
+      "receipt_date": "2026-03-13",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000136",
+      "po_number": "4500000136",
+      "po_item": "00010",
+      "receipt_date": "2026-04-17",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000137",
+      "po_number": "4500000137",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000138",
+      "po_number": "4500000138",
+      "po_item": "00010",
+      "receipt_date": "2026-04-11",
+      "received_quantity": 44.0,
+      "accepted_quantity": 44.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000139",
+      "po_number": "4500000139",
+      "po_item": "00010",
+      "receipt_date": "2026-01-22",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000140",
+      "po_number": "4500000140",
+      "po_item": "00010",
+      "receipt_date": "2026-03-24",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000141",
+      "po_number": "4500000141",
+      "po_item": "00010",
+      "receipt_date": "2026-02-05",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000142",
+      "po_number": "4500000142",
+      "po_item": "00010",
+      "receipt_date": "2026-01-29",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000143",
+      "po_number": "4500000143",
+      "po_item": "00010",
+      "receipt_date": "2026-02-20",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000144",
+      "po_number": "4500000144",
+      "po_item": "00010",
+      "receipt_date": "2026-04-25",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000145",
+      "po_number": "4500000145",
+      "po_item": "00010",
+      "receipt_date": "2026-04-08",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000146",
+      "po_number": "4500000146",
+      "po_item": "00010",
+      "receipt_date": "2026-04-23",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000147",
+      "po_number": "4500000147",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000148",
+      "po_number": "4500000148",
+      "po_item": "00010",
+      "receipt_date": "2026-03-05",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000149",
+      "po_number": "4500000149",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 42.0,
+      "accepted_quantity": 42.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000150",
+      "po_number": "4500000150",
+      "po_item": "00010",
+      "receipt_date": "2026-01-06",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000151",
+      "po_number": "4500000151",
+      "po_item": "00010",
+      "receipt_date": "2026-04-27",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000152",
+      "po_number": "4500000152",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 21.0,
+      "accepted_quantity": 21.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000153",
+      "po_number": "4500000153",
+      "po_item": "00010",
+      "receipt_date": "2026-02-07",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000154",
+      "po_number": "4500000154",
+      "po_item": "00010",
+      "receipt_date": "2026-03-19",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000155",
+      "po_number": "4500000155",
+      "po_item": "00010",
+      "receipt_date": "2026-02-04",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000156",
+      "po_number": "4500000156",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000157",
+      "po_number": "4500000157",
+      "po_item": "00010",
+      "receipt_date": "2026-03-25",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000158",
+      "po_number": "4500000158",
+      "po_item": "00010",
+      "receipt_date": "2026-01-19",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000159",
+      "po_number": "4500000159",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000160",
+      "po_number": "4500000160",
+      "po_item": "00010",
+      "receipt_date": "2026-01-15",
+      "received_quantity": 38.0,
+      "accepted_quantity": 38.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000161",
+      "po_number": "4500000161",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000162",
+      "po_number": "4500000162",
+      "po_item": "00010",
+      "receipt_date": "2026-03-18",
+      "received_quantity": 29.0,
+      "accepted_quantity": 29.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000163",
+      "po_number": "4500000163",
+      "po_item": "00010",
+      "receipt_date": "2026-04-28",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000164",
+      "po_number": "4500000164",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000165",
+      "po_number": "4500000165",
+      "po_item": "00010",
+      "receipt_date": "2026-04-27",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000166",
+      "po_number": "4500000166",
+      "po_item": "00010",
+      "receipt_date": "2026-05-09",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000167",
+      "po_number": "4500000167",
+      "po_item": "00010",
+      "receipt_date": "2026-03-04",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000168",
+      "po_number": "4500000168",
+      "po_item": "00010",
+      "receipt_date": "2026-03-04",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000169",
+      "po_number": "4500000169",
+      "po_item": "00010",
+      "receipt_date": "2026-04-06",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000170",
+      "po_number": "4500000170",
+      "po_item": "00010",
+      "receipt_date": "2026-01-11",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000171",
+      "po_number": "4500000171",
+      "po_item": "00010",
+      "receipt_date": "2026-03-19",
+      "received_quantity": 44.0,
+      "accepted_quantity": 44.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000172",
+      "po_number": "4500000172",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000173",
+      "po_number": "4500000173",
+      "po_item": "00010",
+      "receipt_date": "2026-04-28",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000174",
+      "po_number": "4500000174",
+      "po_item": "00010",
+      "receipt_date": "2026-05-18",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000175",
+      "po_number": "4500000175",
+      "po_item": "00010",
+      "receipt_date": "2026-04-29",
+      "received_quantity": 48.0,
+      "accepted_quantity": 48.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000176",
+      "po_number": "4500000176",
+      "po_item": "00010",
+      "receipt_date": "2026-05-07",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000177",
+      "po_number": "4500000177",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000178",
+      "po_number": "4500000178",
+      "po_item": "00010",
+      "receipt_date": "2026-01-08",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000179",
+      "po_number": "4500000179",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000180",
+      "po_number": "4500000180",
+      "po_item": "00010",
+      "receipt_date": "2026-03-17",
+      "received_quantity": 48.0,
+      "accepted_quantity": 48.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000181",
+      "po_number": "4500000181",
+      "po_item": "00010",
+      "receipt_date": "2026-05-16",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000182",
+      "po_number": "4500000182",
+      "po_item": "00010",
+      "receipt_date": "2026-04-23",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000183",
+      "po_number": "4500000183",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000184",
+      "po_number": "4500000184",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000185",
+      "po_number": "4500000185",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000186",
+      "po_number": "4500000186",
+      "po_item": "00010",
+      "receipt_date": "2026-02-03",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000187",
+      "po_number": "4500000187",
+      "po_item": "00010",
+      "receipt_date": "2026-05-08",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000188",
+      "po_number": "4500000188",
+      "po_item": "00010",
+      "receipt_date": "2026-02-24",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000189",
+      "po_number": "4500000189",
+      "po_item": "00010",
+      "receipt_date": "2026-03-05",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000190",
+      "po_number": "4500000190",
+      "po_item": "00010",
+      "receipt_date": "2026-04-17",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000191",
+      "po_number": "4500000191",
+      "po_item": "00010",
+      "receipt_date": "2026-02-24",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000192",
+      "po_number": "4500000192",
+      "po_item": "00010",
+      "receipt_date": "2026-04-10",
+      "received_quantity": 53.0,
+      "accepted_quantity": 53.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000193",
+      "po_number": "4500000193",
+      "po_item": "00010",
+      "receipt_date": "2026-01-19",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000194",
+      "po_number": "4500000194",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000195",
+      "po_number": "4500000195",
+      "po_item": "00010",
+      "receipt_date": "2026-03-15",
+      "received_quantity": 30.0,
+      "accepted_quantity": 30.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000196",
+      "po_number": "4500000196",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000197",
+      "po_number": "4500000197",
+      "po_item": "00010",
+      "receipt_date": "2026-04-09",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000198",
+      "po_number": "4500000198",
+      "po_item": "00010",
+      "receipt_date": "2026-03-11",
+      "received_quantity": 59.0,
+      "accepted_quantity": 59.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000199",
+      "po_number": "4500000199",
+      "po_item": "00010",
+      "receipt_date": "2026-03-20",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000200",
+      "po_number": "4500000200",
+      "po_item": "00010",
+      "receipt_date": "2026-04-13",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000201",
+      "po_number": "4500000201",
+      "po_item": "00010",
+      "receipt_date": "2026-02-02",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000202",
+      "po_number": "4500000202",
+      "po_item": "00010",
+      "receipt_date": "2026-04-30",
+      "received_quantity": 56.0,
+      "accepted_quantity": 56.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000203",
+      "po_number": "4500000203",
+      "po_item": "00010",
+      "receipt_date": "2026-05-01",
+      "received_quantity": 48.0,
+      "accepted_quantity": 48.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000204",
+      "po_number": "4500000204",
+      "po_item": "00010",
+      "receipt_date": "2026-02-18",
+      "received_quantity": 25.0,
+      "accepted_quantity": 25.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000205",
+      "po_number": "4500000205",
+      "po_item": "00010",
+      "receipt_date": "2026-03-06",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000206",
+      "po_number": "4500000206",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000207",
+      "po_number": "4500000207",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000208",
+      "po_number": "4500000208",
+      "po_item": "00010",
+      "receipt_date": "2026-02-14",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000209",
+      "po_number": "4500000209",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000210",
+      "po_number": "4500000210",
+      "po_item": "00010",
+      "receipt_date": "2026-01-25",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000211",
+      "po_number": "4500000211",
+      "po_item": "00010",
+      "receipt_date": "2026-02-01",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000212",
+      "po_number": "4500000212",
+      "po_item": "00010",
+      "receipt_date": "2026-01-23",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000213",
+      "po_number": "4500000213",
+      "po_item": "00010",
+      "receipt_date": "2026-01-14",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000214",
+      "po_number": "4500000214",
+      "po_item": "00010",
+      "receipt_date": "2026-04-13",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000215",
+      "po_number": "4500000215",
+      "po_item": "00010",
+      "receipt_date": "2026-01-31",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000216",
+      "po_number": "4500000216",
+      "po_item": "00010",
+      "receipt_date": "2026-02-02",
+      "received_quantity": 52.0,
+      "accepted_quantity": 52.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000217",
+      "po_number": "4500000217",
+      "po_item": "00010",
+      "receipt_date": "2026-03-05",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000218",
+      "po_number": "4500000218",
+      "po_item": "00010",
+      "receipt_date": "2026-02-23",
+      "received_quantity": 35.0,
+      "accepted_quantity": 35.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000219",
+      "po_number": "4500000219",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000220",
+      "po_number": "4500000220",
+      "po_item": "00010",
+      "receipt_date": "2026-02-11",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000221",
+      "po_number": "4500000221",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000222",
+      "po_number": "4500000222",
+      "po_item": "00010",
+      "receipt_date": "2026-04-04",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000223",
+      "po_number": "4500000223",
+      "po_item": "00010",
+      "receipt_date": "2026-03-01",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000224",
+      "po_number": "4500000224",
+      "po_item": "00010",
+      "receipt_date": "2026-01-23",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000225",
+      "po_number": "4500000225",
+      "po_item": "00010",
+      "receipt_date": "2026-02-08",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000226",
+      "po_number": "4500000226",
+      "po_item": "00010",
+      "receipt_date": "2026-03-19",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000227",
+      "po_number": "4500000227",
+      "po_item": "00010",
+      "receipt_date": "2026-02-10",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000228",
+      "po_number": "4500000228",
+      "po_item": "00010",
+      "receipt_date": "2026-02-19",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000229",
+      "po_number": "4500000229",
+      "po_item": "00010",
+      "receipt_date": "2026-03-20",
+      "received_quantity": 31.0,
+      "accepted_quantity": 31.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000230",
+      "po_number": "4500000230",
+      "po_item": "00010",
+      "receipt_date": "2026-01-25",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000231",
+      "po_number": "4500000231",
+      "po_item": "00010",
+      "receipt_date": "2026-01-29",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000232",
+      "po_number": "4500000232",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000233",
+      "po_number": "4500000233",
+      "po_item": "00010",
+      "receipt_date": "2026-02-17",
+      "received_quantity": 30.0,
+      "accepted_quantity": 30.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000234",
+      "po_number": "4500000234",
+      "po_item": "00010",
+      "receipt_date": "2026-04-12",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000235",
+      "po_number": "4500000235",
+      "po_item": "00010",
+      "receipt_date": "2026-02-28",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000236",
+      "po_number": "4500000236",
+      "po_item": "00010",
+      "receipt_date": "2026-05-15",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000237",
+      "po_number": "4500000237",
+      "po_item": "00010",
+      "receipt_date": "2026-01-12",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000238",
+      "po_number": "4500000238",
+      "po_item": "00010",
+      "receipt_date": "2026-05-17",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000239",
+      "po_number": "4500000239",
+      "po_item": "00010",
+      "receipt_date": "2026-04-16",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000240",
+      "po_number": "4500000240",
+      "po_item": "00010",
+      "receipt_date": "2026-02-02",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000241",
+      "po_number": "4500000241",
+      "po_item": "00010",
+      "receipt_date": "2026-02-27",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000242",
+      "po_number": "4500000242",
+      "po_item": "00010",
+      "receipt_date": "2026-01-09",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000243",
+      "po_number": "4500000243",
+      "po_item": "00010",
+      "receipt_date": "2026-05-12",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000244",
+      "po_number": "4500000244",
+      "po_item": "00010",
+      "receipt_date": "2026-03-14",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000245",
+      "po_number": "4500000245",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 21.0,
+      "accepted_quantity": 21.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000246",
+      "po_number": "4500000246",
+      "po_item": "00010",
+      "receipt_date": "2026-03-07",
+      "received_quantity": 30.0,
+      "accepted_quantity": 30.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000247",
+      "po_number": "4500000247",
+      "po_item": "00010",
+      "receipt_date": "2026-04-03",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000248",
+      "po_number": "4500000248",
+      "po_item": "00010",
+      "receipt_date": "2026-02-21",
+      "received_quantity": 29.0,
+      "accepted_quantity": 29.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000249",
+      "po_number": "4500000249",
+      "po_item": "00010",
+      "receipt_date": "2026-01-19",
+      "received_quantity": 24.0,
+      "accepted_quantity": 24.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000250",
+      "po_number": "4500000250",
+      "po_item": "00010",
+      "receipt_date": "2026-02-07",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000251",
+      "po_number": "4500000251",
+      "po_item": "00010",
+      "receipt_date": "2026-05-01",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000252",
+      "po_number": "4500000252",
+      "po_item": "00010",
+      "receipt_date": "2026-04-01",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000253",
+      "po_number": "4500000253",
+      "po_item": "00010",
+      "receipt_date": "2026-05-06",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000254",
+      "po_number": "4500000254",
+      "po_item": "00010",
+      "receipt_date": "2026-03-14",
+      "received_quantity": 20.0,
+      "accepted_quantity": 20.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000255",
+      "po_number": "4500000255",
+      "po_item": "00010",
+      "receipt_date": "2026-02-18",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000256",
+      "po_number": "4500000256",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000257",
+      "po_number": "4500000257",
+      "po_item": "00010",
+      "receipt_date": "2026-04-10",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000258",
+      "po_number": "4500000258",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000259",
+      "po_number": "4500000259",
+      "po_item": "00010",
+      "receipt_date": "2026-04-14",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000260",
+      "po_number": "4500000260",
+      "po_item": "00010",
+      "receipt_date": "2026-01-30",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000261",
+      "po_number": "4500000261",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000262",
+      "po_number": "4500000262",
+      "po_item": "00010",
+      "receipt_date": "2026-02-20",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000263",
+      "po_number": "4500000263",
+      "po_item": "00010",
+      "receipt_date": "2026-02-05",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000264",
+      "po_number": "4500000264",
+      "po_item": "00010",
+      "receipt_date": "2026-01-28",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000265",
+      "po_number": "4500000265",
+      "po_item": "00010",
+      "receipt_date": "2026-05-20",
+      "received_quantity": 38.0,
+      "accepted_quantity": 38.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000266",
+      "po_number": "4500000266",
+      "po_item": "00010",
+      "receipt_date": "2026-04-17",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000267",
+      "po_number": "4500000267",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000268",
+      "po_number": "4500000268",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000269",
+      "po_number": "4500000269",
+      "po_item": "00010",
+      "receipt_date": "2026-03-07",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000270",
+      "po_number": "4500000270",
+      "po_item": "00010",
+      "receipt_date": "2026-02-19",
+      "received_quantity": 3.0,
+      "accepted_quantity": 3.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000271",
+      "po_number": "4500000271",
+      "po_item": "00010",
+      "receipt_date": "2026-03-14",
+      "received_quantity": 31.0,
+      "accepted_quantity": 31.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000272",
+      "po_number": "4500000272",
+      "po_item": "00010",
+      "receipt_date": "2026-04-09",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000273",
+      "po_number": "4500000273",
+      "po_item": "00010",
+      "receipt_date": "2026-03-19",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000274",
+      "po_number": "4500000274",
+      "po_item": "00010",
+      "receipt_date": "2026-01-23",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000275",
+      "po_number": "4500000275",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000276",
+      "po_number": "4500000276",
+      "po_item": "00010",
+      "receipt_date": "2026-05-02",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000277",
+      "po_number": "4500000277",
+      "po_item": "00010",
+      "receipt_date": "2026-03-13",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000278",
+      "po_number": "4500000278",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000279",
+      "po_number": "4500000279",
+      "po_item": "00010",
+      "receipt_date": "2026-03-08",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000280",
+      "po_number": "4500000280",
+      "po_item": "00010",
+      "receipt_date": "2026-04-11",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000281",
+      "po_number": "4500000281",
+      "po_item": "00010",
+      "receipt_date": "2026-01-30",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000282",
+      "po_number": "4500000282",
+      "po_item": "00010",
+      "receipt_date": "2026-01-20",
+      "received_quantity": 2.0,
+      "accepted_quantity": 2.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000283",
+      "po_number": "4500000283",
+      "po_item": "00010",
+      "receipt_date": "2026-01-09",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000284",
+      "po_number": "4500000284",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000285",
+      "po_number": "4500000285",
+      "po_item": "00010",
+      "receipt_date": "2026-03-01",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000286",
+      "po_number": "4500000286",
+      "po_item": "00010",
+      "receipt_date": "2026-03-26",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000287",
+      "po_number": "4500000287",
+      "po_item": "00010",
+      "receipt_date": "2026-04-30",
+      "received_quantity": 38.0,
+      "accepted_quantity": 38.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000288",
+      "po_number": "4500000288",
+      "po_item": "00010",
+      "receipt_date": "2026-04-10",
+      "received_quantity": 47.0,
+      "accepted_quantity": 47.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000289",
+      "po_number": "4500000289",
+      "po_item": "00010",
+      "receipt_date": "2026-03-03",
+      "received_quantity": 25.0,
+      "accepted_quantity": 25.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000290",
+      "po_number": "4500000290",
+      "po_item": "00010",
+      "receipt_date": "2026-01-30",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000291",
+      "po_number": "4500000291",
+      "po_item": "00010",
+      "receipt_date": "2026-04-14",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000292",
+      "po_number": "4500000292",
+      "po_item": "00010",
+      "receipt_date": "2026-03-12",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000293",
+      "po_number": "4500000293",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000294",
+      "po_number": "4500000294",
+      "po_item": "00010",
+      "receipt_date": "2026-01-31",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000295",
+      "po_number": "4500000295",
+      "po_item": "00010",
+      "receipt_date": "2026-03-03",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000296",
+      "po_number": "4500000296",
+      "po_item": "00010",
+      "receipt_date": "2026-04-06",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000297",
+      "po_number": "4500000297",
+      "po_item": "00010",
+      "receipt_date": "2026-05-04",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000298",
+      "po_number": "4500000298",
+      "po_item": "00010",
+      "receipt_date": "2026-02-08",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000299",
+      "po_number": "4500000299",
+      "po_item": "00010",
+      "receipt_date": "2026-03-29",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000300",
+      "po_number": "4500000300",
+      "po_item": "00010",
+      "receipt_date": "2026-02-25",
+      "received_quantity": 6.0,
+      "accepted_quantity": 6.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000301",
+      "po_number": "4500000301",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000302",
+      "po_number": "4500000302",
+      "po_item": "00010",
+      "receipt_date": "2026-01-17",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000303",
+      "po_number": "4500000303",
+      "po_item": "00010",
+      "receipt_date": "2026-04-26",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000304",
+      "po_number": "4500000304",
+      "po_item": "00010",
+      "receipt_date": "2026-02-01",
+      "received_quantity": 25.0,
+      "accepted_quantity": 25.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000305",
+      "po_number": "4500000305",
+      "po_item": "00010",
+      "receipt_date": "2026-01-08",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000306",
+      "po_number": "4500000306",
+      "po_item": "00010",
+      "receipt_date": "2026-02-13",
+      "received_quantity": 45.0,
+      "accepted_quantity": 45.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000307",
+      "po_number": "4500000307",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 29.0,
+      "accepted_quantity": 29.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000308",
+      "po_number": "4500000308",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000309",
+      "po_number": "4500000309",
+      "po_item": "00010",
+      "receipt_date": "2026-03-29",
+      "received_quantity": 6.0,
+      "accepted_quantity": 6.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000310",
+      "po_number": "4500000310",
+      "po_item": "00010",
+      "receipt_date": "2026-05-22",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000311",
+      "po_number": "4500000311",
+      "po_item": "00010",
+      "receipt_date": "2026-01-25",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000312",
+      "po_number": "4500000312",
+      "po_item": "00010",
+      "receipt_date": "2026-01-14",
+      "received_quantity": 42.0,
+      "accepted_quantity": 42.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000313",
+      "po_number": "4500000313",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000314",
+      "po_number": "4500000314",
+      "po_item": "00010",
+      "receipt_date": "2026-01-20",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000315",
+      "po_number": "4500000315",
+      "po_item": "00010",
+      "receipt_date": "2026-01-30",
+      "received_quantity": 46.0,
+      "accepted_quantity": 46.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000316",
+      "po_number": "4500000316",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000317",
+      "po_number": "4500000317",
+      "po_item": "00010",
+      "receipt_date": "2026-04-15",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000318",
+      "po_number": "4500000318",
+      "po_item": "00010",
+      "receipt_date": "2026-01-25",
+      "received_quantity": 26.0,
+      "accepted_quantity": 26.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000319",
+      "po_number": "4500000319",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000320",
+      "po_number": "4500000320",
+      "po_item": "00010",
+      "receipt_date": "2026-02-16",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000321",
+      "po_number": "4500000321",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 22.0,
+      "accepted_quantity": 22.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000322",
+      "po_number": "4500000322",
+      "po_item": "00010",
+      "receipt_date": "2026-02-24",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000323",
+      "po_number": "4500000323",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000324",
+      "po_number": "4500000324",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000325",
+      "po_number": "4500000325",
+      "po_item": "00010",
+      "receipt_date": "2026-04-18",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000326",
+      "po_number": "4500000326",
+      "po_item": "00010",
+      "receipt_date": "2026-04-05",
+      "received_quantity": 53.0,
+      "accepted_quantity": 53.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000327",
+      "po_number": "4500000327",
+      "po_item": "00010",
+      "receipt_date": "2026-01-22",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000328",
+      "po_number": "4500000328",
+      "po_item": "00010",
+      "receipt_date": "2026-03-30",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000329",
+      "po_number": "4500000329",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000330",
+      "po_number": "4500000330",
+      "po_item": "00010",
+      "receipt_date": "2026-03-13",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000331",
+      "po_number": "4500000331",
+      "po_item": "00010",
+      "receipt_date": "2026-04-23",
+      "received_quantity": 25.0,
+      "accepted_quantity": 25.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000332",
+      "po_number": "4500000332",
+      "po_item": "00010",
+      "receipt_date": "2026-03-02",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000333",
+      "po_number": "4500000333",
+      "po_item": "00010",
+      "receipt_date": "2026-01-07",
+      "received_quantity": 27.0,
+      "accepted_quantity": 27.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000334",
+      "po_number": "4500000334",
+      "po_item": "00010",
+      "receipt_date": "2026-01-07",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000335",
+      "po_number": "4500000335",
+      "po_item": "00010",
+      "receipt_date": "2026-02-03",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000336",
+      "po_number": "4500000336",
+      "po_item": "00010",
+      "receipt_date": "2026-03-22",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000337",
+      "po_number": "4500000337",
+      "po_item": "00010",
+      "receipt_date": "2026-04-23",
+      "received_quantity": 21.0,
+      "accepted_quantity": 21.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000338",
+      "po_number": "4500000338",
+      "po_item": "00010",
+      "receipt_date": "2026-05-14",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000339",
+      "po_number": "4500000339",
+      "po_item": "00010",
+      "receipt_date": "2026-02-11",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000340",
+      "po_number": "4500000340",
+      "po_item": "00010",
+      "receipt_date": "2026-05-03",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000341",
+      "po_number": "4500000341",
+      "po_item": "00010",
+      "receipt_date": "2026-05-09",
+      "received_quantity": 16.0,
+      "accepted_quantity": 16.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000342",
+      "po_number": "4500000342",
+      "po_item": "00010",
+      "receipt_date": "2026-03-03",
+      "received_quantity": 8.0,
+      "accepted_quantity": 8.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000343",
+      "po_number": "4500000343",
+      "po_item": "00010",
+      "receipt_date": "2026-05-16",
+      "received_quantity": 6.0,
+      "accepted_quantity": 6.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000344",
+      "po_number": "4500000344",
+      "po_item": "00010",
+      "receipt_date": "2026-01-08",
+      "received_quantity": 58.0,
+      "accepted_quantity": 58.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000345",
+      "po_number": "4500000345",
+      "po_item": "00010",
+      "receipt_date": "2026-02-23",
+      "received_quantity": 33.0,
+      "accepted_quantity": 33.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000346",
+      "po_number": "4500000346",
+      "po_item": "00010",
+      "receipt_date": "2026-04-11",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000347",
+      "po_number": "4500000347",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 20.0,
+      "accepted_quantity": 20.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000348",
+      "po_number": "4500000348",
+      "po_item": "00010",
+      "receipt_date": "2026-05-08",
+      "received_quantity": 21.0,
+      "accepted_quantity": 21.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000349",
+      "po_number": "4500000349",
+      "po_item": "00010",
+      "receipt_date": "2026-02-07",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000350",
+      "po_number": "4500000350",
+      "po_item": "00010",
+      "receipt_date": "2026-01-16",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000351",
+      "po_number": "4500000351",
+      "po_item": "00010",
+      "receipt_date": "2026-03-31",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000352",
+      "po_number": "4500000352",
+      "po_item": "00010",
+      "receipt_date": "2026-03-29",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000353",
+      "po_number": "4500000353",
+      "po_item": "00010",
+      "receipt_date": "2026-02-03",
+      "received_quantity": 22.0,
+      "accepted_quantity": 22.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000354",
+      "po_number": "4500000354",
+      "po_item": "00010",
+      "receipt_date": "2026-03-04",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000355",
+      "po_number": "4500000355",
+      "po_item": "00010",
+      "receipt_date": "2026-05-02",
+      "received_quantity": 28.0,
+      "accepted_quantity": 28.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000356",
+      "po_number": "4500000356",
+      "po_item": "00010",
+      "receipt_date": "2026-03-18",
+      "received_quantity": 17.0,
+      "accepted_quantity": 17.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000357",
+      "po_number": "4500000357",
+      "po_item": "00010",
+      "receipt_date": "2026-04-07",
+      "received_quantity": 31.0,
+      "accepted_quantity": 31.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000358",
+      "po_number": "4500000358",
+      "po_item": "00010",
+      "receipt_date": "2026-01-22",
+      "received_quantity": 13.0,
+      "accepted_quantity": 13.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000359",
+      "po_number": "4500000359",
+      "po_item": "00010",
+      "receipt_date": "2026-04-20",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000360",
+      "po_number": "4500000360",
+      "po_item": "00010",
+      "receipt_date": "2026-05-21",
+      "received_quantity": 43.0,
+      "accepted_quantity": 43.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000361",
+      "po_number": "4500000361",
+      "po_item": "00010",
+      "receipt_date": "2026-02-26",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000362",
+      "po_number": "4500000362",
+      "po_item": "00010",
+      "receipt_date": "2026-03-26",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000363",
+      "po_number": "4500000363",
+      "po_item": "00010",
+      "receipt_date": "2026-04-15",
+      "received_quantity": 4.0,
+      "accepted_quantity": 4.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000364",
+      "po_number": "4500000364",
+      "po_item": "00010",
+      "receipt_date": "2026-05-16",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000365",
+      "po_number": "4500000365",
+      "po_item": "00010",
+      "receipt_date": "2026-02-12",
+      "received_quantity": 49.0,
+      "accepted_quantity": 49.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000366",
+      "po_number": "4500000366",
+      "po_item": "00010",
+      "receipt_date": "2026-01-07",
+      "received_quantity": 55.0,
+      "accepted_quantity": 55.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000367",
+      "po_number": "4500000367",
+      "po_item": "00010",
+      "receipt_date": "2026-04-22",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000368",
+      "po_number": "4500000368",
+      "po_item": "00010",
+      "receipt_date": "2026-02-23",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000369",
+      "po_number": "4500000369",
+      "po_item": "00010",
+      "receipt_date": "2026-04-20",
+      "received_quantity": 14.0,
+      "accepted_quantity": 14.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000370",
+      "po_number": "4500000370",
+      "po_item": "00010",
+      "receipt_date": "2026-05-05",
+      "received_quantity": 56.0,
+      "accepted_quantity": 56.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000371",
+      "po_number": "4500000371",
+      "po_item": "00010",
+      "receipt_date": "2026-03-07",
+      "received_quantity": 23.0,
+      "accepted_quantity": 23.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000372",
+      "po_number": "4500000372",
+      "po_item": "00010",
+      "receipt_date": "2026-03-04",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000373",
+      "po_number": "4500000373",
+      "po_item": "00010",
+      "receipt_date": "2026-01-07",
+      "received_quantity": 36.0,
+      "accepted_quantity": 36.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000374",
+      "po_number": "4500000374",
+      "po_item": "00010",
+      "receipt_date": "2026-04-13",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000375",
+      "po_number": "4500000375",
+      "po_item": "00010",
+      "receipt_date": "2026-03-21",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000376",
+      "po_number": "4500000376",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 11.0,
+      "accepted_quantity": 11.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000377",
+      "po_number": "4500000377",
+      "po_item": "00010",
+      "receipt_date": "2026-02-22",
+      "received_quantity": 1.0,
+      "accepted_quantity": 1.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000378",
+      "po_number": "4500000378",
+      "po_item": "00010",
+      "receipt_date": "2026-02-16",
+      "received_quantity": 37.0,
+      "accepted_quantity": 37.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000379",
+      "po_number": "4500000379",
+      "po_item": "00010",
+      "receipt_date": "2026-01-21",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000380",
+      "po_number": "4500000380",
+      "po_item": "00010",
+      "receipt_date": "2026-05-12",
+      "received_quantity": 32.0,
+      "accepted_quantity": 32.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000381",
+      "po_number": "4500000381",
+      "po_item": "00010",
+      "receipt_date": "2026-02-05",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000382",
+      "po_number": "4500000382",
+      "po_item": "00010",
+      "receipt_date": "2026-03-30",
+      "received_quantity": 41.0,
+      "accepted_quantity": 41.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000383",
+      "po_number": "4500000383",
+      "po_item": "00010",
+      "receipt_date": "2026-04-30",
+      "received_quantity": 51.0,
+      "accepted_quantity": 51.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000384",
+      "po_number": "4500000384",
+      "po_item": "00010",
+      "receipt_date": "2026-04-17",
+      "received_quantity": 34.0,
+      "accepted_quantity": 34.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000385",
+      "po_number": "4500000385",
+      "po_item": "00010",
+      "receipt_date": "2026-03-11",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000386",
+      "po_number": "4500000386",
+      "po_item": "00010",
+      "receipt_date": "2026-03-14",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000387",
+      "po_number": "4500000387",
+      "po_item": "00010",
+      "receipt_date": "2026-04-12",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000388",
+      "po_number": "4500000388",
+      "po_item": "00010",
+      "receipt_date": "2026-05-08",
+      "received_quantity": 54.0,
+      "accepted_quantity": 54.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000389",
+      "po_number": "4500000389",
+      "po_item": "00010",
+      "receipt_date": "2026-02-06",
+      "received_quantity": 40.0,
+      "accepted_quantity": 40.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000390",
+      "po_number": "4500000390",
+      "po_item": "00010",
+      "receipt_date": "2026-04-19",
+      "received_quantity": 29.0,
+      "accepted_quantity": 29.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000391",
+      "po_number": "4500000391",
+      "po_item": "00010",
+      "receipt_date": "2026-02-02",
+      "received_quantity": 9.0,
+      "accepted_quantity": 9.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000392",
+      "po_number": "4500000392",
+      "po_item": "00010",
+      "receipt_date": "2026-03-23",
+      "received_quantity": 6.0,
+      "accepted_quantity": 6.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000393",
+      "po_number": "4500000393",
+      "po_item": "00010",
+      "receipt_date": "2026-03-27",
+      "received_quantity": 50.0,
+      "accepted_quantity": 50.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000394",
+      "po_number": "4500000394",
+      "po_item": "00010",
+      "receipt_date": "2026-04-22",
+      "received_quantity": 18.0,
+      "accepted_quantity": 18.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000395",
+      "po_number": "4500000395",
+      "po_item": "00010",
+      "receipt_date": "2026-04-01",
+      "received_quantity": 39.0,
+      "accepted_quantity": 39.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000396",
+      "po_number": "4500000396",
+      "po_item": "00010",
+      "receipt_date": "2026-05-08",
+      "received_quantity": 12.0,
+      "accepted_quantity": 12.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000397",
+      "po_number": "4500000397",
+      "po_item": "00010",
+      "receipt_date": "2026-05-25",
+      "received_quantity": 60.0,
+      "accepted_quantity": 60.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000398",
+      "po_number": "4500000398",
+      "po_item": "00010",
+      "receipt_date": "2026-04-21",
+      "received_quantity": 15.0,
+      "accepted_quantity": 15.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000399",
+      "po_number": "4500000399",
+      "po_item": "00010",
+      "receipt_date": "2026-01-18",
+      "received_quantity": 57.0,
+      "accepted_quantity": 57.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5000000400",
+      "po_number": "4500000400",
+      "po_item": "00010",
+      "receipt_date": "2026-03-03",
+      "received_quantity": 52.0,
+      "accepted_quantity": 52.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000401",
+      "po_number": "4590000401",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000402",
+      "po_number": "4590000402",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000403",
+      "po_number": "4590000403",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 5.0,
+      "accepted_quantity": 5.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000404",
+      "po_number": "4590000404",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 7.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000405",
+      "po_number": "4590000406",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000406",
+      "po_number": "4590000407",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000407",
+      "po_number": "4590000408",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000408",
+      "po_number": "4590000409",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000409",
+      "po_number": "4590000410",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000410",
+      "po_number": "4590000411",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000411",
+      "po_number": "4590000412",
+      "po_item": "00010",
+      "receipt_date": "2026-01-22",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000412",
+      "po_number": "4590000413",
+      "po_item": "00010",
+      "receipt_date": "2026-01-23",
+      "received_quantity": 10.0,
+      "accepted_quantity": 7.0,
+      "rejected_quantity": 3.0
+    },
+    {
+      "gr_number": "5090000413",
+      "po_number": "4590000414",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000414",
+      "po_number": "4590000415",
+      "po_item": "00010",
+      "receipt_date": "2026-03-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000415",
+      "po_number": "4590000416",
+      "po_item": "00010",
+      "receipt_date": "2026-03-25",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000416",
+      "po_number": "4590000417",
+      "po_item": "00010",
+      "receipt_date": "2026-05-10",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    },
+    {
+      "gr_number": "5090000417",
+      "po_number": "4590000418",
+      "po_item": "00010",
+      "receipt_date": "2026-01-24",
+      "received_quantity": 10.0,
+      "accepted_quantity": 10.0,
+      "rejected_quantity": 0.0
+    }
+  ]
+}

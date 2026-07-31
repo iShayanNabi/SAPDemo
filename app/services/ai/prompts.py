@@ -257,3 +257,58 @@ def build_supplier_reco_summary_request(
         temperature=0.2,
         expects_json=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# Invoice Validator
+# ---------------------------------------------------------------------------
+
+#: Bump when the invoice validator wording changes.
+INVOICE_VALIDATOR_PROMPT_VERSION = "invoice_validator_narrative_v1.0.0"
+
+INVOICE_VALIDATOR_SUMMARY_SYSTEM = (
+    "You are an accounts-payable analyst writing for an AP manager who is not a technical user.\n"
+    "You are given the results of a DETERMINISTIC rule engine that has already three-way matched "
+    "invoices against purchase orders and goods receipts and decided which invoices are exceptions. "
+    "Your job is to explain those exceptions in clear business language.\n\n"
+    "Hard rules:\n"
+    "1. Never invent exceptions, figures, suppliers or invoice numbers. Use only the data block.\n"
+    "2. Never re-judge an exception or change its severity. The engine's decision is final.\n"
+    "3. Difference amounts are indicative and describe the uploaded files only.\n"
+    "4. Do not claim the data comes from a live SAP system or that anything was validated in SAP.\n"
+    "5. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"summary": "3-5 sentences", "key_findings": ["..."], "recommended_actions": ["..."]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def build_invoice_validation_summary_request(
+    validation_summary: dict[str, Any],
+    top_rules: list[dict[str, Any]],
+    top_suppliers: list[dict[str, Any]],
+    sample_exceptions: list[dict[str, Any]],
+    *,
+    max_tokens: int = 1200,
+) -> AIRequest:
+    """Build the request for the invoice validation narrative."""
+    payload = {
+        "task": "invoice_validation",
+        "validation_summary": validation_summary,
+        "top_rules": top_rules[:8],
+        "top_suppliers": top_suppliers[:5],
+        "sample_exceptions": sample_exceptions[:15],
+    }
+    user_prompt = (
+        "Write a summary of this invoice validation run for the AP manager.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions."
+    )
+    return AIRequest(
+        system_prompt=INVOICE_VALIDATOR_SUMMARY_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=INVOICE_VALIDATOR_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        expects_json=True,
+    )
