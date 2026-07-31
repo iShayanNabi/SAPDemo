@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 4 of 10 |
-| Tests | 506 passing (296 unit, 129 API, 81 integration) |
-| Python source | ~26,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 5 of 10 |
+| Tests | 664 passing (381 unit, 170 API, 113 integration) |
+| Python source | ~31,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -310,6 +310,87 @@ migrations/versions/aa9af98480ef_invoice_validator_schema.py
   rules, sample download.
 - The sample run reproduces `expected_invoice_baseline.json` exactly through HTTP, only the 17
   anchor invoices are flagged, and repeated runs are identical.
+
+---
+
+## Module 5 - Supplier Risk Copilot - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| Reuse supplier, PO, spend, invoice, contract and performance data | Done - inherits module 3's 19 supplier fields via `FieldRegistry.extend()`, appends 25 risk facts (44 total) |
+| Eleven risk figures (ten categories + overall) | Done - delivery, quality, financial, spend concentration, contract, invoice, compliance, ESG, geographic, operational, overall |
+| Transparent configurable scoring | Done - every metric returns raw value, weight, normalised score, contribution and a plain-language basis |
+| Thresholds in configuration, not code | Done - `config/supplier_risk_rules.json`, proven by four tests |
+| Supplier profile with all required elements | Done - details, spend, PO count, contracts, expiry, OTD, late deliveries, quality, defects, invoice exceptions, financial/ESG/geographic/compliance/overall scores, trend, actions |
+| Risk trend | Done - severity-weighted event volume across two equal windows; `unknown` when the records cannot support a direction |
+| Recommended actions | Done - rule-based, triggered by category band, capped and prioritised |
+| Copilot answering the six documented questions | Done - deterministic intent router, no language model in the answer path |
+| Responses reference the internal records used | Done - every answer carries `citations[]` pointing at profile fields and event records |
+| Clearly states when information is unavailable | Done - six distinct `unavailable_reason` values, never a fabricated answer |
+| Four required API routes | Done, plus upload, datasets, assessments, scoring, fields, sample, sample/info, ai-status (13 total) |
+| No claim of live financial/ESG/news retrieval | Done - stated in the config disclaimer, the AI system prompt, the API and the UI |
+| Streamlit page with all required elements | Done - selector, score, breakdown, trend, metrics, contracts, delivery/invoice issues, actions, chat |
+| Tests: calculations, weighting, missing data, categorisation, citations, unavailable info, endpoints | Done - 158 new tests |
+
+### Files created
+
+```text
+app/modules/supplier_risk/
+  field_definitions.py    inherits module 3's registry, appends 25 risk fields + an events registry
+  thresholds.py           Pydantic-validated config: weights, anchors, score maps, bands, trend
+  normalizer.py           two normalisers (profiles, events) -> canonical records
+  scoring.py              metric normalisation, category blending, category isolation
+  engine.py               assessment, trend, actions, alternatives
+  copilot.py              intent detection, supplier resolution, answers, citations
+  ai_narrative.py         optional narrative layer
+  service.py              orchestration and persistence
+  config/supplier_risk_rules.json
+
+app/api/v1/supplier_risk.py                  one router, 13 routes
+app/models/supplier_risk.py                  4 tables
+app/schemas/supplier_risk.py                 request/response contract
+streamlit_app/pages/5_Supplier_Risk_Copilot.py
+scripts/generate_supplier_risk_sample_data.py
+tests/unit/test_supplier_risk_scoring.py, tests/unit/test_supplier_risk_copilot.py
+tests/api/test_supplier_risk_api.py
+tests/integration/test_supplier_risk_sample_data.py
+migrations/versions/b7e41c9d5a02_supplier_risk_copilot_schema.py
+data/sample/sample_supplier_risk_profiles.{csv,xlsx,json}
+data/sample/sample_supplier_risk_events.{csv,xlsx,json}
+data/sample/SUPPLIER_RISK_SCENARIO_MANIFEST.md, supplier_risk_scenario_manifest.json
+data/sample/expected_supplier_risk_baseline.json
+```
+
+### Files modified
+
+`app/api/v1/router.py`, `app/models/__init__.py`, `app/services/ai/prompts.py`,
+`app/services/ai/mock_provider.py`, `app/services/tabular/parsing.py`, `streamlit_app/Home.py`,
+`streamlit_app/components/api_client.py`, `scripts/verify_setup.py`, `tests/conftest.py`,
+`tests/factories.py`, `tests/unit/test_pipeline.py`, and the documentation set.
+
+### A shared-service bug this module surfaced
+
+`coerce_types` widened an INTEGER column to float64 as soon as one cell was blank, so the integer
+cast received `NaN` and raised `ValueError: cannot convert float NaN to integer`. It affected **every
+module**, but modules 1-4 ship no blank integer cells, so nothing had ever hit it. Module 5's
+missing-data sample supplier is exactly that file. Fixed in `app/services/tabular/parsing.py` by
+rebuilding the column as an object series that preserves real ints and real `None`s, with a
+regression test in `tests/unit/test_pipeline.py`.
+
+### Verification performed
+
+- Full suite: 664 passed. The 506 module 1-4 tests passed unchanged.
+- Live `uvicorn` run: upload profiles (55) and events (179), calculate with AI narrative, list
+  suppliers, fetch a full profile, and all six documented copilot questions plus three
+  unavailable-information cases.
+- Live category contributions reconcile exactly to the overall score (79.96 for the top supplier).
+- The sample run reproduces `expected_supplier_risk_baseline.json` exactly through HTTP, every
+  documented anchor tops the category it anchors, the missing-data anchor is the only unscored
+  supplier, and repeated runs are identical.
+- The XLSX (business labels) and CSV (SAP codes) paths produce identical scores.
+- Alembic `upgrade head` and `downgrade -1` verified against a scratch database.
 - Alembic `upgrade head` -> `downgrade -1` -> `upgrade head` on a scratch database, and an
   autogenerate diff confirmed the migration matches the models.
 
@@ -397,6 +478,18 @@ than module 1, because the shared layers already exist.
 - Currency conversion uses fixed configured rates.
 - Validation is synchronous; very large invoice runs would need a job queue.
 
+**Module 5 - Supplier Risk Copilot**
+
+- The copilot is a deterministic intent router, not a language model: it answers the documented
+  question shapes and says so when a question falls outside them. It does not do free-form dialogue.
+- Risk inputs are pre-aggregated per supplier. The module does not recompute delivery or invoice
+  metrics from raw module 1/4 transactions; the datasets in this lab use separate supplier id
+  ranges, so a cross-module join would need a shared supplier master first.
+- No live financial, credit, ESG, sanctions or news retrieval - by design, and stated in the output.
+- The risk trend needs dated risk events; without them it reports `unknown` rather than a direction.
+- Alternatives are proposed from the loaded records only and are not a sourcing decision.
+- Country risk is a configured index, not a live feed.
+
 **Project-wide**
 
 - No authentication or authorisation - the lab is local-only.
@@ -411,11 +504,13 @@ than module 1, because the shared layers already exist.
 
 ## Recommended next step
 
-**Module 5 - Supplier Risk Copilot.** With four procurement modules now sharing one database, the
-copilot is the natural next step: it retrieves supplier metrics deterministically and uses AI only
-to answer questions over the retrieved facts (retrieval-grounded question answering), which is a new
-shape for the lab - the AI reads structured facts rather than only summarising a finished analysis.
+**Module 6 - Contract Assistant.** Module 5 stops at contract *status* and *expiry dates*; the
+contract documents themselves are still unread. The Contract Assistant is the natural continuation:
+it introduces document parsing (PDF/DOCX) and clause extraction, which is the first genuinely
+AI-shaped task in the lab - clause extraction cannot be done reliably by rules, unlike every
+calculation built so far. It would also feed module 5, since extracted clause data (notice periods,
+auto-renewal, penalties) would sharpen contract risk beyond a status label.
 
 Worth weighing against building the next module: the operational work listed under limitations -
-authentication, a job queue, and a PostgreSQL run. Four modules now share one database and one
+authentication, a job queue, and a PostgreSQL run. Five modules now share one database and one
 upload table, so the cost of adding authentication grows with each module rather than staying flat.

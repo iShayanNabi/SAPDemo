@@ -1,0 +1,504 @@
+{
+  "config_version": "1.0.0",
+  "description": "Supplier Risk Copilot - risk category weights, metric normalisation anchors, categorical score maps, risk bands, trend windows and recommended-action rules. Every number the risk model uses is declared here; the engine reads them through thresholds.py, so retuning the model is a JSON edit rather than a code change.",
+  "base_currency": "EUR",
+  "currency_rates": {
+    "EUR": 1.0,
+    "USD": 0.92,
+    "GBP": 1.17,
+    "CHF": 1.05,
+    "SEK": 0.088,
+    "PLN": 0.23
+  },
+  "weight_total": 100.0,
+  "weight_total_tolerance": 0.01,
+
+  "default_weights": {
+    "delivery": 15.0,
+    "quality": 15.0,
+    "financial": 14.0,
+    "spend_concentration": 10.0,
+    "contract": 8.0,
+    "invoice": 8.0,
+    "compliance": 10.0,
+    "esg": 6.0,
+    "geographic": 6.0,
+    "operational": 8.0
+  },
+
+  "categories": {
+    "delivery": {
+      "label": "Delivery risk",
+      "description": "How reliably the supplier delivers on time, from the on-time rate, the share of late deliveries and how late they run.",
+      "metrics": {
+        "on_time_delivery_rate": {
+          "label": "On-time delivery rate",
+          "weight": 0.5,
+          "direction": "higher_is_better",
+          "best_value": 99.0,
+          "worst_value": 70.0,
+          "unit": "%"
+        },
+        "late_delivery_ratio": {
+          "label": "Late delivery share",
+          "weight": 0.3,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 30.0,
+          "unit": "%"
+        },
+        "average_delay_days": {
+          "label": "Average delay",
+          "weight": 0.2,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 14.0,
+          "unit": "days"
+        }
+      }
+    },
+    "quality": {
+      "label": "Quality risk",
+      "description": "Product quality exposure, from the recorded quality score, the defect rate and the number of quality incidents.",
+      "metrics": {
+        "quality_score": {
+          "label": "Quality score",
+          "weight": 0.45,
+          "direction": "higher_is_better",
+          "best_value": 98.0,
+          "worst_value": 65.0,
+          "unit": "score"
+        },
+        "defect_rate": {
+          "label": "Defect rate",
+          "weight": 0.35,
+          "direction": "higher_is_worse",
+          "best_value": 0.2,
+          "worst_value": 8.0,
+          "unit": "%"
+        },
+        "quality_incident_count": {
+          "label": "Quality incidents",
+          "weight": 0.2,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 10.0,
+          "unit": "count"
+        }
+      }
+    },
+    "financial": {
+      "label": "Financial risk",
+      "description": "Financial standing recorded internally: credit score, payment defaults and any distress flag raised by finance. No external credit feed is used.",
+      "metrics": {
+        "credit_score": {
+          "label": "Credit score",
+          "weight": 0.55,
+          "direction": "higher_is_better",
+          "best_value": 90.0,
+          "worst_value": 35.0,
+          "unit": "score"
+        },
+        "payment_default_count": {
+          "label": "Payment defaults",
+          "weight": 0.25,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 4.0,
+          "unit": "count"
+        },
+        "financial_distress_flag": {
+          "label": "Financial distress flag",
+          "weight": 0.2,
+          "direction": "flag",
+          "flag_true_score": 100.0,
+          "flag_false_score": 0.0,
+          "unit": "flag"
+        }
+      }
+    },
+    "spend_concentration": {
+      "label": "Spend concentration risk",
+      "description": "Dependence on this single supplier: its share of category spend, how many materials it single-sources and how few qualified alternatives exist.",
+      "metrics": {
+        "category_spend_share": {
+          "label": "Share of category spend",
+          "weight": 0.5,
+          "direction": "higher_is_worse",
+          "best_value": 10.0,
+          "worst_value": 70.0,
+          "unit": "%"
+        },
+        "single_source_material_count": {
+          "label": "Single-source materials",
+          "weight": 0.3,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 6.0,
+          "unit": "count"
+        },
+        "alternative_supplier_count": {
+          "label": "Qualified alternatives",
+          "weight": 0.2,
+          "direction": "higher_is_better",
+          "best_value": 4.0,
+          "worst_value": 0.0,
+          "unit": "count"
+        }
+      }
+    },
+    "contract": {
+      "label": "Contract risk",
+      "description": "Contract cover: whether an outline agreement is active and how soon it expires. Spend without a contract is the worst case.",
+      "metrics": {
+        "contract_status": {
+          "label": "Contract status",
+          "weight": 0.6,
+          "direction": "categorical",
+          "score_map_key": "contract_status",
+          "unit": "status"
+        },
+        "days_to_contract_expiry": {
+          "label": "Days to contract expiry",
+          "weight": 0.4,
+          "direction": "higher_is_better",
+          "best_value": 365.0,
+          "worst_value": 0.0,
+          "unit": "days"
+        }
+      }
+    },
+    "invoice": {
+      "label": "Invoice risk",
+      "description": "Invoice accuracy exposure, using the exception concept module 4 produces: the exception rate and the number of disputed invoices.",
+      "metrics": {
+        "invoice_exception_rate": {
+          "label": "Invoice exception rate",
+          "weight": 0.65,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 25.0,
+          "unit": "%"
+        },
+        "disputed_invoice_count": {
+          "label": "Disputed invoices",
+          "weight": 0.35,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 8.0,
+          "unit": "count"
+        }
+      }
+    },
+    "compliance": {
+      "label": "Compliance risk",
+      "description": "Open compliance findings, the state of required certifications and the outcome of the most recent audit.",
+      "metrics": {
+        "compliance_finding_count": {
+          "label": "Open compliance findings",
+          "weight": 0.4,
+          "direction": "higher_is_worse",
+          "best_value": 0.0,
+          "worst_value": 5.0,
+          "unit": "count"
+        },
+        "certification_status": {
+          "label": "Certification status",
+          "weight": 0.35,
+          "direction": "categorical",
+          "score_map_key": "certification_status",
+          "unit": "status"
+        },
+        "audit_status": {
+          "label": "Audit status",
+          "weight": 0.25,
+          "direction": "categorical",
+          "score_map_key": "audit_status",
+          "unit": "status"
+        }
+      }
+    },
+    "esg": {
+      "label": "ESG risk",
+      "description": "Sustainability exposure from the internally recorded ESG score. No external ESG rating service is called.",
+      "metrics": {
+        "esg_score": {
+          "label": "ESG score",
+          "weight": 1.0,
+          "direction": "higher_is_better",
+          "best_value": 85.0,
+          "worst_value": 30.0,
+          "unit": "score"
+        }
+      }
+    },
+    "geographic": {
+      "label": "Geographic risk",
+      "description": "Country exposure taken from the configured country risk index, plus the concentration of the supplier's footprint. No live news or country-risk feed is used.",
+      "metrics": {
+        "country_risk_index": {
+          "label": "Country risk index",
+          "weight": 0.7,
+          "direction": "categorical",
+          "score_map_key": "country_risk_index",
+          "unit": "index"
+        },
+        "region_coverage_count": {
+          "label": "Regions served",
+          "weight": 0.3,
+          "direction": "higher_is_better",
+          "best_value": 3.0,
+          "worst_value": 1.0,
+          "unit": "count"
+        }
+      }
+    },
+    "operational": {
+      "label": "Operational risk",
+      "description": "Ability to absorb demand changes: how much capacity headroom is left, how variable lead times are and how long the planned lead time runs.",
+      "metrics": {
+        "capacity_utilization": {
+          "label": "Capacity utilisation",
+          "weight": 0.4,
+          "direction": "higher_is_worse",
+          "best_value": 60.0,
+          "worst_value": 98.0,
+          "unit": "%"
+        },
+        "lead_time_variability_days": {
+          "label": "Lead time variability",
+          "weight": 0.35,
+          "direction": "higher_is_worse",
+          "best_value": 1.0,
+          "worst_value": 15.0,
+          "unit": "days"
+        },
+        "lead_time_days": {
+          "label": "Planned lead time",
+          "weight": 0.25,
+          "direction": "higher_is_worse",
+          "best_value": 7.0,
+          "worst_value": 60.0,
+          "unit": "days"
+        }
+      }
+    }
+  },
+
+  "score_maps": {
+    "contract_status": {
+      "default": 55.0,
+      "values": {
+        "active": 0.0,
+        "valid": 0.0,
+        "in place": 0.0,
+        "contracted": 0.0,
+        "expiring": 45.0,
+        "expiring soon": 45.0,
+        "renewal due": 50.0,
+        "under negotiation": 60.0,
+        "expired": 85.0,
+        "lapsed": 85.0,
+        "no contract": 100.0,
+        "none": 100.0,
+        "not contracted": 100.0
+      }
+    },
+    "certification_status": {
+      "default": 55.0,
+      "values": {
+        "valid": 0.0,
+        "certified": 0.0,
+        "current": 0.0,
+        "expiring": 45.0,
+        "renewal due": 50.0,
+        "expired": 85.0,
+        "missing": 100.0,
+        "none": 100.0,
+        "not certified": 100.0
+      }
+    },
+    "audit_status": {
+      "default": 50.0,
+      "values": {
+        "passed": 0.0,
+        "pass": 0.0,
+        "approved": 0.0,
+        "conditional": 45.0,
+        "conditional pass": 45.0,
+        "remediation": 65.0,
+        "overdue": 70.0,
+        "failed": 100.0,
+        "fail": 100.0,
+        "not audited": 60.0,
+        "none": 60.0
+      }
+    },
+    "country_risk_index": {
+      "default": 50.0,
+      "values": {
+        "DE": 10.0,
+        "AT": 12.0,
+        "CH": 10.0,
+        "NL": 12.0,
+        "BE": 15.0,
+        "FR": 18.0,
+        "SE": 10.0,
+        "NO": 10.0,
+        "DK": 10.0,
+        "FI": 12.0,
+        "IE": 15.0,
+        "IT": 28.0,
+        "ES": 25.0,
+        "PT": 25.0,
+        "PL": 30.0,
+        "CZ": 28.0,
+        "HU": 38.0,
+        "RO": 40.0,
+        "GB": 20.0,
+        "US": 18.0,
+        "CA": 15.0,
+        "MX": 48.0,
+        "BR": 52.0,
+        "CN": 58.0,
+        "IN": 55.0,
+        "VN": 55.0,
+        "TH": 50.0,
+        "MY": 45.0,
+        "ID": 58.0,
+        "TR": 65.0,
+        "ZA": 60.0,
+        "NG": 78.0,
+        "UA": 88.0,
+        "RU": 90.0,
+        "JP": 12.0,
+        "KR": 22.0,
+        "TW": 40.0,
+        "AU": 12.0
+      }
+    }
+  },
+
+  "risk_bands": {
+    "description": "Bands applied to every category score and to the overall score. Ranges are lower-inclusive, upper-exclusive; the top band includes 100.",
+    "bands": [
+      { "label": "low", "min_score": 0.0, "max_score": 25.0 },
+      { "label": "medium", "min_score": 25.0, "max_score": 50.0 },
+      { "label": "high", "min_score": 50.0, "max_score": 75.0 },
+      { "label": "critical", "min_score": 75.0, "max_score": 100.0 }
+    ]
+  },
+
+  "trend": {
+    "description": "Risk trend compares the severity-weighted volume of internal risk events in the recent window against the window immediately before it. Without events the trend is reported as unknown rather than guessed.",
+    "window_days": 180,
+    "minimum_events": 2,
+    "improving_delta": -1.5,
+    "deteriorating_delta": 1.5,
+    "severity_weights": {
+      "low": 1.0,
+      "medium": 2.0,
+      "high": 4.0,
+      "critical": 8.0
+    },
+    "default_severity": "medium"
+  },
+
+  "missing_data": {
+    "description": "How the engine behaves when a metric or a whole category has no data. Nothing is invented: a metric with no value is dropped and the remaining metric weights in that category are renormalised. A category with no data at all is excluded from the overall score and the remaining category weights are renormalised.",
+    "renormalise_category_weights": true,
+    "renormalise_metric_weights": true,
+    "minimum_categories_for_overall": 3,
+    "flag_below_completeness_pct": 60.0
+  },
+
+  "contract_expiry": {
+    "description": "Windows used to report contracts as expiring, independently of the contract score.",
+    "expiring_within_days": 90,
+    "critical_within_days": 30
+  },
+
+  "actions": {
+    "description": "Recommended actions are rule-based. A rule fires when its category score reaches the trigger band, and the actions are returned in the order listed here, highest category score first.",
+    "max_actions": 6,
+    "trigger_band": "high",
+    "rules": [
+      {
+        "category": "delivery",
+        "action": "Put the supplier on a delivery-performance improvement plan and agree weekly confirmed-date reporting.",
+        "priority": "high"
+      },
+      {
+        "category": "quality",
+        "action": "Raise a formal quality escalation, require a corrective-action plan and consider incoming inspection until the defect rate recovers.",
+        "priority": "high"
+      },
+      {
+        "category": "financial",
+        "action": "Ask finance to re-review the supplier's standing before new commitments, and reduce prepayment exposure.",
+        "priority": "critical"
+      },
+      {
+        "category": "spend_concentration",
+        "action": "Qualify a second source for the single-sourced materials to reduce dependence on this supplier.",
+        "priority": "high"
+      },
+      {
+        "category": "contract",
+        "action": "Start contract renewal or renegotiation now so spend does not continue without an active agreement.",
+        "priority": "high"
+      },
+      {
+        "category": "invoice",
+        "action": "Run an invoice-accuracy review with the supplier and fix the master-data causes of the repeated exceptions.",
+        "priority": "medium"
+      },
+      {
+        "category": "compliance",
+        "action": "Close the open compliance findings and re-audit before the next award.",
+        "priority": "critical"
+      },
+      {
+        "category": "esg",
+        "action": "Request an updated sustainability self-assessment and agree an ESG improvement target.",
+        "priority": "medium"
+      },
+      {
+        "category": "geographic",
+        "action": "Review logistics contingency for this country and hold agreed safety stock for the affected materials.",
+        "priority": "medium"
+      },
+      {
+        "category": "operational",
+        "action": "Review capacity commitments and lead-time variability with the supplier before increasing volumes.",
+        "priority": "medium"
+      }
+    ],
+    "overall_critical_action": "Escalate to the category manager: this supplier's overall risk is in the critical band and should not receive new awards without sign-off.",
+    "no_action_message": "No escalation triggered: every risk category is below the configured action threshold."
+  },
+
+  "alternatives": {
+    "description": "How the copilot proposes lower-risk alternatives. Candidates must share the supplier's spend category (or, failing that, a supplied material) and must score better by at least the configured margin.",
+    "max_alternatives": 3,
+    "minimum_improvement": 5.0,
+    "match_on_spend_category": true,
+    "match_on_material": true
+  },
+
+  "copilot": {
+    "description": "Deterministic question answering over the computed profiles. The copilot never invents data: when a supplier or a metric is not in the loaded records it says so.",
+    "max_suppliers_listed": 5,
+    "minimum_name_match_score": 0.6,
+    "top_drivers_in_answer": 3,
+    "unavailable_message": "That information is not in the loaded supplier risk records.",
+    "no_data_message": "No supplier risk data has been loaded yet. Upload a supplier risk profile file and run a risk calculation first.",
+    "disclaimer": "Answers are generated from the uploaded internal records by deterministic rules. Risk scores are calculated by the scoring model in app/modules/supplier_risk, not by an AI model, and have not been validated in a live SAP environment."
+  },
+
+  "reporting": {
+    "top_n_default": 10,
+    "max_suppliers_per_dataset": 5000,
+    "risk_disclaimer": "Supplier risk scores are produced by a deterministic, configurable scoring model from fictional internal demo records. No live financial, ESG, credit or news service is contacted. Figures are indicative planning inputs, not validated SAP results, and estimated exposure is not a guaranteed figure."
+  }
+}

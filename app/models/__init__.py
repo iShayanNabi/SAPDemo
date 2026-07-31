@@ -10,6 +10,12 @@ from app.models.supplier_reco import (
     SupplierRecommendation,
     SupplierRecommendationEntry,
 )
+from app.models.supplier_risk import (
+    SupplierRiskAssessment,
+    SupplierRiskDataset,
+    SupplierRiskProfileRow,
+    SupplierRiskRecord,
+)
 
 __all__ = [
     "Base",
@@ -27,4 +33,8 @@ __all__ = [
     "SupplierRecommendationEntry",
     "InvoiceValidation",
     "InvoiceException",
+    "SupplierRiskDataset",
+    "SupplierRiskRecord",
+    "SupplierRiskAssessment",
+    "SupplierRiskProfileRow",
 ]

@@ -372,3 +372,109 @@ class ApiClient:
         return self.download_bytes(
             f"/invoices/validations/{validation_id}/export", {"format": export_format}
         )
+
+    # -- Supplier Risk Copilot -------------------------------------------
+    def supplier_risk_upload(
+        self,
+        dataset: str,
+        filename: str,
+        content: bytes,
+        content_type: str,
+        *,
+        dataset_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Upload supplier risk profiles or the dated risk events."""
+        data: dict[str, str] = {"dataset": dataset}
+        if dataset_id:
+            data["dataset_id"] = dataset_id
+        return self._request(
+            "POST",
+            "/supplier-risk/upload",
+            data=data,
+            files={"file": (filename, content, content_type)},
+        )
+
+    def supplier_risk_datasets(self) -> dict[str, Any]:
+        """List the uploaded supplier risk datasets."""
+        return self._request("GET", "/supplier-risk/datasets")
+
+    def supplier_risk_fields(self) -> list[dict[str, Any]]:
+        """Fetch the supplier risk field catalogue."""
+        return self._request("GET", "/supplier-risk/fields")
+
+    def supplier_risk_scoring(self) -> dict[str, Any]:
+        """Fetch the documented risk scoring model (categories, weights, bands)."""
+        return self._request("GET", "/supplier-risk/scoring")
+
+    def supplier_risk_ai_status(self) -> dict[str, Any]:
+        """Report which AI provider the copilot would use."""
+        return self._request("GET", "/supplier-risk/ai-status")
+
+    def supplier_risk_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional supplier risk demo dataset."""
+        return self._request("GET", "/supplier-risk/sample/info")
+
+    def supplier_risk_sample_file(self, dataset: str, file_format: str) -> bytes:
+        """Download one bundled demo supplier risk file."""
+        return self.download_bytes(
+            "/supplier-risk/sample", {"dataset": dataset, "format": file_format}
+        )
+
+    def supplier_risk_calculate(
+        self,
+        *,
+        dataset_id: str | None = None,
+        weights: dict[str, float] | None = None,
+        as_of_date: str | None = None,
+        generate_ai_summary: bool = False,
+    ) -> dict[str, Any]:
+        """Run the risk model over a loaded dataset."""
+        payload: dict[str, Any] = {"generate_ai_summary": generate_ai_summary}
+        if dataset_id:
+            payload["dataset_id"] = dataset_id
+        if weights is not None:
+            payload["weights"] = weights
+        if as_of_date:
+            payload["as_of_date"] = as_of_date
+        return self._request("POST", "/supplier-risk/calculate", json=payload)
+
+    def supplier_risk_assessments(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List previous risk assessments, newest first."""
+        return self._request(
+            "GET", "/supplier-risk/assessments", params={"limit": limit, "offset": offset}
+        )
+
+    def supplier_risk_assessment(self, assessment_id: str) -> dict[str, Any]:
+        """Fetch one risk assessment with its ranked suppliers."""
+        return self._request("GET", f"/supplier-risk/assessments/{assessment_id}")
+
+    def supplier_risk_suppliers(self, **filters: Any) -> dict[str, Any]:
+        """List assessed suppliers, highest risk first, with optional filters."""
+        params = {key: value for key, value in filters.items() if value not in (None, "", [])}
+        return self._request("GET", "/supplier-risk/suppliers", params=params)
+
+    def supplier_risk_supplier(
+        self, supplier_id: str, assessment_id: str | None = None
+    ) -> dict[str, Any]:
+        """Fetch one supplier's complete risk profile."""
+        params = {"assessment_id": assessment_id} if assessment_id else {}
+        return self._request("GET", f"/supplier-risk/suppliers/{supplier_id}", params=params)
+
+    def supplier_risk_chat(
+        self,
+        question: str,
+        *,
+        assessment_id: str | None = None,
+        supplier_id: str | None = None,
+        generate_ai_summary: bool = False,
+    ) -> dict[str, Any]:
+        """Ask the copilot a question about the loaded supplier risk data."""
+        payload: dict[str, Any] = {
+            "question": question,
+            "generate_ai_summary": generate_ai_summary,
+        }
+        if assessment_id:
+            payload["assessment_id"] = assessment_id
+        if supplier_id:
+            payload["supplier_id"] = supplier_id
+        return self._request("POST", "/supplier-risk/chat", json=payload)

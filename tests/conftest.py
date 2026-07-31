@@ -230,6 +230,57 @@ def invoice_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def supplier_risk_config():
+    """The default supplier risk configuration."""
+    from app.modules.supplier_risk.thresholds import get_supplier_risk_config
+
+    return get_supplier_risk_config()
+
+
+def _supplier_risk_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_supplier_risk_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def supplier_risk_sample_csv_path() -> Path:
+    """Path of the generated supplier risk profiles CSV."""
+    return _supplier_risk_sample("sample_supplier_risk_profiles.csv")
+
+
+@pytest.fixture(scope="session")
+def supplier_risk_sample_xlsx_path() -> Path:
+    """Path of the generated supplier risk profiles XLSX."""
+    return _supplier_risk_sample("sample_supplier_risk_profiles.xlsx")
+
+
+@pytest.fixture(scope="session")
+def supplier_risk_event_sample_csv_path() -> Path:
+    """Path of the generated supplier risk events CSV."""
+    return _supplier_risk_sample("sample_supplier_risk_events.csv")
+
+
+@pytest.fixture(scope="session")
+def supplier_risk_scenario_manifest() -> dict:
+    """The documented supplier risk anchors and the reference date."""
+    import json
+
+    path = _supplier_risk_sample("supplier_risk_scenario_manifest.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def supplier_risk_baseline() -> dict:
+    """The recorded engine output for the supplier risk sample dataset."""
+    import json
+
+    path = _supplier_risk_sample("expected_supplier_risk_baseline.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"

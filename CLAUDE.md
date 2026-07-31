@@ -19,7 +19,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 2 | Spend Analytics Dashboard | **Implemented** |
 | 3 | Supplier Recommendation Engine | **Implemented** |
 | 4 | Invoice Validator | **Implemented** |
-| 5 | Supplier Risk Copilot | Planned |
+| 5 | Supplier Risk Copilot | **Implemented** |
 | 6 | Contract Assistant | Planned |
 | 7 | Inventory Predictor | Planned |
 | 8 | SAP Test Case Generator | Planned |
@@ -212,6 +212,15 @@ tables and an Alembic revision, exported from `app/models/__init__.py`.
 **Trap:** `init_db()` imports the `app.models` *package*. Importing one module by name would
 silently skip other modules' tables on a fresh database.
 
+### Inheriting a field contract
+
+Module 5 inherits module 3's supplier registry with `.extend()` rather than redefining the supplier
+master, so `OTD`, `QUALITY_SCORE`, `CONTRACT_STATUS` and friends keep one meaning lab-wide. When
+appending fields, check every alias against the inherited ones first: aliases resolve with
+`setdefault`, so an inherited declaration silently wins. `regions_served` already owns `REGION` and
+`GEOGRAPHY`, `historical_spend` owns `TOTAL_SPEND`, `historical_order_count` owns `PO_COUNT`.
+A quick loop asserting each appended field owns its own primary alias catches this immediately.
+
 ### Sample data + manifest + baseline
 
 Each module ships a seeded generator, a documented manifest, and an
@@ -230,6 +239,7 @@ python scripts/generate_sample_data.py
 python scripts/generate_spend_sample_data.py
 python scripts/generate_supplier_sample_data.py
 python scripts/generate_invoice_sample_data.py
+python scripts/generate_supplier_risk_sample_data.py
 python scripts/verify_setup.py
 
 # run
@@ -237,7 +247,7 @@ uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 506 tests
+pytest                                  # 664 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -272,6 +282,14 @@ only appeared when the API was driven by hand:
   overbilling a fallback only when a line has no ordered quantity, so a price mismatch does not also
   read as overbilling. The generator prints which anchors are flagged, which is what caught the
   incidental duplicate-invoice collisions among same-amount, same-date anchors.
+
+- Module 5: the shared `coerce_types` widened an INTEGER column to float64 the moment one cell was
+  blank, so the integer cast received `NaN` and raised `ValueError: cannot convert float NaN to
+  integer`. The bug was in code every module uses, but modules 1-4 ship no blank integer cells, so
+  four modules and 506 green tests never touched it. Module 5's deliberate missing-data sample
+  supplier is exactly that file. Fix: rebuild the column as an object series that preserves real
+  ints and real `None`s. **A sample dataset with a deliberate hole in it is worth more than another
+  happy-path row** - the missing-data anchor found a latent bug in shared code on its first run.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

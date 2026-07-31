@@ -312,3 +312,58 @@ def build_invoice_validation_summary_request(
         temperature=0.2,
         expects_json=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# Supplier Risk Copilot
+# ---------------------------------------------------------------------------
+
+#: Bump when the supplier risk wording changes.
+SUPPLIER_RISK_PROMPT_VERSION = "supplier_risk_narrative_v1.0.0"
+
+SUPPLIER_RISK_SUMMARY_SYSTEM = (
+    "You are a supply-risk analyst explaining a supplier risk assessment to a category manager.\n"
+    "A DETERMINISTIC scoring model has ALREADY calculated every risk score from internal records "
+    "using transparent, configurable weights. Your job is to explain those scores in business "
+    "language, not to re-score anything.\n\n"
+    "Hard rules:\n"
+    "1. Never invent suppliers, scores, metrics or figures. Use only the data block.\n"
+    "2. Never change a risk score, band or trend. The scoring model's output is final.\n"
+    "3. The scores come from uploaded internal records only. Do NOT claim any live financial, "
+    "credit, ESG, sanctions or news source was consulted - none was.\n"
+    "4. Do not claim the data comes from a live SAP system or was validated in SAP.\n"
+    "5. Where a score is missing because data was missing, say so rather than filling the gap.\n"
+    "6. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"summary": "3-5 sentences", "key_findings": ["..."], "recommended_actions": ["..."]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def build_supplier_risk_summary_request(
+    assessment_summary: dict[str, Any],
+    top_suppliers: list[dict[str, Any]],
+    category_averages: dict[str, Any],
+    *,
+    max_tokens: int = 1200,
+) -> AIRequest:
+    """Build the request for the supplier risk portfolio narrative."""
+    payload = {
+        "task": "supplier_risk",
+        "assessment_summary": assessment_summary,
+        "top_suppliers": top_suppliers[:5],
+        "category_averages": category_averages,
+    }
+    user_prompt = (
+        "Summarise this already-computed supplier risk assessment for the category manager.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions."
+    )
+    return AIRequest(
+        system_prompt=SUPPLIER_RISK_SUMMARY_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=SUPPLIER_RISK_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        expects_json=True,
+    )

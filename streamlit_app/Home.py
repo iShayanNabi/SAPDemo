@@ -53,7 +53,7 @@ modules = [
     ("2. Spend Analytics Dashboard", "Available", "Analyse spend, find leakage and savings opportunities, drill into transactions."),
     ("3. Supplier Recommendation Engine", "Available", "Rank eligible suppliers for a requirement with transparent weighted scoring."),
     ("4. Invoice Validator", "Available", "Three-way match invoices against POs and goods receipts with configurable tolerances."),
-    ("5. Supplier Risk Copilot", "Planned", "Question answering over supplier risk data."),
+    ("5. Supplier Risk Copilot", "Available", "Score suppliers across ten risk categories with a transparent weighted model, then ask questions answered from the loaded records with citations."),
     ("6. Contract Assistant", "Planned", "Clause extraction and contract summarisation."),
     ("7. Inventory Predictor", "Planned", "Statistical demand and stock forecasting."),
     ("8. SAP Test Case Generator", "Planned", "Generate test cases from process descriptions."),

@@ -555,3 +555,168 @@ def invoice_rows_to_csv(rows: list[dict[str, Any]], dataset: str, headers: dict[
     for row in rows:
         writer.writerow({headers.get(name, name): _as_text(row.get(name)) for name in fields})
     return buffer.getvalue().encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Module 5 - Supplier Risk Copilot
+# ---------------------------------------------------------------------------
+
+RISK_AS_OF = date(2026, 7, 1)
+
+#: A well-behaved supplier: every metric present, every category low risk.
+DEFAULT_RISK_PROFILE: dict[str, Any] = {
+    "supplier_id": "0000300001",
+    "supplier_name": "Bluepeak Value Supply Ltd",
+    "country": "DE",
+    "spend_category": "Components",
+    "materials_supplied": ["MAT-1000"],
+    "plants_served": ["1010"],
+    "regions_served": ["EU", "NA"],
+    "currency": "EUR",
+    "historical_spend": 500000.0,
+    "historical_order_count": 40,
+    "open_purchase_order_count": 4,
+    "active_contract_count": 1,
+    "contract_number": "4600000001",
+    "contract_status": "Active",
+    "contract_expiration": date(2027, 6, 30),
+    "delivery_count": 100,
+    "late_delivery_count": 4,
+    "average_delay_days": 1.0,
+    "on_time_delivery_rate": 96.0,
+    "quality_score": 94.0,
+    "defect_rate": 1.0,
+    "quality_incident_count": 1,
+    "invoice_count": 100,
+    "invoice_exception_count": 2,
+    "disputed_invoice_count": 0,
+    "credit_score": 82.0,
+    "days_payable_outstanding": 35.0,
+    "payment_default_count": 0,
+    "financial_distress_flag": False,
+    "category_spend_share": 15.0,
+    "single_source_material_count": 0,
+    "alternative_supplier_count": 3,
+    "compliance_finding_count": 0,
+    "certification_status": "Valid",
+    "audit_status": "Passed",
+    "last_audit_date": date(2026, 2, 1),
+    "esg_score": 78.0,
+    "lead_time_days": 15,
+    "lead_time_variability_days": 2.0,
+    "capacity_utilization": 65.0,
+}
+
+
+def make_risk_profile(**overrides: Any):
+    """Build one :class:`NormalizedSupplierProfile` on top of a healthy default."""
+    from app.modules.supplier_risk.normalizer import NormalizedSupplierProfile
+    from app.modules.supplier_risk.thresholds import get_supplier_risk_config
+
+    data = {**DEFAULT_RISK_PROFILE, **overrides}
+    config = get_supplier_risk_config()
+    spend = data.get("historical_spend")
+    rate = config.conversion_rate(data.get("currency"))
+
+    return NormalizedSupplierProfile(
+        row_number=overrides.get("row_number", 2),
+        supplier_id=str(data["supplier_id"]),
+        historical_spend_base=None if spend is None else round(float(spend) * rate, 2),
+        **{
+            key: value
+            for key, value in data.items()
+            if key not in {"supplier_id", "row_number"}
+        },
+    )
+
+
+def make_risk_profiles(count: int, **overrides: Any) -> list[Any]:
+    """Build ``count`` risk profiles with incrementing supplier ids."""
+    profiles = []
+    for index in range(count):
+        data = dict(overrides)
+        if "supplier_id" not in overrides:
+            data["supplier_id"] = f"{300001 + index:010d}"
+        profiles.append(make_risk_profile(**data))
+    return profiles
+
+
+def make_risk_event(**overrides: Any):
+    """Build one :class:`NormalizedRiskEvent` with sensible defaults."""
+    from app.modules.supplier_risk.normalizer import NormalizedRiskEvent
+
+    defaults: dict[str, Any] = {
+        "row_number": 2,
+        "event_id": "EVT-0001",
+        "supplier_id": "0000300001",
+        "event_type": "late_delivery",
+        "event_date": RISK_AS_OF - timedelta(days=30),
+        "reference": "4500000001",
+        "severity": "medium",
+        "description": "Delivery arrived after the confirmed date",
+        "amount": None,
+        "currency": "EUR",
+        "amount_base": None,
+    }
+    return NormalizedRiskEvent(**{**defaults, **overrides})
+
+
+def run_risk_assessment_for(
+    profiles: list[Any],
+    events: list[Any] | None = None,
+    *,
+    as_of: date | None = None,
+    weights: Any = None,
+    config: Any = None,
+):
+    """Run the real risk engine over hand-built records."""
+    from app.modules.supplier_risk.engine import run_risk_assessment
+    from app.modules.supplier_risk.thresholds import get_supplier_risk_config
+
+    config = config or get_supplier_risk_config()
+    return run_risk_assessment(
+        profiles,
+        events or [],
+        weights or config.default_weights,
+        config,
+        as_of or RISK_AS_OF,
+    )
+
+
+def risk_profile_rows_to_csv(
+    rows: list[dict[str, Any]], headers: dict[str, str] | None = None
+) -> bytes:
+    """Serialise supplier risk profile rows as CSV, optionally renaming headers."""
+    from app.modules.supplier_risk.field_definitions import CANONICAL_FIELDS as RISK_FIELDS
+
+    headers = headers or {}
+    field_names = [headers.get(name, name) for name in RISK_FIELDS]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=field_names, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(
+            {headers.get(name, name): _supplier_cell(row.get(name)) for name in RISK_FIELDS}
+        )
+    return buffer.getvalue().encode("utf-8")
+
+
+def risk_event_rows_to_csv(
+    rows: list[dict[str, Any]], headers: dict[str, str] | None = None
+) -> bytes:
+    """Serialise risk event rows as CSV."""
+    from app.modules.supplier_risk.field_definitions import EVENT_CANONICAL_FIELDS
+
+    headers = headers or {}
+    field_names = [headers.get(name, name) for name in EVENT_CANONICAL_FIELDS]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=field_names, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(
+            {
+                headers.get(name, name): _supplier_cell(row.get(name))
+                for name in EVENT_CANONICAL_FIELDS
+            }
+        )
+    return buffer.getvalue().encode("utf-8")

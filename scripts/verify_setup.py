@@ -141,6 +141,23 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/invoice_validator/config/invoice_validator_rules.json")
 
+    try:
+        from app.modules.supplier_risk.thresholds import (
+            RISK_CATEGORIES,
+            get_supplier_risk_config,
+        )
+
+        risk_config = get_supplier_risk_config()
+        risk_config.validate_weights(risk_config.default_weights)
+        print(
+            f"{PASS} supplier risk configuration v{risk_config.config_version}: "
+            f"{len(RISK_CATEGORIES)} risk categories, default weights sum to "
+            f"{risk_config.default_weights.total():g}%"
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/supplier_risk/config/supplier_risk_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -167,6 +184,16 @@ def main() -> int:
         ("spend", "sample_spend_transactions.csv", "scripts/generate_spend_sample_data.py"),
         ("suppliers", "sample_suppliers.csv", "scripts/generate_supplier_sample_data.py"),
         ("invoices", "sample_invoices.csv", "scripts/generate_invoice_sample_data.py"),
+        (
+            "supplier risk",
+            "sample_supplier_risk_profiles.csv",
+            "scripts/generate_supplier_risk_sample_data.py",
+        ),
+        (
+            "risk events",
+            "sample_supplier_risk_events.csv",
+            "scripts/generate_supplier_risk_sample_data.py",
+        ),
     ):
         sample = settings.sample_dir / filename
         if sample.is_file():

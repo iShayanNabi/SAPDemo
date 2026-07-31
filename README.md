@@ -19,7 +19,7 @@ are required.**
 | 2 | **Spend Analytics Dashboard** | **Implemented** |
 | 3 | **Supplier Recommendation Engine** | **Implemented** |
 | 4 | **Invoice Validator** | **Implemented** |
-| 5 | Supplier Risk Copilot | Planned |
+| 5 | **Supplier Risk Copilot** | **Implemented** |
 | 6 | Contract Assistant | Planned |
 | 7 | Inventory Predictor | Planned |
 | 8 | SAP Test Case Generator | Planned |
@@ -45,6 +45,7 @@ python scripts/generate_sample_data.py            # PO risk
 python scripts/generate_spend_sample_data.py      # spend analytics
 python scripts/generate_supplier_sample_data.py   # supplier catalogue
 python scripts/generate_invoice_sample_data.py    # invoices, POs, goods receipts
+python scripts/generate_supplier_risk_sample_data.py  # supplier risk profiles + risk events
 
 # 4. Check the installation
 python scripts/verify_setup.py
@@ -278,6 +279,83 @@ produced by deterministic Python - AI never decides one.**
 
 ---
 
+## Module 5 - Supplier Risk Copilot
+
+Aggregates the supplier information the lab already holds into a transparent, per-supplier risk
+profile, and lets you **ask questions about the loaded data**.
+
+**Workflow:** upload the supplier risk profiles (and optionally the dated risk events) -> calculate
+-> portfolio KPIs -> pick a supplier -> risk score, category breakdown, trend, supporting metrics,
+contracts, delivery and invoice issues, recommended actions -> ask the copilot.
+
+**Reuses the supplier master.** The field contract inherits module 3's 19 supplier fields through
+`FieldRegistry.extend()` and appends 25 risk facts, so `OTD`, `QUALITY_SCORE`, `DEFECT_RATE`,
+`ESG_SCORE`, `CONTRACT_STATUS`, `ORDER_COUNT` and `HISTORICAL_SPEND` keep exactly one meaning across
+the lab. 44 canonical fields in total; only `supplier_id` is required.
+
+### The eleven risk figures
+
+Ten weighted categories plus the overall blend. **The scale is always 0 = no risk, 100 = maximum
+risk**, so a reader never has to remember which direction a metric runs.
+
+| Category | Default weight | Driven by |
+| --- | --- | --- |
+| Delivery risk | 15% | on-time rate, late-delivery share, average delay |
+| Quality risk | 15% | quality score, defect rate, quality incidents |
+| Financial risk | 14% | credit score, payment defaults, distress flag |
+| Spend concentration risk | 10% | share of category spend, single-source materials, alternatives |
+| Compliance risk | 10% | open findings, certification status, audit status |
+| Contract risk | 8% | contract status, days to expiry |
+| Invoice risk | 8% | invoice exception rate, disputed invoices |
+| Operational risk | 8% | capacity utilisation, lead-time variability, lead time |
+| ESG risk | 6% | recorded ESG score |
+| Geographic risk | 6% | country risk index, regions served |
+| **Overall supplier risk** | 100% | the weighted blend of the ten above |
+
+### Transparent scoring
+
+Every figure carries its own audit trail. For each input metric the API returns the **raw value**,
+the **weight**, the **normalised 0-100 score**, the **contribution** to the category, and a plain
+sentence saying how it was reached (`74 % against best 99 / worst 70 -> 86.2`). Category
+contributions sum to the overall score, and the tests assert that they do.
+
+### Missing data is never invented
+
+A metric with no value is dropped and the remaining metric weights in its category are
+renormalised; a category with no data at all is excluded and the category weights are renormalised.
+If fewer than three categories can be scored, the **overall score is withheld** rather than computed
+from a fragment. Suppliers below the configured completeness are flagged `limited_data`.
+
+### Risk trend
+
+Derived from the dated internal records: the severity-weighted volume of risk events in the recent
+window against the window immediately before it. Without enough dated records the trend is reported
+as `unknown` - it is not guessed.
+
+### The copilot
+
+A **deterministic** question answerer - not a language model. It classifies a question against a
+fixed intent table, answers from the computed assessment, and **cites the internal records it used**:
+
+| Question | Answered from |
+| --- | --- |
+| Show supplier ABC's risk. | the supplier's computed profile |
+| Why is this supplier high risk? | the top contributing categories and their metrics |
+| Which suppliers have the most delivery issues? | the delivery category ranking |
+| Which suppliers have contracts expiring soon? | contract expiry against the as-of date |
+| Which alternative supplier has lower risk? | same-category / shared-material suppliers scoring lower |
+| What action should procurement take? | the rule-based recommended actions |
+
+Because the copilot and the supplier page read the same computed profile, **an answer can never
+disagree with the page**. When a supplier is not in the loaded records, or a question is outside
+what the data supports, it says so plainly instead of producing a plausible sentence.
+
+> **No live external data.** No financial, credit, ESG, sanctions or news service is contacted.
+> Every figure comes from the uploaded internal records, and nothing here has been validated in a
+> live SAP environment.
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -379,14 +457,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (506 tests, ~60s)
-pytest tests/unit         # 296 - rules, metrics, savings, scoring, eligibility, tolerances, mapping, parsing, security, AI
-pytest tests/api          # 129 - endpoints against a temporary database
-pytest tests/integration  # 81  - full journeys over all four sample datasets
+pytest                    # everything (664 tests, ~100s)
+pytest tests/unit         # 381 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, security, AI
+pytest tests/api          # 170 - endpoints against a temporary database
+pytest tests/integration  # 113 - full journeys over all five sample datasets
 ```
 
-The integration suites read the anomaly, scenario, supplier and invoice manifests and assert that
-every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario, supplier, invoice and supplier-risk manifests
+and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

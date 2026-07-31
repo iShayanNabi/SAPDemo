@@ -115,6 +115,39 @@ include_ineligible?}`. `weights` must total 100% (nine dimensions: cost, deliver
 capacity, risk, esg, contract, geographic, past_performance) or the request is rejected with a
 `validation_error` (422). When `catalog_id` is omitted the most recent catalogue is used.
 
+### Supplier Risk Copilot
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/supplier-risk/upload` | Upload risk profiles (`dataset=profiles`) or dated risk events (`dataset=events`) |
+| POST | `/api/v1/supplier-risk/calculate` | Score every supplier across the ten risk categories |
+| GET | `/api/v1/supplier-risk/suppliers` | Assessed suppliers, highest risk first |
+| GET | `/api/v1/supplier-risk/suppliers/{supplier_id}` | One supplier's full risk profile |
+| POST | `/api/v1/supplier-risk/chat` | Ask the copilot a question, with citations |
+| GET | `/api/v1/supplier-risk/datasets` | List uploaded risk datasets |
+| GET | `/api/v1/supplier-risk/assessments` | List past assessments |
+| GET | `/api/v1/supplier-risk/assessments/{id}` | One assessment with ranked suppliers |
+| GET | `/api/v1/supplier-risk/scoring` | Categories, weights, metrics, bands, missing-data behaviour |
+| GET | `/api/v1/supplier-risk/fields` | Canonical risk fields and their aliases |
+| GET | `/api/v1/supplier-risk/sample` | Download a demo file (`dataset=profiles\|events`) |
+| GET | `/api/v1/supplier-risk/sample/info` | Describe the demo dataset |
+| GET | `/api/v1/supplier-risk/ai-status` | Active AI provider (never a key) |
+
+The `calculate` body is `{dataset_id?, weights?, as_of_date?, generate_ai_summary?}`. `weights` must
+total 100% across the ten categories (delivery, quality, financial, spend_concentration, contract,
+invoice, compliance, esg, geographic, operational) or the request is rejected. When `dataset_id` is
+omitted the most recent dataset is used; `as_of_date` defaults to today and drives contract expiry
+and the trend windows.
+
+The `chat` body is `{question, assessment_id?, supplier_id?, generate_ai_summary?}`. Pass
+`supplier_id` so follow-ups like *"why is this supplier high risk?"* resolve. The response carries
+`answer`, `intent`, `data_available`, `unavailable_reason`, `citations[]` and
+`suppliers_referenced[]`. **Every risk score is `rule_based`**; the optional `ai_narrative` is a
+separate field and never replaces a computed figure.
+
+Risk scores run **0 = no risk to 100 = maximum risk**. A supplier whose data supports fewer than
+three categories has `overall_score: null` rather than a score computed from a fragment.
+
 ---
 
 ## Health
