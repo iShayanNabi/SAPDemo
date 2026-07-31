@@ -27,6 +27,18 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   filters.py   one filter applied everywhere     │
 │                   savings.py   6 configurable savings models     │
 │                   normalizer.py, thresholds.py, ai_narrative.py  │
+│                                                                  │
+│                   app/modules/supplier_reco/                     │
+│                   eligibility.py, scoring.py, engine.py          │
+│                                                                  │
+│                   app/modules/invoice_validator/                 │
+│                   matching.py, engine.py, rules/ (17 rules)      │
+│                                                                  │
+│                   app/modules/supplier_risk/                     │
+│                   scoring.py  metric -> category -> overall      │
+│                   engine.py   assessment, trend, actions         │
+│                   copilot.py  deterministic Q&A with citations   │
+│                   normalizer.py, thresholds.py, ai_narrative.py  │
 ├──────────────────────────────────────────────────────────────────┤
 │ Shared services   app/services/                                  │
 │                   tabular/ field registry, mapping, parsing      │
@@ -338,8 +350,14 @@ Four tables (`app/models/po_risk.py`):
 | `suppliers` | normalised supplier master data (lists stored as JSON) |
 | `supplier_recommendations` | requirement, weights, eligibility summary, AI narrative |
 | `supplier_recommendation_entries` | one row per supplier: rank, 9 sub-scores, cost/delivery, advantages, risks |
+| `invoice_validations` | tolerances, KPIs, three-way matches, rule executions, AI narrative |
+| `invoice_exceptions` | one row per exception, with evidence JSON |
+| `supplier_risk_datasets` | one row per uploaded risk profile file (plus the optional events file) |
+| `supplier_risk_records` | normalised risk facts per supplier, with that supplier's events |
+| `supplier_risk_assessments` | weights, as-of date, portfolio summary, AI narrative |
+| `supplier_risk_profiles` | one row per supplier: 10 category scores, overall, band, trend, full breakdown |
 
-``uploaded_files`` is shared by all three modules and carries a ``module`` column.
+``uploaded_files`` is shared by every module and carries a ``module`` column.
 
 SQLite by default with `check_same_thread=False`; PostgreSQL works by changing `DATABASE_URL`
 only. Alembic migrations use batch mode so they run on SQLite too, and the migration was verified

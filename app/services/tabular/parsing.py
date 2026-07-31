@@ -187,7 +187,19 @@ def coerce_types(
         if definition.field_type in (FieldType.NUMBER, FieldType.INTEGER):
             converted = original.map(parse_number)
             if definition.field_type is FieldType.INTEGER:
-                converted = converted.map(lambda v: None if v is None else int(round(v)))
+                # ``map`` infers float64 as soon as the column has a hole, so a
+                # missing integer arrives here as NaN rather than None - and a
+                # plain re-map would hand the column back as floats. Rebuild it
+                # as an object column so an INTEGER field keeps real ints and
+                # real ``None``s, whether or not any cell was blank.
+                converted = pd.Series(
+                    [
+                        None if value is None or pd.isna(value) else int(round(value))
+                        for value in converted
+                    ],
+                    index=converted.index,
+                    dtype=object,
+                )
             frame[field_name] = converted
         elif definition.field_type is FieldType.DATE:
             frame[field_name] = original.map(parse_date)

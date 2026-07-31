@@ -1,0 +1,65 @@
+{
+  "note": "Observed output of the current supplier risk engine on the generated data set with the default category weights, read back from the written CSV files through the real reader, mapper and normaliser. Used by the test suite to detect unintended changes in the engine or the generator.",
+  "seed": 20260801,
+  "as_of_date": "2026-07-01",
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "supplier_count": 55,
+  "scored_count": 54,
+  "event_count": 179,
+  "band_counts": {
+    "low": 31,
+    "medium": 19,
+    "high": 3,
+    "critical": 1
+  },
+  "average_overall_score": 23.2,
+  "highest_risk_supplier_id": "0000300001",
+  "highest_risk_score": 79.96,
+  "contracts_expiring_count": 3,
+  "limited_data_count": 1,
+  "category_averages": {
+    "delivery": 22.97,
+    "quality": 28.43,
+    "financial": 17.23,
+    "spend_concentration": 23.8,
+    "contract": 18.89,
+    "invoice": 20.2,
+    "compliance": 21.17,
+    "esg": 23.53,
+    "geographic": 25.49,
+    "operational": 31.97
+  },
+  "top_five": [
+    {
+      "rank": 1,
+      "supplier_id": "0000300001",
+      "overall_score": 79.96,
+      "overall_band": "critical"
+    },
+    {
+      "rank": 2,
+      "supplier_id": "0000300004",
+      "overall_score": 58.92,
+      "overall_band": "high"
+    },
+    {
+      "rank": 3,
+      "supplier_id": "0000300008",
+      "overall_score": 58.61,
+      "overall_band": "high"
+    },
+    {
+      "rank": 4,
+      "supplier_id": "0000300003",
+      "overall_score": 54.95,
+      "overall_band": "high"
+    },
+    {
+      "rank": 5,
+      "supplier_id": "0000300020",
+      "overall_score": 36.87,
+      "overall_band": "medium"
+    }
+  ]
+}

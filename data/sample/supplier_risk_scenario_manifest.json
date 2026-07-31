@@ -1,0 +1,82 @@
+{
+  "generated_with_seed": 20260801,
+  "data_origin": "demo_data",
+  "as_of_date": "2026-07-01",
+  "supplier_count": 55,
+  "event_count": 179,
+  "note": "Fictional supplier risk records. Most suppliers are ordinary vendors whose overall risk lands in the low or medium band; the anchor suppliers below are placed deliberately so every documented risk behaviour can be asserted against the deterministic scoring model. No live credit, ESG, news or country-risk service is contacted anywhere in this module.",
+  "scenarios": [
+    {
+      "scenario_id": "SRK-01",
+      "name": "Highest overall risk supplier",
+      "supplier_id": "0000300001",
+      "category": "overall",
+      "description": "Weak in almost every category at once: on-time rate 74%, quality score 69, credit score 40 with a financial distress flag, 60% of its category spend, an unresolved contract negotiation, a 21.7% invoice exception rate, four open compliance findings, ESG 38, a high-risk country and 94% capacity utilisation.",
+      "expects": "Highest overall risk score in the data set, the only supplier in the 'critical' band, and the supplier reported as highest_risk_supplier_id. It also carries the highest geographic and operational risk. In each of the eight categories anchored below it is beaten by that category's specialist anchor, so it never wins a category ranking it is not meant to."
+    },
+    {
+      "scenario_id": "SRK-02",
+      "name": "Delivery risk anchor",
+      "supplier_id": "0000300002",
+      "category": "delivery",
+      "description": "On-time delivery rate 58%, 68 of 140 deliveries late and an average delay of 19.5 days - every delivery metric past its configured worst anchor.",
+      "expects": "Highest delivery category score in the data set (100.0, 'critical' band) and the top of any delivery ranking. Its other categories stay ordinary."
+    },
+    {
+      "scenario_id": "SRK-03",
+      "name": "Quality risk anchor",
+      "supplier_id": "0000300003",
+      "category": "quality",
+      "description": "Quality score 61, defect rate 9.4% and 15 recorded quality incidents - every quality metric past its configured worst anchor.",
+      "expects": "Highest quality category score in the data set (100.0, 'critical' band), which carries its overall risk into the 'high' band. No other category of this supplier tops a ranking."
+    },
+    {
+      "scenario_id": "SRK-04",
+      "name": "Financial risk anchor",
+      "supplier_id": "0000300004",
+      "category": "financial",
+      "description": "Internally recorded credit score 26, six payment defaults and the financial distress flag set. No external credit feed is involved - these are stored internal figures.",
+      "expects": "Highest financial category score in the data set (100.0, 'critical' band), a 'critical'-priority finance action in its recommended actions, and an overall risk in the 'high' band."
+    },
+    {
+      "scenario_id": "SRK-05",
+      "name": "Spend concentration anchor",
+      "supplier_id": "0000300005",
+      "category": "spend_concentration",
+      "description": "92% of the Specialty Chemicals category spend, 11 single-sourced materials and no qualified alternative. It also buys with no outline agreement - contract status 'No contract' (written as a real label, never the bare word 'None').",
+      "expects": "Highest spend concentration category score in the data set (100.0) and a contract category score of 100.0 because there is no agreement at all. Ordinary Specialty Chemicals suppliers score far lower, so the alternatives lookup has candidates."
+    },
+    {
+      "scenario_id": "SRK-06",
+      "name": "Contract expiry anchor",
+      "supplier_id": "0000300006",
+      "category": "contract",
+      "description": "An otherwise sound supplier whose outline agreement 4600008106 expires 18 days after the reference date of 2026-07-01.",
+      "expects": "days_to_contract_expiry is 18, contract_expiring_soon is true and it is the only supplier inside the configured 30-day critical window. Its contract category scores in the 'high' band - the highest of any supplier that still holds a dated agreement."
+    },
+    {
+      "scenario_id": "SRK-07",
+      "name": "Invoice risk anchor",
+      "supplier_id": "0000300007",
+      "category": "invoice",
+      "description": "34 of 96 invoices raised an exception (35.4%) and 11 invoices are formally disputed - the same exception concept module 4 (Invoice Validator) produces.",
+      "expects": "Highest invoice category score in the data set (100.0, 'critical' band) and an invoice-accuracy action in its recommended actions."
+    },
+    {
+      "scenario_id": "SRK-08",
+      "name": "Compliance and ESG anchor",
+      "supplier_id": "0000300008",
+      "category": "compliance",
+      "description": "Eight open compliance findings, an expired certification, a failed audit and an internally recorded ESG score of 18. No external ESG rating service is contacted.",
+      "expects": "Highest compliance category score in the data set ('critical' band) and the highest ESG category score (100.0), which together carry its overall risk into the 'high' band. Neither its delivery nor its quality category tops a ranking."
+    },
+    {
+      "scenario_id": "SRK-09",
+      "name": "Missing data anchor",
+      "supplier_id": "0000300009",
+      "category": "missing_data",
+      "description": "A newly onboarded supplier with almost nothing recorded: a name, a country, a spend category and an ESG score. Every other cell is genuinely empty - no placeholder text, so nothing is mistaken for a real value.",
+      "expects": "Only the geographic and ESG categories can be scored, which is below the configured minimum of three, so overall_score is withheld (None), overall_band is None and limited_data is true at 12% data completeness. It is the only supplier in the data set that is not scored."
+    }
+  ]
+}

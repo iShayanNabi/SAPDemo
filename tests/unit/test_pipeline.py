@@ -44,6 +44,8 @@ from app.services.ai.mock_provider import MockAIProvider
 from app.services.ai.prompts import build_executive_summary_request
 from app.services.files.readers import read_tabular
 from app.services.files.validation import validate_upload
+from app.services.tabular.field_registry import FieldDefinition, FieldRegistry, FieldType
+from app.services.tabular.parsing import DataQualityIssue, coerce_types
 from tests.factories import make_frame, make_row, rows_to_csv, rows_to_json, rows_to_xlsx
 
 SAP_HEADERS = {
@@ -245,6 +247,36 @@ def test_json_reader_rejects_invalid_json():
 def test_reader_rejects_a_file_with_no_data_rows():
     with pytest.raises(FileValidationError, match="no data rows"):
         read_tabular(b"EBELN,MENGE\n", ".csv")
+
+
+def test_integer_column_survives_a_blank_cell():
+    """A hole in an INTEGER column must normalise to ``None``, not explode.
+
+    ``Series.map`` widens a column with holes to float64, so a missing integer
+    arrives at the integer cast as ``NaN`` rather than ``None``. Coercion used to
+    raise ``ValueError: cannot convert float NaN to integer``, which took down
+    every upload where one supplier had not reported a count yet. Module 5's
+    missing-data sample supplier is exactly that file.
+    """
+    registry = FieldRegistry(
+        (
+            FieldDefinition(
+                name="delivery_count",
+                label="Deliveries",
+                field_type=FieldType.INTEGER,
+                required=False,
+                description="Deliveries received in the assessed period.",
+                aliases=("DELIVERY_COUNT",),
+            ),
+        )
+    )
+    frame = pd.DataFrame({"delivery_count": pd.Series([90, None, 45], dtype=object)})
+
+    issues: list[DataQualityIssue] = []
+    coerced = coerce_types(frame, registry, issues)
+
+    assert list(coerced["delivery_count"]) == [90, None, 45]
+    assert issues == []
 
 
 # ---------------------------------------------------------------------------

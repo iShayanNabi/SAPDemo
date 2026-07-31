@@ -17,9 +17,9 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 270 | Does each rule, metric and score produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, security and the AI abstraction behave? |
-| `tests/api` | 112 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
-| `tests/integration` | 74 | Over the full demo datasets, is every documented anomaly, scenario and supplier anchor actually detected, end to end through HTTP? |
+| `tests/unit` | 381 | Does each rule, metric and score produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, security and the AI abstraction behave? |
+| `tests/api` | 170 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
+| `tests/integration` | 113 | Over the full demo datasets, is every documented anomaly, scenario and supplier anchor actually detected, end to end through HTTP? |
 
 | File | Covers |
 | --- | --- |
@@ -35,6 +35,10 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/integration/test_sample_data_anomalies.py` | PO risk anomaly manifest |
 | `tests/integration/test_spend_sample_data.py` | Spend scenario manifest |
 | `tests/integration/test_supplier_sample_data.py` | Supplier anchor manifest and ranking baseline |
+| `tests/unit/test_supplier_risk_scoring.py` | Metric normalisation, category weighting, missing data, bands, trend, actions, config |
+| `tests/unit/test_supplier_risk_copilot.py` | Intent detection, supplier resolution, citations, unavailable answers |
+| `tests/api/test_supplier_risk_api.py` | Supplier risk endpoints, calculate, chat, filters |
+| `tests/integration/test_supplier_risk_sample_data.py` | Supplier risk anchor manifest and scoring baseline |
 
 ### Isolation
 
@@ -256,6 +260,16 @@ breakdown they came from - the assertion that would have caught it.
 
 **Same lesson as module 1**, where a prompt-truncation bug also survived a green suite and only
 appeared under manual use. Run the thing.
+
+**The blank integer cell.** `coerce_types` widened an INTEGER column to float64 as soon as one cell
+was empty, so the integer cast received `NaN` and raised
+`ValueError: cannot convert float NaN to integer`. This lived in code **every** module uses, and 506
+tests were green across four modules - because modules 1-4 ship no blank integer cells. It surfaced
+the first time module 5's deliberate missing-data sample supplier was loaded.
+
+The lesson is about sample data rather than test structure: a dataset whose rows are all complete
+only ever exercises the happy path. `tests/unit/test_pipeline.py::test_integer_column_survives_a_blank_cell`
+is the regression test, and module 5's `SRK-09` anchor is the dataset row that keeps it honest.
 
 ---
 

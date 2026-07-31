@@ -45,6 +45,8 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_supplier_recommendation(payload), ensure_ascii=False)
         elif task == "invoice_validation":
             text = json.dumps(_invoice_validation(payload), ensure_ascii=False)
+        elif task == "supplier_risk":
+            text = json.dumps(_supplier_risk(payload), ensure_ascii=False)
         else:
             text = json.dumps(
                 {
@@ -88,6 +90,8 @@ def _infer_task(prompt: str) -> str:
         return "supplier_recommendation"
     if "invoice validation" in lowered or "invoice exception" in lowered:
         return "invoice_validation"
+    if "supplier risk" in lowered or "risk assessment" in lowered:
+        return "supplier_risk"
     if "finding" in lowered:
         return "explain_finding"
     return "unknown"
@@ -393,4 +397,101 @@ def _invoice_validation(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": " ".join(sentences),
         "key_findings": key_findings,
         "recommended_actions": actions[: max(2, min(4, len(actions)))],
+    }
+
+
+def _supplier_risk(payload: dict[str, Any]) -> dict[str, Any]:
+    """Build the mock supplier risk narrative from the deterministic scores.
+
+    Every figure below is copied from the payload the scoring model produced.
+    The mock never invents a score, a band or a supplier.
+    """
+    summary_data: dict[str, Any] = payload.get("assessment_summary", {}) or {}
+    top_suppliers: list[dict[str, Any]] = payload.get("top_suppliers", []) or []
+    category_averages: dict[str, Any] = payload.get("category_averages", {}) or {}
+
+    supplier_count = summary_data.get("supplier_count", 0)
+    scored_count = summary_data.get("scored_count", 0)
+    band_counts = summary_data.get("band_counts", {}) or {}
+    average_score = summary_data.get("average_overall_score")
+    expiring = summary_data.get("contracts_expiring_count", 0)
+    limited = summary_data.get("limited_data_count", 0)
+
+    sentences = [
+        f"The risk model scored {scored_count:,} of {supplier_count:,} loaded suppliers using "
+        f"the configured category weights.",
+    ]
+    if average_score is not None:
+        sentences.append(
+            f"The average overall risk is {float(average_score):.1f} out of 100, with "
+            f"{band_counts.get('critical', 0)} supplier(s) in the critical band and "
+            f"{band_counts.get('high', 0)} in the high band."
+        )
+    if top_suppliers:
+        leader = top_suppliers[0]
+        leader_score = leader.get("overall_score")
+        if leader_score is not None:
+            sentences.append(
+                f"The highest-risk supplier is {leader.get('supplier_name') or leader.get('supplier_id')} "
+                f"({leader.get('supplier_id')}) at {float(leader_score):.1f} "
+                f"('{leader.get('overall_band')}')."
+            )
+    if expiring:
+        sentences.append(f"{expiring} supplier contract(s) fall inside the expiry warning window.")
+    sentences.append(
+        "All figures come from the uploaded internal records only; no live financial, credit, "
+        "ESG or news service was contacted."
+    )
+
+    key_findings: list[str] = []
+    for supplier in top_suppliers[:3]:
+        score = supplier.get("overall_score")
+        if score is None:
+            continue
+        drivers = supplier.get("top_drivers", []) or []
+        driver_text = ", ".join(
+            f"{item.get('label')} {item.get('score')}" for item in drivers[:2]
+        )
+        name = supplier.get("supplier_name") or supplier.get("supplier_id")
+        finding = f"{name} ({supplier.get('supplier_id')}): overall risk {float(score):.1f} "
+        finding += f"('{supplier.get('overall_band')}')"
+        if driver_text:
+            finding += f", driven by {driver_text}"
+        key_findings.append(finding + ".")
+
+    ranked_categories = [
+        (name, value) for name, value in category_averages.items() if value is not None
+    ]
+    ranked_categories.sort(key=lambda item: -float(item[1]))
+    if ranked_categories:
+        worst_name, worst_value = ranked_categories[0]
+        key_findings.append(
+            f"Across the portfolio the highest average category risk is "
+            f"{worst_name.replace('_', ' ')} at {float(worst_value):.1f}."
+        )
+    if limited:
+        key_findings.append(
+            f"{limited} supplier(s) were flagged as having limited data, so their scores rest "
+            f"on a partial set of metrics."
+        )
+
+    recommended_actions: list[str] = []
+    for supplier in top_suppliers[:3]:
+        actions = supplier.get("actions", []) or []
+        if actions:
+            name = supplier.get("supplier_name") or supplier.get("supplier_id")
+            recommended_actions.append(f"{name}: {actions[0]}")
+    if expiring:
+        recommended_actions.append(
+            "Review the contracts inside the expiry window before they lapse."
+        )
+    if not recommended_actions:
+        recommended_actions.append(
+            "No escalation was triggered by the risk rules; continue routine monitoring."
+        )
+
+    return {
+        "summary": " ".join(sentences),
+        "key_findings": key_findings,
+        "recommended_actions": recommended_actions,
     }

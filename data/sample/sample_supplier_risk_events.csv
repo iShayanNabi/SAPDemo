@@ -1,0 +1,180 @@
+EVENT_ID,LIFNR,EVENT_TYPE,BUDAT,REFERENCE,SEVERITY,DESCRIPTION,WRBTR,WAERS
+SRE-00001,0000300001,late_delivery,2026-05-11,4500099582,high,Goods receipt 26 days after the confirmed date.,,
+SRE-00002,0000300001,late_delivery,2026-03-07,4500081277,high,Goods receipt 33 days after the confirmed date.,,
+SRE-00003,0000300001,late_delivery,2026-01-25,4500053062,high,Goods receipt 30 days after the confirmed date.,,
+SRE-00004,0000300001,late_delivery,2026-04-18,4500095001,high,Goods receipt 32 days after the confirmed date.,,
+SRE-00005,0000300001,late_delivery,2025-11-09,4500092382,high,Goods receipt 4 days after the confirmed date.,,
+SRE-00006,0000300001,late_delivery,2025-12-06,4500034969,high,Goods receipt 30 days after the confirmed date.,,
+SRE-00007,0000300001,quality_incident,2026-02-22,QN-10001039,high,Non-conformance report raised; batch quarantined at goods receipt.,12666.0,EUR
+SRE-00008,0000300001,quality_incident,2026-01-16,QN-10007653,high,Non-conformance report raised; batch quarantined at goods receipt.,20462.0,EUR
+SRE-00009,0000300001,quality_incident,2026-05-23,QN-10006816,high,Non-conformance report raised; batch quarantined at goods receipt.,21736.0,EUR
+SRE-00010,0000300001,quality_incident,2025-12-29,QN-10007115,high,Non-conformance report raised; batch quarantined at goods receipt.,18141.0,EUR
+SRE-00011,0000300001,invoice_exception,2026-06-10,5105620204,medium,Invoice blocked: price and quantity did not match the purchase order.,2065.0,EUR
+SRE-00012,0000300001,invoice_exception,2026-02-09,5105636607,medium,Invoice blocked: price and quantity did not match the purchase order.,5646.0,EUR
+SRE-00013,0000300001,invoice_exception,2026-01-17,5105647882,medium,Invoice blocked: price and quantity did not match the purchase order.,3382.0,EUR
+SRE-00014,0000300001,invoice_exception,2025-10-30,5105619607,medium,Invoice blocked: price and quantity did not match the purchase order.,34700.0,EUR
+SRE-00015,0000300001,compliance_finding,2026-04-03,CF-2026-920,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00016,0000300001,compliance_finding,2026-05-11,CF-2026-547,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00017,0000300001,payment_default,2026-01-04,AP-2026-708,critical,Payment default recorded by accounts payable.,50109.0,EUR
+SRE-00018,0000300001,payment_default,2026-04-01,AP-2026-314,critical,Payment default recorded by accounts payable.,67233.0,EUR
+SRE-00019,0000300002,late_delivery,2026-04-19,4500069419,high,Goods receipt 18 days after the confirmed date.,,
+SRE-00020,0000300002,late_delivery,2026-03-06,4500045935,high,Goods receipt 34 days after the confirmed date.,,
+SRE-00021,0000300002,late_delivery,2026-06-23,4500081144,high,Goods receipt 2 days after the confirmed date.,,
+SRE-00022,0000300002,late_delivery,2026-04-10,4500039431,high,Goods receipt 30 days after the confirmed date.,,
+SRE-00023,0000300002,late_delivery,2026-01-29,4500075293,high,Goods receipt 27 days after the confirmed date.,,
+SRE-00024,0000300002,late_delivery,2026-03-15,4500075368,high,Goods receipt 19 days after the confirmed date.,,
+SRE-00025,0000300002,late_delivery,2026-07-01,4500050045,high,Goods receipt 33 days after the confirmed date.,,
+SRE-00026,0000300002,late_delivery,2026-05-12,4500070900,high,Goods receipt 2 days after the confirmed date.,,
+SRE-00027,0000300002,late_delivery,2026-04-17,4500078839,high,Goods receipt 20 days after the confirmed date.,,
+SRE-00028,0000300002,late_delivery,2026-04-21,4500099623,high,Goods receipt 16 days after the confirmed date.,,
+SRE-00029,0000300002,late_delivery,2026-01-09,4500020612,high,Goods receipt 34 days after the confirmed date.,,
+SRE-00030,0000300002,late_delivery,2025-11-10,4500084189,high,Goods receipt 10 days after the confirmed date.,,
+SRE-00031,0000300002,late_delivery,2025-12-11,4500037377,high,Goods receipt 12 days after the confirmed date.,,
+SRE-00032,0000300002,late_delivery,2025-10-25,4500061144,high,Goods receipt 20 days after the confirmed date.,,
+SRE-00033,0000300002,late_delivery,2025-12-04,4500092390,high,Goods receipt 15 days after the confirmed date.,,
+SRE-00034,0000300002,late_delivery,2025-11-11,4500091586,high,Goods receipt 26 days after the confirmed date.,,
+SRE-00035,0000300002,contract_event,2026-07-01,4600088737,low,Outline agreement change recorded: renewal not yet signed.,271251.0,EUR
+SRE-00036,0000300003,quality_incident,2026-02-13,QN-10005492,high,Non-conformance report raised; batch quarantined at goods receipt.,2680.0,EUR
+SRE-00037,0000300003,quality_incident,2026-05-24,QN-10002658,high,Non-conformance report raised; batch quarantined at goods receipt.,22155.0,EUR
+SRE-00038,0000300003,quality_incident,2026-04-04,QN-10009766,high,Non-conformance report raised; batch quarantined at goods receipt.,8952.0,EUR
+SRE-00039,0000300003,quality_incident,2026-02-20,QN-10005839,high,Non-conformance report raised; batch quarantined at goods receipt.,24611.0,EUR
+SRE-00040,0000300003,quality_incident,2026-03-30,QN-10006283,high,Non-conformance report raised; batch quarantined at goods receipt.,6246.0,EUR
+SRE-00041,0000300003,quality_incident,2026-05-21,QN-10003742,high,Non-conformance report raised; batch quarantined at goods receipt.,12045.0,EUR
+SRE-00042,0000300003,quality_incident,2026-04-08,QN-10002697,high,Non-conformance report raised; batch quarantined at goods receipt.,13646.0,EUR
+SRE-00043,0000300003,quality_incident,2026-02-04,QN-10002603,high,Non-conformance report raised; batch quarantined at goods receipt.,24945.0,EUR
+SRE-00044,0000300003,quality_incident,2026-06-09,QN-10003665,high,Non-conformance report raised; batch quarantined at goods receipt.,14727.0,EUR
+SRE-00045,0000300003,quality_incident,2025-11-05,QN-10009595,high,Non-conformance report raised; batch quarantined at goods receipt.,4544.0,EUR
+SRE-00046,0000300003,quality_incident,2025-12-22,QN-10002645,high,Non-conformance report raised; batch quarantined at goods receipt.,22427.0,EUR
+SRE-00047,0000300003,quality_incident,2025-07-25,QN-10001391,high,Non-conformance report raised; batch quarantined at goods receipt.,22325.0,EUR
+SRE-00048,0000300003,quality_incident,2025-08-17,QN-10004036,high,Non-conformance report raised; batch quarantined at goods receipt.,22949.0,EUR
+SRE-00049,0000300003,late_delivery,2026-05-06,4500029158,medium,Goods receipt 29 days after the confirmed date.,,
+SRE-00050,0000300003,late_delivery,2026-05-03,4500032003,medium,Goods receipt 18 days after the confirmed date.,,
+SRE-00051,0000300003,late_delivery,2025-09-15,4500093558,medium,Goods receipt 24 days after the confirmed date.,,
+SRE-00052,0000300004,payment_default,2026-02-16,AP-2026-147,critical,Payment default recorded by accounts payable.,31721.0,EUR
+SRE-00053,0000300004,payment_default,2026-06-14,AP-2026-395,critical,Payment default recorded by accounts payable.,116807.0,EUR
+SRE-00054,0000300004,payment_default,2026-04-17,AP-2026-750,critical,Payment default recorded by accounts payable.,115980.0,EUR
+SRE-00055,0000300004,payment_default,2026-05-11,AP-2026-198,critical,Payment default recorded by accounts payable.,8282.0,EUR
+SRE-00056,0000300004,payment_default,2025-12-15,AP-2026-835,critical,Payment default recorded by accounts payable.,16518.0,EUR
+SRE-00057,0000300004,invoice_exception,2026-03-25,5105650935,medium,Invoice blocked: price and quantity did not match the purchase order.,6263.0,EUR
+SRE-00058,0000300004,invoice_exception,2026-06-06,5105612595,medium,Invoice blocked: price and quantity did not match the purchase order.,6682.0,EUR
+SRE-00059,0000300004,invoice_exception,2025-12-24,5105668589,medium,Invoice blocked: price and quantity did not match the purchase order.,40565.0,EUR
+SRE-00060,0000300004,compliance_finding,2026-06-14,CF-2026-543,high,Supplier audit finding recorded and not yet closed.,,
+SRE-00061,0000300005,contract_event,2026-05-09,4600080238,high,Outline agreement change recorded: renewal not yet signed.,112656.0,EUR
+SRE-00062,0000300005,contract_event,2026-01-04,4600080987,high,Outline agreement change recorded: renewal not yet signed.,540151.0,EUR
+SRE-00063,0000300005,contract_event,2026-05-10,4600084673,high,Outline agreement change recorded: renewal not yet signed.,226988.0,EUR
+SRE-00064,0000300005,contract_event,2025-09-17,4600087949,high,Outline agreement change recorded: renewal not yet signed.,600160.0,EUR
+SRE-00065,0000300005,late_delivery,2026-02-08,4500060042,low,Goods receipt 9 days after the confirmed date.,,
+SRE-00066,0000300005,late_delivery,2026-01-07,4500060878,low,Goods receipt 22 days after the confirmed date.,,
+SRE-00067,0000300005,late_delivery,2025-09-12,4500048605,low,Goods receipt 26 days after the confirmed date.,,
+SRE-00068,0000300006,contract_event,2026-06-22,4600088412,medium,Outline agreement change recorded: renewal not yet signed.,609102.0,EUR
+SRE-00069,0000300006,contract_event,2026-01-16,4600087778,medium,Outline agreement change recorded: renewal not yet signed.,216760.0,EUR
+SRE-00070,0000300006,contract_event,2026-01-30,4600087199,medium,Outline agreement change recorded: renewal not yet signed.,309454.0,EUR
+SRE-00071,0000300006,contract_event,2026-03-22,4600085627,medium,Outline agreement change recorded: renewal not yet signed.,634309.0,EUR
+SRE-00072,0000300006,contract_event,2025-09-11,4600086290,medium,Outline agreement change recorded: renewal not yet signed.,727833.0,EUR
+SRE-00073,0000300007,invoice_exception,2026-02-27,5105663118,high,Invoice blocked: price and quantity did not match the purchase order.,44789.0,EUR
+SRE-00074,0000300007,invoice_exception,2026-02-10,5105668576,high,Invoice blocked: price and quantity did not match the purchase order.,11324.0,EUR
+SRE-00075,0000300007,invoice_exception,2026-03-07,5105657055,high,Invoice blocked: price and quantity did not match the purchase order.,7819.0,EUR
+SRE-00076,0000300007,invoice_exception,2026-05-13,5105634923,high,Invoice blocked: price and quantity did not match the purchase order.,7233.0,EUR
+SRE-00077,0000300007,invoice_exception,2026-04-30,5105667696,high,Invoice blocked: price and quantity did not match the purchase order.,2730.0,EUR
+SRE-00078,0000300007,invoice_exception,2026-02-02,5105676915,high,Invoice blocked: price and quantity did not match the purchase order.,28397.0,EUR
+SRE-00079,0000300007,invoice_exception,2026-01-06,5105691415,high,Invoice blocked: price and quantity did not match the purchase order.,35258.0,EUR
+SRE-00080,0000300007,invoice_exception,2026-02-20,5105667823,high,Invoice blocked: price and quantity did not match the purchase order.,16064.0,EUR
+SRE-00081,0000300007,invoice_exception,2026-05-23,5105656811,high,Invoice blocked: price and quantity did not match the purchase order.,13693.0,EUR
+SRE-00082,0000300007,invoice_exception,2026-02-26,5105681280,high,Invoice blocked: price and quantity did not match the purchase order.,19470.0,EUR
+SRE-00083,0000300007,invoice_exception,2025-10-06,5105661089,high,Invoice blocked: price and quantity did not match the purchase order.,39316.0,EUR
+SRE-00084,0000300007,invoice_exception,2025-12-10,5105676324,high,Invoice blocked: price and quantity did not match the purchase order.,26307.0,EUR
+SRE-00085,0000300007,invoice_exception,2025-09-12,5105635755,high,Invoice blocked: price and quantity did not match the purchase order.,32930.0,EUR
+SRE-00086,0000300007,invoice_exception,2025-08-19,5105685734,high,Invoice blocked: price and quantity did not match the purchase order.,24400.0,EUR
+SRE-00087,0000300007,late_delivery,2026-03-03,4500034005,low,Goods receipt 10 days after the confirmed date.,,
+SRE-00088,0000300007,late_delivery,2025-09-03,4500034229,low,Goods receipt 25 days after the confirmed date.,,
+SRE-00089,0000300008,compliance_finding,2026-05-26,CF-2026-945,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00090,0000300008,compliance_finding,2026-04-11,CF-2026-425,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00091,0000300008,compliance_finding,2026-06-04,CF-2026-923,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00092,0000300008,compliance_finding,2026-07-01,CF-2026-107,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00093,0000300008,compliance_finding,2026-03-09,CF-2026-396,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00094,0000300008,compliance_finding,2026-04-06,CF-2026-215,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00095,0000300008,compliance_finding,2025-08-10,CF-2026-719,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00096,0000300008,compliance_finding,2025-12-27,CF-2026-162,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00097,0000300008,compliance_finding,2025-11-17,CF-2026-353,critical,Supplier audit finding recorded and not yet closed.,,
+SRE-00098,0000300008,quality_incident,2026-05-11,QN-10004782,medium,Non-conformance report raised; batch quarantined at goods receipt.,19985.0,EUR
+SRE-00099,0000300008,quality_incident,2026-05-18,QN-10006508,medium,Non-conformance report raised; batch quarantined at goods receipt.,16451.0,EUR
+SRE-00100,0000300008,quality_incident,2025-08-30,QN-10009844,medium,Non-conformance report raised; batch quarantined at goods receipt.,8147.0,EUR
+SRE-00101,0000300010,invoice_exception,2026-06-23,5105690095,high,Invoice blocked: price and quantity did not match the purchase order.,34198.0,EUR
+SRE-00102,0000300010,quality_incident,2026-01-06,QN-10003836,medium,Non-conformance report raised; batch quarantined at goods receipt.,22349.0,EUR
+SRE-00103,0000300010,late_delivery,2025-08-13,4500073919,low,Goods receipt 11 days after the confirmed date.,,
+SRE-00104,0000300011,compliance_finding,2025-12-24,CF-2026-814,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00105,0000300012,invoice_exception,2026-04-10,5105617275,low,Invoice blocked: price and quantity did not match the purchase order.,30754.0,EUR
+SRE-00106,0000300012,invoice_exception,2025-12-25,5105628980,low,Invoice blocked: price and quantity did not match the purchase order.,34929.0,EUR
+SRE-00107,0000300012,late_delivery,2026-02-27,4500075940,medium,Goods receipt 19 days after the confirmed date.,,
+SRE-00108,0000300013,quality_incident,2025-11-21,QN-10004376,medium,Non-conformance report raised; batch quarantined at goods receipt.,24666.0,EUR
+SRE-00109,0000300013,payment_default,2026-05-09,AP-2026-268,high,Payment default recorded by accounts payable.,94495.0,EUR
+SRE-00110,0000300014,late_delivery,2025-09-21,4500068747,medium,Goods receipt 4 days after the confirmed date.,,
+SRE-00111,0000300014,contract_event,2025-10-19,4600087124,low,Outline agreement change recorded: renewal not yet signed.,834365.0,EUR
+SRE-00112,0000300015,payment_default,2025-09-19,AP-2026-396,high,Payment default recorded by accounts payable.,77430.0,EUR
+SRE-00113,0000300015,compliance_finding,2026-04-01,CF-2026-146,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00114,0000300015,compliance_finding,2025-08-17,CF-2026-201,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00115,0000300016,contract_event,2026-06-26,4600088150,low,Outline agreement change recorded: renewal not yet signed.,176615.0,EUR
+SRE-00116,0000300016,contract_event,2025-08-19,4600087954,high,Outline agreement change recorded: renewal not yet signed.,162904.0,EUR
+SRE-00117,0000300017,payment_default,2025-07-25,AP-2026-245,medium,Payment default recorded by accounts payable.,50376.0,EUR
+SRE-00118,0000300018,compliance_finding,2025-09-02,CF-2026-226,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00119,0000300019,invoice_exception,2025-10-06,5105623949,high,Invoice blocked: price and quantity did not match the purchase order.,43440.0,EUR
+SRE-00120,0000300019,payment_default,2026-04-30,AP-2026-781,low,Payment default recorded by accounts payable.,26140.0,EUR
+SRE-00121,0000300020,contract_event,2026-04-10,4600089804,low,Outline agreement change recorded: renewal not yet signed.,458622.0,EUR
+SRE-00122,0000300020,payment_default,2026-03-27,AP-2026-992,low,Payment default recorded by accounts payable.,19901.0,EUR
+SRE-00123,0000300021,quality_incident,2025-10-25,QN-10002757,medium,Non-conformance report raised; batch quarantined at goods receipt.,1870.0,EUR
+SRE-00124,0000300021,compliance_finding,2025-12-14,CF-2026-827,high,Supplier audit finding recorded and not yet closed.,,
+SRE-00125,0000300022,quality_incident,2025-10-15,QN-10006139,medium,Non-conformance report raised; batch quarantined at goods receipt.,3112.0,EUR
+SRE-00126,0000300022,contract_event,2026-06-14,4600084958,high,Outline agreement change recorded: renewal not yet signed.,533627.0,EUR
+SRE-00127,0000300022,compliance_finding,2026-02-26,CF-2026-257,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00128,0000300023,payment_default,2026-01-24,AP-2026-906,low,Payment default recorded by accounts payable.,29644.0,EUR
+SRE-00129,0000300023,contract_event,2025-12-06,4600086975,high,Outline agreement change recorded: renewal not yet signed.,506064.0,EUR
+SRE-00130,0000300023,contract_event,2026-05-15,4600086000,low,Outline agreement change recorded: renewal not yet signed.,460132.0,EUR
+SRE-00131,0000300024,compliance_finding,2025-11-05,CF-2026-380,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00132,0000300024,payment_default,2026-05-21,AP-2026-900,low,Payment default recorded by accounts payable.,15265.0,EUR
+SRE-00133,0000300025,late_delivery,2026-04-28,4500056016,medium,Goods receipt 26 days after the confirmed date.,,
+SRE-00134,0000300026,invoice_exception,2026-02-15,5105610713,low,Invoice blocked: price and quantity did not match the purchase order.,19315.0,EUR
+SRE-00135,0000300027,invoice_exception,2026-02-02,5105636256,medium,Invoice blocked: price and quantity did not match the purchase order.,29356.0,EUR
+SRE-00136,0000300027,quality_incident,2026-04-29,QN-10008666,low,Non-conformance report raised; batch quarantined at goods receipt.,6351.0,EUR
+SRE-00137,0000300027,payment_default,2026-04-16,AP-2026-889,medium,Payment default recorded by accounts payable.,42574.0,EUR
+SRE-00138,0000300028,compliance_finding,2026-06-02,CF-2026-931,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00139,0000300028,invoice_exception,2025-11-03,5105645474,low,Invoice blocked: price and quantity did not match the purchase order.,12107.0,EUR
+SRE-00140,0000300028,invoice_exception,2025-11-01,5105695690,high,Invoice blocked: price and quantity did not match the purchase order.,29417.0,EUR
+SRE-00141,0000300030,compliance_finding,2026-01-22,CF-2026-356,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00142,0000300030,invoice_exception,2025-07-20,5105624924,low,Invoice blocked: price and quantity did not match the purchase order.,14814.0,EUR
+SRE-00143,0000300031,invoice_exception,2025-09-17,5105680679,low,Invoice blocked: price and quantity did not match the purchase order.,38958.0,EUR
+SRE-00144,0000300031,quality_incident,2025-11-06,QN-10008745,medium,Non-conformance report raised; batch quarantined at goods receipt.,12920.0,EUR
+SRE-00145,0000300031,compliance_finding,2026-01-08,CF-2026-879,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00146,0000300033,invoice_exception,2025-07-27,5105662087,medium,Invoice blocked: price and quantity did not match the purchase order.,17336.0,EUR
+SRE-00147,0000300034,compliance_finding,2026-06-29,CF-2026-593,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00148,0000300034,quality_incident,2026-03-14,QN-10004943,medium,Non-conformance report raised; batch quarantined at goods receipt.,24559.0,EUR
+SRE-00149,0000300034,compliance_finding,2026-02-11,CF-2026-235,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00150,0000300035,invoice_exception,2026-03-06,5105681100,high,Invoice blocked: price and quantity did not match the purchase order.,31925.0,EUR
+SRE-00151,0000300035,contract_event,2025-07-30,4600089077,medium,Outline agreement change recorded: renewal not yet signed.,161823.0,EUR
+SRE-00152,0000300036,quality_incident,2025-09-02,QN-10002758,low,Non-conformance report raised; batch quarantined at goods receipt.,18954.0,EUR
+SRE-00153,0000300036,contract_event,2025-12-15,4600085131,low,Outline agreement change recorded: renewal not yet signed.,306335.0,EUR
+SRE-00154,0000300036,payment_default,2025-12-02,AP-2026-982,medium,Payment default recorded by accounts payable.,9065.0,EUR
+SRE-00155,0000300037,invoice_exception,2025-07-14,5105657274,medium,Invoice blocked: price and quantity did not match the purchase order.,15072.0,EUR
+SRE-00156,0000300037,contract_event,2026-05-27,4600080384,low,Outline agreement change recorded: renewal not yet signed.,323562.0,EUR
+SRE-00157,0000300037,quality_incident,2026-04-05,QN-10006779,low,Non-conformance report raised; batch quarantined at goods receipt.,10455.0,EUR
+SRE-00158,0000300039,contract_event,2025-10-25,4600088770,high,Outline agreement change recorded: renewal not yet signed.,253920.0,EUR
+SRE-00159,0000300043,compliance_finding,2025-12-01,CF-2026-355,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00160,0000300044,contract_event,2025-07-18,4600085543,low,Outline agreement change recorded: renewal not yet signed.,883001.0,EUR
+SRE-00161,0000300044,invoice_exception,2026-01-28,5105690346,low,Invoice blocked: price and quantity did not match the purchase order.,40662.0,EUR
+SRE-00162,0000300044,late_delivery,2025-08-30,4500078623,medium,Goods receipt 2 days after the confirmed date.,,
+SRE-00163,0000300045,invoice_exception,2025-10-21,5105611633,medium,Invoice blocked: price and quantity did not match the purchase order.,34891.0,EUR
+SRE-00164,0000300045,compliance_finding,2026-04-23,CF-2026-759,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00165,0000300045,invoice_exception,2026-04-04,5105633432,low,Invoice blocked: price and quantity did not match the purchase order.,17644.0,EUR
+SRE-00166,0000300047,invoice_exception,2026-03-06,5105654965,low,Invoice blocked: price and quantity did not match the purchase order.,14485.0,EUR
+SRE-00167,0000300047,invoice_exception,2026-03-28,5105613084,low,Invoice blocked: price and quantity did not match the purchase order.,30862.0,EUR
+SRE-00168,0000300047,contract_event,2025-10-02,4600080910,medium,Outline agreement change recorded: renewal not yet signed.,285290.0,EUR
+SRE-00169,0000300048,compliance_finding,2025-07-15,CF-2026-104,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00170,0000300048,compliance_finding,2026-05-16,CF-2026-674,low,Supplier audit finding recorded and not yet closed.,,
+SRE-00171,0000300049,payment_default,2026-01-20,AP-2026-653,low,Payment default recorded by accounts payable.,82768.0,EUR
+SRE-00172,0000300049,quality_incident,2025-08-01,QN-10002009,high,Non-conformance report raised; batch quarantined at goods receipt.,9937.0,EUR
+SRE-00173,0000300049,quality_incident,2025-09-04,QN-10001616,medium,Non-conformance report raised; batch quarantined at goods receipt.,12833.0,EUR
+SRE-00174,0000300052,compliance_finding,2026-05-01,CF-2026-598,medium,Supplier audit finding recorded and not yet closed.,,
+SRE-00175,0000300052,payment_default,2026-07-01,AP-2026-657,low,Payment default recorded by accounts payable.,35408.0,EUR
+SRE-00176,0000300052,payment_default,2025-10-21,AP-2026-161,medium,Payment default recorded by accounts payable.,19884.0,EUR
+SRE-00177,0000300054,contract_event,2025-12-23,4600085035,low,Outline agreement change recorded: renewal not yet signed.,787595.0,EUR
+SRE-00178,0000300055,quality_incident,2026-04-29,QN-10005683,low,Non-conformance report raised; batch quarantined at goods receipt.,2478.0,EUR
+SRE-00179,0000300055,quality_incident,2026-02-12,QN-10004881,low,Non-conformance report raised; batch quarantined at goods receipt.,3969.0,EUR
