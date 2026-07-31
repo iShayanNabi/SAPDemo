@@ -20,7 +20,7 @@ are required.**
 | 3 | **Supplier Recommendation Engine** | **Implemented** |
 | 4 | **Invoice Validator** | **Implemented** |
 | 5 | **Supplier Risk Copilot** | **Implemented** |
-| 6 | Contract Assistant | Planned |
+| 6 | **Contract Assistant** | **Implemented** |
 | 7 | Inventory Predictor | Planned |
 | 8 | SAP Test Case Generator | Planned |
 | 9 | SAP Blueprint Generator | Planned |
@@ -354,6 +354,125 @@ what the data supports, it says so plainly instead of producing a plausible sent
 
 ---
 
+## Module 6 - Contract Assistant
+
+Reads a contract document and turns it into a structured, **verifiable** record: the clauses, the
+key dates, the obligations and the risks - each one carrying the page it came from, the heading it
+sat under, a short supporting excerpt and a confidence score. Then answers questions from those
+same extractions, with citations.
+
+**Workflow:** upload -> file validation -> text extraction -> page segmentation -> section
+detection -> clause extraction -> structured validation -> risk analysis -> question answering ->
+export.
+
+### Supported documents
+
+| Format | Works out of the box | Notes |
+| --- | --- | --- |
+| Text-based PDF | Yes | via `pypdf`; one entry per real page |
+| DOCX | Yes | via `python-docx`; headings and tables are read |
+| TXT / MD | Yes | form feeds become pages, otherwise a paragraph-safe character budget |
+| Scanned PDF / images | Only with OCR configured | reported as `needs_ocr`, never analysed as empty |
+
+Extraction lives in `app/services/documents/` behind a `DocumentExtractor` interface, with an OCR
+seam (`ocr.py`) that declares **local OCR (Tesseract)**, **AWS Textract** and **Azure AI Document
+Intelligence**. All three are unconfigured by default and say so - `GET /api/v1/contracts/extractors`
+reports exactly what this installation can and cannot read, without ever revealing a credential.
+
+> **A scanned file is not silently accepted.** If no text can be extracted and no OCR provider is
+> configured, the upload comes back with `status: needs_ocr` and an explanation, and the analyse
+> endpoint refuses rather than returning an empty contract.
+
+### What is extracted
+
+Seventeen clause types - contract term, auto-renewal, termination and notice, payment terms,
+pricing, service levels, penalties, limitation of liability, indemnification, confidentiality,
+data privacy, insurance, governing law, dispute resolution, force majeure, assignment and audit
+rights - plus the contract title, the parties and their roles, the key dates, the obligations,
+the **missing clauses** and the **potential risks**.
+
+Structured values are parsed out of the clause text where they exist: `net_days`, an early-payment
+discount, notice periods, renewal terms, liability caps and their currency, an availability
+percentage, a named jurisdiction. Anything that cannot be parsed is simply absent - never a zero
+that would read as a real figure.
+
+### Every claim carries its source
+
+The module's unit of output is a value **plus a source reference**:
+
+| Field | Meaning |
+| --- | --- |
+| `page_number` | 1-based, as a reader sees it |
+| `section_heading` | quoted verbatim from the document (`"4. TERMINATION"`) |
+| `excerpt` | a short quotation, clamped to the clause's own section |
+| `confidence` | a deterministic 0-1 score |
+
+Confidence is **built, not guessed**: a base value, plus a bonus when the clause sits under a
+heading that names it, plus the defining phrase, plus capped bonuses for supporting phrases and for
+a value that actually parsed, minus a penalty when the only evidence is scattered across unrelated
+pages. The weights live in `contract_rules.json`, and a clause below the review threshold is
+flagged `needs_review` rather than presented as certain.
+
+### Key dates, and how they were reached
+
+`effective_date`, `expiration_date`, `renewal_date`, `notice_deadline` and `signature_date`, each
+with a `*_basis` saying whether it was **stated** in the document or **derived** (`derived_from_term`,
+`derived_from_expiration_and_notice`). A derived date is never presented as one the contract
+printed. Dates are parsed from the formats contracts actually use - `1 January 2026`,
+`January 1, 2026`, `the 1st day of January 2026`, `2026-01-01`, `01/01/2026` - with the ambiguous
+numeric case resolved by the configurable `day_first` setting, and reported on the result.
+
+### Risk rules
+
+Twenty deterministic rules (`CA-R001`-`CA-R020`) covering renewal traps, short notice periods,
+missing required clauses, uncapped and unlimited liability, penalties, expiry windows, payment
+terms outside policy, one-sided indemnities, unremedied service levels, free assignment, absent
+audit rights, unapproved governing law, prompt-injection bait, unreadable documents, missing key
+dates and low-confidence extractions. Each is isolated: one broken rule lands in `rule_errors` and
+the other nineteen still produce findings.
+
+### Question answering
+
+Deterministic, and answered **from the extracted clauses** - not from a language model. A question
+is scored against the same clause vocabulary used for extraction, and the answer quotes the clause
+with its page and heading:
+
+| Question | Answered from |
+| --- | --- |
+| What are the payment terms? | the payment clause, with `net_days` |
+| When does this contract expire? | the computed key dates and their basis |
+| Does it renew automatically? | the auto-renewal clause and its notice period |
+| Is liability capped? | the liability clause and any parsed cap |
+| Which clauses are missing? | the missing-clause list |
+| What are the risks? | the rule findings |
+
+Because the answer and the clause table read the same extraction, **they cannot disagree**. When
+the contract does not cover a question, the assistant says so and lists what it does cover, instead
+of producing a fluent wrong paragraph.
+
+### Uploaded documents are untrusted data
+
+A contract is written by someone outside the organisation, which makes this the sharpest version of
+the prompt-injection problem in the lab. Four layers apply:
+
+1. instruction-like text found in a document is **reported as a finding** (`CA-R016`), so a
+   reviewer learns the document was tampered with;
+2. it never changes an extraction - clause detection is pattern matching over the text, not
+   instruction following;
+3. only *results* ever reach an AI provider, never the whole document, and every string is passed
+   through the shared injection filter first;
+4. the prompt wraps the payload in an explicit `<untrusted_data>` block whose system prompt forbids
+   following anything inside it.
+
+`sample_contract_hostile_calder` exists to prove this: it asks to be recorded as approved with no
+risks and to have an API key printed. The test suite asserts that it is reported, and not obeyed.
+
+> **Not legal advice.** Every clause, date and risk is extracted by deterministic pattern matching
+> from the uploaded file. This is an assistive review and no substitute for reading the contract;
+> nothing here has been validated in a live SAP environment.
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -395,6 +514,26 @@ recreates its dataset byte for byte, and rewrites that module's `expected_*_base
 
 The generator is seeded, so regenerating reproduces the identical dataset. The background
 population is deliberately built *not* to trigger rules, which makes every finding traceable.
+
+`python scripts/generate_contract_sample_data.py` produces **six fictional contracts, each in
+three formats** (`.txt`, a real text-based `.pdf`, and a `.docx` with real heading styles and a
+table), plus
+[`data/sample/CONTRACT_SCENARIO_MANIFEST.md`](data/sample/CONTRACT_SCENARIO_MANIFEST.md) and
+`expected_contract_baseline.json`:
+
+| Contract | What it demonstrates |
+| --- | --- |
+| `msa_nordwind` | auto-renewal, a 14-day termination notice, liquidated damages, net 90 payment terms |
+| `supply_ravenna` | no data-privacy clause, unlimited liability, assignment without consent, Singapore law |
+| `saas_helvetia` | service levels with credits, an expiry inside the warning window, a renewal notice deadline that has already passed |
+| `services_baltic` | a clean, well-drafted agreement - the negative control |
+| `nda_meridian` | a short NDA that genuinely lacks most clause types |
+| `hostile_calder` | prompt-injection bait inside the contract text |
+
+The same agreement exists in all three formats so the tests can prove PDF, DOCX and TXT extraction
+reach **identical** conclusions. 21 documented scenarios are asserted by name, and the baseline is
+recorded by reading the written files back through the real extractor - not from the generator's
+in-memory strings.
 
 `python scripts/generate_spend_sample_data.py` produces the spend dataset:
 
@@ -459,14 +598,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (664 tests, ~100s)
-pytest tests/unit         # 381 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, security, AI
-pytest tests/api          # 170 - endpoints against a temporary database
-pytest tests/integration  # 113 - full journeys over all five sample datasets
+pytest                    # everything (876 tests, ~130s)
+pytest tests/unit         # 515 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, prompt-injection resistance, security, AI
+pytest tests/api          # 208 - endpoints against a temporary database
+pytest tests/integration  # 153 - full journeys over all six sample datasets
 ```
 
-The integration suites read the anomaly, scenario, supplier, invoice and supplier-risk manifests
-and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk and contract
+manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 
@@ -481,7 +620,10 @@ by an endpoint or written to a log.
 | `DATABASE_URL` | SQLite in `data/` | PostgreSQL-ready connection string |
 | `AI_PROVIDER` | `mock` | `mock`, `anthropic` or `openai` |
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | unset | Only needed for a real model |
-| `MAX_UPLOAD_BYTES` | 25 MB | Upload size limit |
+| `MAX_UPLOAD_BYTES` | 25 MB | Tabular upload size limit (modules 1-5) |
+| `MAX_DOCUMENT_BYTES` | 20 MB | Contract document size limit (module 6) |
+| `ALLOWED_DOCUMENT_EXTENSIONS` | `.pdf,.docx,.txt,.md` | Document allow list, separate from the tabular one |
+| `OCR_PROVIDER` | `none` | `none`, `local`, `aws_textract` or `azure_document_intelligence` |
 | `API_BASE_URL` | `http://127.0.0.1:8000` | Where Streamlit finds the API |
 
 Switching to PostgreSQL is a one-line change:

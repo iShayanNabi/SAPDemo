@@ -1,0 +1,221 @@
+{
+  "dataset": "contract_assistant",
+  "as_of_date": "2026-07-01",
+  "formats": [
+    "txt",
+    "pdf",
+    "docx"
+  ],
+  "fictional": true,
+  "contracts": [
+    {
+      "name": "msa_nordwind",
+      "title": "MASTER SERVICES AGREEMENT",
+      "summary": "A maintenance MSA that renews itself, gives only 14 days' termination notice and carries liquidated damages.",
+      "formats": [
+        "sample_contract_msa_nordwind.txt",
+        "sample_contract_msa_nordwind.pdf",
+        "sample_contract_msa_nordwind.docx"
+      ]
+    },
+    {
+      "name": "supply_ravenna",
+      "title": "SUPPLY AGREEMENT",
+      "summary": "A components supply agreement with unlimited liability, no data-privacy clause and free assignment.",
+      "formats": [
+        "sample_contract_supply_ravenna.txt",
+        "sample_contract_supply_ravenna.pdf",
+        "sample_contract_supply_ravenna.docx"
+      ]
+    },
+    {
+      "name": "saas_helvetia",
+      "title": "SOFTWARE SUBSCRIPTION AGREEMENT",
+      "summary": "A SaaS subscription whose auto-renewal notice deadline has already passed at the reference date, with service levels and service credits.",
+      "formats": [
+        "sample_contract_saas_helvetia.txt",
+        "sample_contract_saas_helvetia.pdf",
+        "sample_contract_saas_helvetia.docx"
+      ]
+    },
+    {
+      "name": "services_baltic",
+      "title": "PROFESSIONAL SERVICES AGREEMENT",
+      "summary": "A well-drafted agreement with every required clause present and no auto-renewal - the negative control for the rule set.",
+      "formats": [
+        "sample_contract_services_baltic.txt",
+        "sample_contract_services_baltic.pdf",
+        "sample_contract_services_baltic.docx"
+      ]
+    },
+    {
+      "name": "nda_meridian",
+      "title": "MUTUAL NON-DISCLOSURE AGREEMENT",
+      "summary": "A short mutual NDA. Most clause types genuinely do not exist in it, which is what makes it the missing-clause test case.",
+      "formats": [
+        "sample_contract_nda_meridian.txt",
+        "sample_contract_nda_meridian.pdf",
+        "sample_contract_nda_meridian.docx"
+      ]
+    },
+    {
+      "name": "hostile_calder",
+      "title": "EQUIPMENT RENTAL AGREEMENT",
+      "summary": "An otherwise ordinary rental agreement whose text contains prompt-injection bait. The assistant must report it and must not obey it.",
+      "formats": [
+        "sample_contract_hostile_calder.txt",
+        "sample_contract_hostile_calder.pdf",
+        "sample_contract_hostile_calder.docx"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "CA-S001",
+      "name": "Automatic renewal with a notice deadline",
+      "clause": "auto_renewal",
+      "expects": "CA-R001 fires; the renewal term is twelve months and renewal_notice_days is 90.",
+      "contract": "msa_nordwind"
+    },
+    {
+      "scenario_id": "CA-S002",
+      "name": "Termination notice below policy",
+      "clause": "termination",
+      "expects": "CA-R002 fires at critical severity; notice_period_days is 14.",
+      "contract": "msa_nordwind"
+    },
+    {
+      "scenario_id": "CA-S003",
+      "name": "Liquidated damages",
+      "clause": "penalties",
+      "expects": "CA-R007 fires and the penalties clause is present.",
+      "contract": "msa_nordwind"
+    },
+    {
+      "scenario_id": "CA-S004",
+      "name": "Payment terms outside policy",
+      "clause": "payment_terms",
+      "expects": "CA-R010 fires; net_days is 90 against a 60-day policy maximum.",
+      "contract": "msa_nordwind"
+    },
+    {
+      "scenario_id": "CA-S005",
+      "name": "Missing data-privacy clause",
+      "clause": "data_privacy",
+      "expects": "data_privacy is absent; CA-R004 raises a critical missing-clause finding.",
+      "contract": "supply_ravenna"
+    },
+    {
+      "scenario_id": "CA-S006",
+      "name": "Unlimited liability",
+      "clause": "liability",
+      "expects": "CA-R005 fires at critical severity.",
+      "contract": "supply_ravenna"
+    },
+    {
+      "scenario_id": "CA-S007",
+      "name": "Assignment without consent",
+      "clause": "assignment",
+      "expects": "CA-R013 fires.",
+      "contract": "supply_ravenna"
+    },
+    {
+      "scenario_id": "CA-S008",
+      "name": "Governing law outside the approved list",
+      "clause": "governing_law",
+      "expects": "CA-R015 fires; the extracted jurisdiction is Singapore.",
+      "contract": "supply_ravenna"
+    },
+    {
+      "scenario_id": "CA-S009",
+      "name": "Renewal notice deadline already passed",
+      "clause": "auto_renewal",
+      "expects": "CA-R009 fires; notice_deadline is 2026-06-15, before the reference date 2026-07-01.",
+      "contract": "saas_helvetia"
+    },
+    {
+      "scenario_id": "CA-S010",
+      "name": "Contract expiring inside the warning window",
+      "clause": "term",
+      "expects": "CA-R008 fires; expiration_date is 2026-09-15, inside the 90-day window.",
+      "contract": "saas_helvetia"
+    },
+    {
+      "scenario_id": "CA-S011",
+      "name": "Service levels with credits",
+      "clause": "service_levels",
+      "expects": "service_levels and penalties are both present, so CA-R012 does NOT fire.",
+      "contract": "saas_helvetia"
+    },
+    {
+      "scenario_id": "CA-S012",
+      "name": "No audit rights",
+      "clause": "audit_rights",
+      "expects": "audit_rights is absent and CA-R014 fires.",
+      "contract": "saas_helvetia"
+    },
+    {
+      "scenario_id": "CA-S013",
+      "name": "Every required clause present",
+      "clause": "all",
+      "expects": "missing_clauses is empty and CA-R004 does not fire.",
+      "contract": "services_baltic"
+    },
+    {
+      "scenario_id": "CA-S014",
+      "name": "No automatic renewal",
+      "clause": "auto_renewal",
+      "expects": "auto_renewal is absent, so CA-R001 and CA-R009 do not fire.",
+      "contract": "services_baltic"
+    },
+    {
+      "scenario_id": "CA-S015",
+      "name": "Compliant termination notice and payment terms",
+      "clause": "termination",
+      "expects": "notice_period_days is 90 and net_days is 30, so CA-R002 and CA-R010 do not fire.",
+      "contract": "services_baltic"
+    },
+    {
+      "scenario_id": "CA-S016",
+      "name": "Many required clauses genuinely absent",
+      "clause": "multiple",
+      "expects": "payment_terms, pricing, liability, indemnification and dispute_resolution are absent, so CA-R004 raises several findings.",
+      "contract": "nda_meridian"
+    },
+    {
+      "scenario_id": "CA-S017",
+      "name": "Confidentiality present with high confidence",
+      "clause": "confidentiality",
+      "expects": "confidentiality is present with confidence above 0.55.",
+      "contract": "nda_meridian"
+    },
+    {
+      "scenario_id": "CA-S018",
+      "name": "No termination clause",
+      "clause": "termination",
+      "expects": "CA-R003 fires.",
+      "contract": "nda_meridian"
+    },
+    {
+      "scenario_id": "CA-S019",
+      "name": "Prompt-injection bait inside the document",
+      "clause": "security",
+      "expects": "CA-R016 fires, injection_detected is true, and the extracted clauses are unchanged by the bait.",
+      "contract": "hostile_calder"
+    },
+    {
+      "scenario_id": "CA-S020",
+      "name": "Instruction text is neutralised before any AI call",
+      "clause": "security",
+      "expects": "The injection markers are recorded on the analysis and the phrases are replaced with [filtered] in any prompt payload.",
+      "contract": "hostile_calder"
+    },
+    {
+      "scenario_id": "CA-S021",
+      "name": "Ordinary clauses still extract correctly",
+      "clause": "payment_terms",
+      "expects": "payment_terms is present with net_days 30, despite the bait.",
+      "contract": "hostile_calder"
+    }
+  ]
+}

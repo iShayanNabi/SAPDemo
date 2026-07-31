@@ -158,6 +158,28 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/supplier_risk/config/supplier_risk_rules.json")
 
+    try:
+        from app.modules.contract_assistant.risk_rules import RULES as CONTRACT_RULES
+        from app.modules.contract_assistant.thresholds import (
+            CLAUSE_TYPES,
+            get_contract_config,
+        )
+
+        contract_config = get_contract_config()
+        undefined_contract = set(contract_config.rules) - set(CONTRACT_RULES)
+        if undefined_contract:
+            print(f"{FAIL} contract rules without an implementation: {sorted(undefined_contract)}")
+            problems.append("Fix app/modules/contract_assistant/config/contract_rules.json")
+        else:
+            print(
+                f"{PASS} contract assistant configuration v{contract_config.config_version}: "
+                f"{len(CLAUSE_TYPES)} clause types, {len(contract_config.rules)} rules, "
+                f"{len(contract_config.required_clauses)} required clauses"
+            )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/contract_assistant/config/contract_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -202,6 +224,41 @@ def main() -> int:
         else:
             print(f"{WARN} {label}: not generated yet")
             warnings.append(f"Run: python {script}")
+
+    # The contract samples are documents, not rows, so they are counted by file.
+    contracts = sorted(settings.sample_dir.glob("sample_contract_*.pdf"))
+    if contracts:
+        formats = sorted({path.suffix for path in settings.sample_dir.glob("sample_contract_*")})
+        print(
+            f"{PASS} contracts: {len(contracts)} demo contracts available "
+            f"in {', '.join(formats)}"
+        )
+    else:
+        print(f"{WARN} contracts: not generated yet")
+        warnings.append("Run: python scripts/generate_contract_sample_data.py")
+
+    # 8. Document extraction capability
+    print("\nDocument extraction")
+    try:
+        from app.services.documents.factory import describe_extractors
+
+        capability = describe_extractors()
+        print(
+            f"{PASS} readable without OCR: "
+            f"{', '.join(capability['document_extensions'])}"
+        )
+        ocr = capability["ocr"]
+        if ocr["ocr_available"]:
+            print(f"{PASS} OCR provider: {ocr['resolved_provider']}")
+        else:
+            print(f"{WARN} no OCR provider configured - scanned documents cannot be processed")
+            warnings.append(
+                "Optional: set OCR_PROVIDER (and its credentials) to process scanned documents. "
+                "Text-based PDF, DOCX and TXT need nothing."
+            )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Check app/services/documents/")
 
     _report(problems, warnings)
     return 1 if problems else 0

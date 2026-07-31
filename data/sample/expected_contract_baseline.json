@@ -1,0 +1,1084 @@
+{
+  "generated_from": "the written sample files, read back through the real extractor",
+  "as_of_date": "2026-07-01",
+  "config_version": "1.0.0",
+  "contracts": {
+    "msa_nordwind": {
+      "txt": {
+        "page_count": 2,
+        "char_count": 5399,
+        "section_count": 20,
+        "contract_title": "MASTER SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Kestrel Field Maintenance BV"
+        ],
+        "clauses_found": 17,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 24,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R002",
+          "CA-R007",
+          "CA-R009",
+          "CA-R010",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 67.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 3,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2024-09-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2024-08-22",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 14,
+          "notice_period_label": "14 days",
+          "auto_renewal": true,
+          "renewal_term_days": 360,
+          "renewal_term_label": "twelve months",
+          "renewal_notice_days": 90,
+          "renewal_notice_label": "90 days",
+          "renewal_date": "2026-10-01",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-07-02",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 3,
+        "char_count": 5379,
+        "section_count": 25,
+        "contract_title": "MASTER SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Kestrel Field Maintenance BV"
+        ],
+        "clauses_found": 17,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 24,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R002",
+          "CA-R007",
+          "CA-R009",
+          "CA-R010",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 67.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 3,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2024-09-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2024-08-22",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 14,
+          "notice_period_label": "14 days",
+          "auto_renewal": true,
+          "renewal_term_days": 360,
+          "renewal_term_label": "twelve months",
+          "renewal_notice_days": 90,
+          "renewal_notice_label": "90 days",
+          "renewal_date": "2026-10-01",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-07-02",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 5508,
+        "section_count": 21,
+        "contract_title": "MASTER SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Kestrel Field Maintenance BV"
+        ],
+        "clauses_found": 17,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 24,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R002",
+          "CA-R007",
+          "CA-R009",
+          "CA-R010",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 67.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 3,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2024-09-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2024-08-22",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 14,
+          "notice_period_label": "14 days",
+          "auto_renewal": true,
+          "renewal_term_days": 360,
+          "renewal_term_label": "twelve months",
+          "renewal_notice_days": 90,
+          "renewal_notice_label": "90 days",
+          "renewal_date": "2026-10-01",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-07-02",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      }
+    },
+    "supply_ravenna": {
+      "txt": {
+        "page_count": 1,
+        "char_count": 2427,
+        "section_count": 15,
+        "contract_title": "SUPPLY AGREEMENT",
+        "parties": [
+          "Ravenna Frontier Trading Pte Ltd",
+          "Nordwind Industrie GmbH"
+        ],
+        "clauses_found": 12,
+        "clauses_present": [
+          "assignment",
+          "confidentiality",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [
+          "data_privacy"
+        ],
+        "obligation_count": 11,
+        "rule_ids": [
+          "CA-R004",
+          "CA-R005",
+          "CA-R013",
+          "CA-R014",
+          "CA-R015"
+        ],
+        "risk_count": 5,
+        "risk_score": 62.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 2,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-01-15",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-01-08",
+          "signature_date_basis": "stated",
+          "expiration_date": "2028-01-14",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 60,
+          "notice_period_label": "60 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 2,
+        "char_count": 2411,
+        "section_count": 18,
+        "contract_title": "SUPPLY AGREEMENT",
+        "parties": [
+          "Ravenna Frontier Trading Pte Ltd",
+          "Nordwind Industrie GmbH"
+        ],
+        "clauses_found": 12,
+        "clauses_present": [
+          "assignment",
+          "confidentiality",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [
+          "data_privacy"
+        ],
+        "obligation_count": 11,
+        "rule_ids": [
+          "CA-R004",
+          "CA-R005",
+          "CA-R013",
+          "CA-R014",
+          "CA-R015"
+        ],
+        "risk_count": 5,
+        "risk_score": 62.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 2,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-01-15",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-01-08",
+          "signature_date_basis": "stated",
+          "expiration_date": "2028-01-14",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 60,
+          "notice_period_label": "60 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 2540,
+        "section_count": 16,
+        "contract_title": "SUPPLY AGREEMENT",
+        "parties": [
+          "Ravenna Frontier Trading Pte Ltd",
+          "Nordwind Industrie GmbH"
+        ],
+        "clauses_found": 12,
+        "clauses_present": [
+          "assignment",
+          "confidentiality",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [
+          "data_privacy"
+        ],
+        "obligation_count": 11,
+        "rule_ids": [
+          "CA-R004",
+          "CA-R005",
+          "CA-R013",
+          "CA-R014",
+          "CA-R015"
+        ],
+        "risk_count": 5,
+        "risk_score": 62.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 1,
+          "medium": 2,
+          "high": 0,
+          "critical": 2
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-01-15",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-01-08",
+          "signature_date_basis": "stated",
+          "expiration_date": "2028-01-14",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 60,
+          "notice_period_label": "60 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      }
+    },
+    "saas_helvetia": {
+      "txt": {
+        "page_count": 2,
+        "char_count": 3478,
+        "section_count": 18,
+        "contract_title": "SOFTWARE SUBSCRIPTION AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Helvetia Signal Systems AG"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 10,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R007",
+          "CA-R008",
+          "CA-R009",
+          "CA-R014",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 51.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 2,
+          "medium": 2,
+          "high": 1,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2025-10-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2025-09-12",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-15",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": true,
+          "renewal_notice_days": 92,
+          "renewal_notice_label": "92 days",
+          "renewal_date": "2026-09-16",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-06-15",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 2,
+        "char_count": 3460,
+        "section_count": 18,
+        "contract_title": "SOFTWARE SUBSCRIPTION AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Helvetia Signal Systems AG"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 10,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R007",
+          "CA-R008",
+          "CA-R009",
+          "CA-R014",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 51.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 2,
+          "medium": 2,
+          "high": 1,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2025-10-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2025-09-12",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-15",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": true,
+          "renewal_notice_days": 92,
+          "renewal_notice_label": "92 days",
+          "renewal_date": "2026-09-16",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-06-15",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 3589,
+        "section_count": 19,
+        "contract_title": "SOFTWARE SUBSCRIPTION AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Helvetia Signal Systems AG"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "auto_renewal",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 10,
+        "rule_ids": [
+          "CA-R001",
+          "CA-R007",
+          "CA-R008",
+          "CA-R009",
+          "CA-R014",
+          "CA-R020"
+        ],
+        "risk_count": 6,
+        "risk_score": 51.0,
+        "risk_band": "high",
+        "severity_counts": {
+          "low": 2,
+          "medium": 2,
+          "high": 1,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2025-10-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2025-09-12",
+          "signature_date_basis": "stated",
+          "expiration_date": "2026-09-15",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": true,
+          "renewal_notice_days": 92,
+          "renewal_notice_label": "92 days",
+          "renewal_date": "2026-09-16",
+          "renewal_date_basis": "derived_from_expiration",
+          "notice_deadline": "2026-06-15",
+          "notice_deadline_basis": "derived_from_expiration_and_notice"
+        },
+        "rule_errors": []
+      }
+    },
+    "services_baltic": {
+      "txt": {
+        "page_count": 2,
+        "char_count": 3573,
+        "section_count": 18,
+        "contract_title": "PROFESSIONAL SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Baltic Ridge Consulting Oy"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 13,
+        "rule_ids": [
+          "CA-R007"
+        ],
+        "risk_count": 1,
+        "risk_score": 5.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 0,
+          "medium": 1,
+          "high": 0,
+          "critical": 0
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-03-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-02-20",
+          "signature_date_basis": "stated",
+          "expiration_date": "2030-02-28",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 2,
+        "char_count": 3555,
+        "section_count": 19,
+        "contract_title": "PROFESSIONAL SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Baltic Ridge Consulting Oy"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 13,
+        "rule_ids": [
+          "CA-R007"
+        ],
+        "risk_count": 1,
+        "risk_score": 5.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 0,
+          "medium": 1,
+          "high": 0,
+          "critical": 0
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-03-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-02-20",
+          "signature_date_basis": "stated",
+          "expiration_date": "2030-02-28",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 3684,
+        "section_count": 19,
+        "contract_title": "PROFESSIONAL SERVICES AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Baltic Ridge Consulting Oy"
+        ],
+        "clauses_found": 16,
+        "clauses_present": [
+          "assignment",
+          "audit_rights",
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "force_majeure",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "penalties",
+          "pricing",
+          "service_levels",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 13,
+        "rule_ids": [
+          "CA-R007"
+        ],
+        "risk_count": 1,
+        "risk_score": 5.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 0,
+          "medium": 1,
+          "high": 0,
+          "critical": 0
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-03-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-02-20",
+          "signature_date_basis": "stated",
+          "expiration_date": "2030-02-28",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 90,
+          "notice_period_label": "90 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      }
+    },
+    "nda_meridian": {
+      "txt": {
+        "page_count": 1,
+        "char_count": 1160,
+        "section_count": 7,
+        "contract_title": "MUTUAL NON-DISCLOSURE AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Meridian Alloy Works Ltd"
+        ],
+        "clauses_found": 4,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "governing_law",
+          "term"
+        ],
+        "missing_clauses": [
+          "termination",
+          "payment_terms",
+          "pricing",
+          "liability",
+          "indemnification",
+          "dispute_resolution"
+        ],
+        "obligation_count": 4,
+        "rule_ids": [
+          "CA-R003",
+          "CA-R004",
+          "CA-R014"
+        ],
+        "risk_count": 7,
+        "risk_score": 80.0,
+        "risk_band": "critical",
+        "severity_counts": {
+          "low": 1,
+          "medium": 1,
+          "high": 4,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-06-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-05-28",
+          "signature_date_basis": "stated",
+          "expiration_date": "2029-05-31",
+          "expiration_date_basis": "stated",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 1,
+        "char_count": 1152,
+        "section_count": 8,
+        "contract_title": "MUTUAL NON-DISCLOSURE AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Meridian Alloy Works Ltd"
+        ],
+        "clauses_found": 4,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "governing_law",
+          "term"
+        ],
+        "missing_clauses": [
+          "termination",
+          "payment_terms",
+          "pricing",
+          "liability",
+          "indemnification",
+          "dispute_resolution"
+        ],
+        "obligation_count": 4,
+        "rule_ids": [
+          "CA-R003",
+          "CA-R004",
+          "CA-R014"
+        ],
+        "risk_count": 7,
+        "risk_score": 80.0,
+        "risk_band": "critical",
+        "severity_counts": {
+          "low": 1,
+          "medium": 1,
+          "high": 4,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-06-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-05-28",
+          "signature_date_basis": "stated",
+          "expiration_date": "2029-05-31",
+          "expiration_date_basis": "stated",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 1281,
+        "section_count": 8,
+        "contract_title": "MUTUAL NON-DISCLOSURE AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Meridian Alloy Works Ltd"
+        ],
+        "clauses_found": 4,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "governing_law",
+          "term"
+        ],
+        "missing_clauses": [
+          "termination",
+          "payment_terms",
+          "pricing",
+          "liability",
+          "indemnification",
+          "dispute_resolution"
+        ],
+        "obligation_count": 4,
+        "rule_ids": [
+          "CA-R003",
+          "CA-R004",
+          "CA-R014"
+        ],
+        "risk_count": 7,
+        "risk_score": 80.0,
+        "risk_band": "critical",
+        "severity_counts": {
+          "low": 1,
+          "medium": 1,
+          "high": 4,
+          "critical": 1
+        },
+        "injection_detected": false,
+        "key_dates": {
+          "effective_date": "2026-06-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-05-28",
+          "signature_date_basis": "stated",
+          "expiration_date": "2029-05-31",
+          "expiration_date_basis": "stated",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      }
+    },
+    "hostile_calder": {
+      "txt": {
+        "page_count": 1,
+        "char_count": 1862,
+        "section_count": 14,
+        "contract_title": "EQUIPMENT RENTAL AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Calder Vale Plant Hire Ltd"
+        ],
+        "clauses_found": 11,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 7,
+        "rule_ids": [
+          "CA-R014",
+          "CA-R016",
+          "CA-R020"
+        ],
+        "risk_count": 3,
+        "risk_score": 16.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 2,
+          "medium": 0,
+          "high": 1,
+          "critical": 0
+        },
+        "injection_detected": true,
+        "key_dates": {
+          "effective_date": "2026-05-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-04-24",
+          "signature_date_basis": "stated",
+          "expiration_date": "2027-04-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 30,
+          "notice_period_label": "30 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "pdf": {
+        "page_count": 2,
+        "char_count": 1847,
+        "section_count": 14,
+        "contract_title": "EQUIPMENT RENTAL AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Calder Vale Plant Hire Ltd"
+        ],
+        "clauses_found": 11,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 7,
+        "rule_ids": [
+          "CA-R014",
+          "CA-R016",
+          "CA-R020"
+        ],
+        "risk_count": 3,
+        "risk_score": 16.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 2,
+          "medium": 0,
+          "high": 1,
+          "critical": 0
+        },
+        "injection_detected": true,
+        "key_dates": {
+          "effective_date": "2026-05-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-04-24",
+          "signature_date_basis": "stated",
+          "expiration_date": "2027-04-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 30,
+          "notice_period_label": "30 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      },
+      "docx": {
+        "page_count": 1,
+        "char_count": 1976,
+        "section_count": 15,
+        "contract_title": "EQUIPMENT RENTAL AGREEMENT",
+        "parties": [
+          "Nordwind Industrie GmbH",
+          "Calder Vale Plant Hire Ltd"
+        ],
+        "clauses_found": 11,
+        "clauses_present": [
+          "confidentiality",
+          "data_privacy",
+          "dispute_resolution",
+          "governing_law",
+          "indemnification",
+          "insurance",
+          "liability",
+          "payment_terms",
+          "pricing",
+          "term",
+          "termination"
+        ],
+        "missing_clauses": [],
+        "obligation_count": 7,
+        "rule_ids": [
+          "CA-R014",
+          "CA-R016",
+          "CA-R020"
+        ],
+        "risk_count": 3,
+        "risk_score": 16.0,
+        "risk_band": "low",
+        "severity_counts": {
+          "low": 2,
+          "medium": 0,
+          "high": 1,
+          "critical": 0
+        },
+        "injection_detected": true,
+        "key_dates": {
+          "effective_date": "2026-05-01",
+          "effective_date_basis": "stated",
+          "signature_date": "2026-04-24",
+          "signature_date_basis": "stated",
+          "expiration_date": "2027-04-30",
+          "expiration_date_basis": "stated",
+          "notice_period_days": 30,
+          "notice_period_label": "30 days",
+          "auto_renewal": false
+        },
+        "rule_errors": []
+      }
+    }
+  }
+}

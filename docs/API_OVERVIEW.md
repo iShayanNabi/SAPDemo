@@ -133,6 +133,28 @@ capacity, risk, esg, contract, geographic, past_performance) or the request is r
 | GET | `/api/v1/supplier-risk/sample/info` | Describe the demo dataset |
 | GET | `/api/v1/supplier-risk/ai-status` | Active AI provider (never a key) |
 
+### Module 6 - Contract Assistant
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/contracts/upload` | Upload a PDF/DOCX/TXT contract and extract its text |
+| POST | `/api/v1/contracts/{contract_id}/analyze` | Extract clauses, dates, obligations and risks |
+| GET | `/api/v1/contracts/{contract_id}` | The full analysis |
+| GET | `/api/v1/contracts/{contract_id}/clauses` | The clause table (`present_only`, `clause_type`, `min_confidence`) |
+| POST | `/api/v1/contracts/{contract_id}/questions` | Ask a question, get an answer with citations |
+| GET | `/api/v1/contracts/{contract_id}/export` | Download the report (`xlsx\|csv\|json`) |
+| GET | `/api/v1/contracts` | List uploaded contracts, newest first |
+| GET | `/api/v1/contracts/methodology` | Clause catalogue, rules, confidence formula, date settings |
+| GET | `/api/v1/contracts/extractors` | Readable formats and OCR availability (never a credential) |
+| GET | `/api/v1/contracts/sample` | Download a demo contract (`name`, `format=pdf\|docx\|txt`) |
+| GET | `/api/v1/contracts/sample/info` | Describe the demo contracts |
+| GET | `/api/v1/contracts/ai-status` | Active AI provider (never a key) |
+
+Every clause, risk, obligation and answer carries a **source reference**: `page_number`,
+`section_heading`, `excerpt` and a deterministic `confidence`. Upload returns
+`status: needs_ocr` for a document with no extractable text, and analyse refuses it rather than
+returning an empty contract.
+
 The `calculate` body is `{dataset_id?, weights?, as_of_date?, generate_ai_summary?}`. `weights` must
 total 100% across the ten categories (delivery, quality, financial, spend_concentration, contract,
 invoice, compliance, esg, geographic, operational) or the request is rejected. When `dataset_id` is

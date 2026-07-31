@@ -54,7 +54,7 @@ modules = [
     ("3. Supplier Recommendation Engine", "Available", "Rank eligible suppliers for a requirement with transparent weighted scoring."),
     ("4. Invoice Validator", "Available", "Three-way match invoices against POs and goods receipts with configurable tolerances."),
     ("5. Supplier Risk Copilot", "Available", "Score suppliers across ten risk categories with a transparent weighted model, then ask questions answered from the loaded records with citations."),
-    ("6. Contract Assistant", "Planned", "Clause extraction and contract summarisation."),
+    ("6. Contract Assistant", "Available", "Extract clauses, key dates, obligations and risks from PDF, DOCX and TXT contracts, each with a page reference, an excerpt and a confidence score, then ask questions answered with citations."),
     ("7. Inventory Predictor", "Planned", "Statistical demand and stock forecasting."),
     ("8. SAP Test Case Generator", "Planned", "Generate test cases from process descriptions."),
     ("9. SAP Blueprint Generator", "Planned", "Draft configuration blueprints."),

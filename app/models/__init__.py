@@ -1,6 +1,13 @@
 """ORM models. Importing this package registers every table on the metadata."""
 
 from app.models.base import Base, TimestampMixin
+from app.models.contract_assistant import (
+    Contract,
+    ContractClause,
+    ContractObligation,
+    ContractPage,
+    ContractRisk,
+)
 from app.models.invoice_validator import InvoiceException, InvoiceValidation
 from app.models.po_risk import PoAnalysis, PoFinding, PoRecord, UploadedFile
 from app.models.spend import SpendAnalysis, SpendOpportunity, SpendTransaction
@@ -37,4 +44,9 @@ __all__ = [
     "SupplierRiskRecord",
     "SupplierRiskAssessment",
     "SupplierRiskProfileRow",
+    "Contract",
+    "ContractPage",
+    "ContractClause",
+    "ContractRisk",
+    "ContractObligation",
 ]

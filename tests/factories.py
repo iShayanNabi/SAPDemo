@@ -720,3 +720,172 @@ def risk_event_rows_to_csv(
             }
         )
     return buffer.getvalue().encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Module 6 - Contract Assistant
+# ---------------------------------------------------------------------------
+
+CONTRACT_AS_OF = date(2026, 7, 1)
+
+#: A small but complete contract. A test overrides only the clause it exercises
+#: by passing ``extra`` text or by replacing a numbered section.
+CONTRACT_TEMPLATE = """MASTER SERVICES AGREEMENT
+
+This Master Services Agreement is entered into between Nordwind Industrie GmbH (the "Customer")
+and Kestrel Field Maintenance BV (the "Supplier").
+
+1. TERM
+This Agreement is effective as of 1 January 2026 and shall remain in force until 31 December 2027.
+
+2. TERMINATION
+Either party may terminate this Agreement for convenience on 90 days written notice.
+
+3. PAYMENT TERMS
+The Customer shall pay all undisputed invoices net 30 days from the date of invoice.
+
+4. PRICING
+Prices are as set out in the rate card in Schedule 1 and are exclusive of VAT.
+
+5. LIMITATION OF LIABILITY
+The total aggregate liability of each party shall not exceed EUR 500,000.
+
+6. INDEMNIFICATION
+Each party shall indemnify and hold harmless the other party against third party claims.
+
+7. CONFIDENTIALITY
+Each party shall keep the other party's Confidential Information confidential.
+
+8. DATA PROTECTION
+The Supplier processes personal data as data processor under the General Data Protection
+Regulation, in accordance with the data processing agreement in Schedule 3.
+
+9. GOVERNING LAW
+This Agreement is governed by and construed in accordance with the laws of Germany.
+
+10. DISPUTE RESOLUTION
+Any dispute shall be finally settled by arbitration in Hamburg.
+"""
+
+
+def contract_text(*extra_sections: str) -> str:
+    """Return the template contract with extra numbered sections appended."""
+    body = CONTRACT_TEMPLATE
+    for index, section in enumerate(extra_sections, start=11):
+        body += f"\n{index}. {section.strip()}\n"
+    return body
+
+
+def contract_txt_bytes(text: str | None = None) -> bytes:
+    """Serialise a contract as a UTF-8 .txt upload."""
+    return (text if text is not None else CONTRACT_TEMPLATE).encode("utf-8")
+
+
+def contract_pdf_bytes(text: str | None = None, *, title: str = "Contract") -> bytes:
+    """Serialise a contract as a real, text-based PDF."""
+    from app.services.documents.pdf_writer import build_text_pdf
+
+    return build_text_pdf(text if text is not None else CONTRACT_TEMPLATE, title=title).content
+
+
+def contract_docx_bytes(text: str | None = None) -> bytes:
+    """Serialise a contract as a .docx with real heading styles."""
+    import docx
+
+    body = text if text is not None else CONTRACT_TEMPLATE
+    document = docx.Document()
+    for index, line in enumerate(body.split("\n")):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if index == 0:
+            document.add_heading(stripped, level=1)
+        elif _looks_like_contract_heading(stripped):
+            document.add_heading(stripped, level=2)
+        else:
+            document.add_paragraph(stripped)
+    buffer = io.BytesIO()
+    document.save(buffer)
+    return buffer.getvalue()
+
+
+def _looks_like_contract_heading(line: str) -> bool:
+    """``<number>. ALL CAPS`` is a clause heading in the test contracts."""
+    number, _, rest = line.partition(".")
+    if not number.strip().isdigit():
+        return False
+    title = rest.strip()
+    return bool(title) and title == title.upper() and len(title.split()) <= 8
+
+
+def scanned_pdf_bytes(page_count: int = 2) -> bytes:
+    """A structurally valid PDF whose pages carry no text at all.
+
+    This is what a scan looks like to ``pypdf``: real pages, no text operators.
+    It is how the "needs OCR" path is exercised without shipping an image.
+    """
+    pages = []
+    objects = []
+    for index in range(page_count):
+        page_id = 4 + index * 2
+        stream_id = page_id + 1
+        pages.append(page_id)
+        objects.append(
+            (
+                page_id,
+                (
+                    f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+                    f"/Resources << >> /Contents {stream_id} 0 R >>"
+                ).encode("ascii"),
+            )
+        )
+        objects.append((stream_id, b"<< /Length 0 >>\nstream\n\nendstream"))
+
+    kids = " ".join(f"{page_id} 0 R" for page_id in pages)
+    objects = [
+        (1, b"<< /Type /Catalog /Pages 2 0 R >>"),
+        (2, f"<< /Type /Pages /Count {len(pages)} /Kids [{kids}] >>".encode("ascii")),
+        (3, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"),
+        *objects,
+    ]
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets: dict[int, int] = {}
+    for object_id, payload in objects:
+        offsets[object_id] = len(out)
+        out += f"{object_id} 0 obj\n".encode("ascii") + payload + b"\nendobj\n"
+
+    xref_offset = len(out)
+    highest = max(offsets)
+    out += f"xref\n0 {highest + 1}\n".encode("ascii") + b"0000000000 65535 f \n"
+    for object_id in range(1, highest + 1):
+        out += f"{offsets[object_id]:010d} 00000 n \n".encode("ascii")
+    out += (
+        f"trailer\n<< /Size {highest + 1} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n"
+    ).encode("ascii")
+    return bytes(out)
+
+
+def analyze_contract_text(
+    text: str | None = None, *, as_of: date | None = None, config: Any = None, fmt: str = "txt"
+):
+    """Run the real pipeline over a contract string in the chosen format."""
+    from app.modules.contract_assistant.engine import analyze_contract
+    from app.modules.contract_assistant.thresholds import get_contract_config
+    from app.services.documents.factory import extract_document
+
+    builders = {
+        "txt": (contract_txt_bytes, "contract.txt"),
+        "pdf": (contract_pdf_bytes, "contract.pdf"),
+        "docx": (contract_docx_bytes, "contract.docx"),
+    }
+    builder, filename = builders[fmt]
+    extraction = extract_document(builder(text), filename)
+    return analyze_contract(
+        extraction, config or get_contract_config(), as_of_date=as_of or CONTRACT_AS_OF
+    )
+
+
+def contract_rule_ids(result: Any) -> set[str]:
+    """The set of rule ids that fired in a contract analysis."""
+    return {finding.rule_id for finding in result.risks}

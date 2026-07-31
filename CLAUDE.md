@@ -20,7 +20,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 3 | Supplier Recommendation Engine | **Implemented** |
 | 4 | Invoice Validator | **Implemented** |
 | 5 | Supplier Risk Copilot | **Implemented** |
-| 6 | Contract Assistant | Planned |
+| 6 | Contract Assistant | **Implemented** |
 | 7 | Inventory Predictor | Planned |
 | 8 | SAP Test Case Generator | Planned |
 | 9 | SAP Blueprint Generator | Planned |
@@ -61,8 +61,9 @@ React or Next.js site must be able to use the same FastAPI backend without rewri
 ```
 app/
   api/v1/        core/        models/       schemas/
-  services/      ai/  exports/  files/  tabular/
-  modules/       po_risk/  spend/  supplier_reco/
+  services/      ai/  documents/  exports/  files/  tabular/
+  modules/       po_risk/  spend/  supplier_reco/  invoice_validator/
+                 supplier_risk/  contract_assistant/
 streamlit_app/   pages/  components/
 data/            sample/  uploads/  exports/
 tests/           unit/  api/  integration/
@@ -191,6 +192,7 @@ different in a spend cube.
 | Column mapping | `app/services/tabular/mapping.py` (registry-driven) |
 | Parsing / type coercion | `app/services/tabular/parsing.py` |
 | File validation and reading | `app/services/files/` |
+| Document text extraction (PDF/DOCX/TXT) | `app/services/documents/` |
 | AI providers and prompts | `app/services/ai/` |
 | Export building | `app/services/exports/` |
 
@@ -245,19 +247,55 @@ python scripts/generate_spend_sample_data.py
 python scripts/generate_supplier_sample_data.py
 python scripts/generate_invoice_sample_data.py
 python scripts/generate_supplier_risk_sample_data.py
+python scripts/generate_contract_sample_data.py
 
 # run
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 664 tests
+pytest                                  # 1,028 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
 alembic upgrade head
 alembic revision --autogenerate -m "description"
 ```
+
+---
+
+### Documents are not tables
+
+Modules 1-5 all consume tabular uploads. Module 6 consumes *documents*, and the two must not
+share an allow list: `validate_upload` keeps CSV/XLSX/JSON, `validate_document_upload` owns
+PDF/DOCX/TXT (plus images only when OCR is configured). Growing one must never widen the other,
+and there is a test asserting the tabular validator still refuses a PDF.
+
+Text extraction lives in `app/services/documents/` and always returns **per-page** text. A clause
+cannot cite a page number that extraction threw away. When a document parses but yields no text,
+the result carries `needs_ocr=True` rather than an empty analysis - the OCR seam
+(`ocr.py`: local / AWS Textract / Azure Document Intelligence) is declared but unconfigured by
+default, and says so instead of pretending.
+
+### Every extracted claim carries its source
+
+Module 6's unit of output is not a value, it is a value plus a `SourceReference`: page number,
+section heading, short excerpt and a **deterministic** confidence built from the evidence that was
+actually seen (heading match, primary phrase, supporting phrases, a parsed value). Confidence is
+never guessed, and the formula is in the JSON config so it can be retuned without code.
+
+### Regex flags are part of the contract
+
+`re.IGNORECASE` is right for vocabulary (clause phrases, dates, duty verbs) and **wrong** for
+structure. Compiling `[A-Z]` case-insensitively silently turns "this line is in capitals" into
+"this line exists", which produced party names like `is entered into between Nordwind GmbH`.
+`compile_patterns(..., case_sensitive=True)` is used for headings, titles and party names.
+
+### Match the negation, not just the phrase
+
+"This Agreement does not renew automatically" contains "renew automatically" and asserts the
+opposite. Clause specs carry `negation_patterns` that veto a primary hit in the same sentence.
+Any clause whose absence is meaningful needs them.
 
 ---
 
@@ -294,6 +332,16 @@ only appeared when the API was driven by hand:
   supplier is exactly that file. Fix: rebuild the column as an object series that preserves real
   ints and real `None`s. **A sample dataset with a deliberate hole in it is worth more than another
   happy-path row** - the missing-data anchor found a latent bug in shared code on its first run.
+
+- Module 6: a PDF hard-wraps sentences, so `...in force until 31 March\n2029` hid the expiry date
+  from every pattern that has to exclude newlines to stop at a sentence boundary. The engine
+  reported a date derived from `for a period of five years` in the *confidentiality* clause
+  instead - a confidently wrong expiry, in a field a contract register would trust. Two fixes,
+  both worth reusing: `DocumentIndex.flat_text` is a newline-free view of **exactly the same
+  length**, so offsets still map back to a page; and a duration is only ever read from the clause
+  it belongs to, never from the whole document. The same wrapping had truncated a party name to
+  `Trading Pte Ltd`. **A document is not a string** - it has a geometry, and the geometry is what
+  makes a citation true.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

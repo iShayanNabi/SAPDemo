@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 5 of 10 |
-| Tests | 664 passing (381 unit, 170 API, 113 integration) |
-| Python source | ~31,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 6 of 10 |
+| Tests | 876 passing (515 unit, 208 API, 153 integration) |
+| Python source | ~38,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -429,6 +429,121 @@ than module 1, because the shared layers already exist.
 
 ---
 
+## Module 6 - Contract Assistant - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| Text-based PDF, DOCX, TXT support | Done - `pypdf`, `python-docx` and a decoding text reader, all per-page |
+| Images when OCR is configured | Done - accepted only when a provider is configured; otherwise refused at upload with an explanation |
+| Extraction interface supporting local OCR / AWS Textract / Azure Document Intelligence | Done - `DocumentExtractor` + `OcrProvider` in `app/services/documents/`; all three declared, unconfigured by default, each reporting what it needs |
+| First version works without an external OCR provider | Done - PDF/DOCX/TXT need nothing installed beyond the requirements file |
+| Clearly explain when a scanned file cannot be processed | Done - `status: needs_ocr` on upload, a refusal on analyse, `CA-R017` as a finding, and a warning in the UI |
+| All 24 listed extraction targets | Done - title, parties, effective/expiration/renewal dates, auto-renewal, termination notice, payment, pricing, service levels, penalties, liability, indemnification, confidentiality, data privacy, insurance, governing law, dispute resolution, force majeure, assignment, audit rights, obligations, missing clauses, potential risks |
+| Ten-step processing pipeline | Done - upload, validation, extraction, page segmentation, section detection, clause extraction, structured validation, risk analysis, question answering, export |
+| Pydantic models validate extracted clauses | Done - `app/schemas/contract_assistant.py`; the config itself is Pydantic-validated at load time, including every regex |
+| Page number, section heading, excerpt and confidence on every clause and answer | Done - `SourceReferenceSchema`, with a documented deterministic confidence formula |
+| Prompt-injection protection | Done - four layers: reported as `CA-R016`, never affects extraction, only results reach a provider, and the prompt wraps everything in `<untrusted_data>` |
+| Six required API routes | Done, plus list, methodology, extractors, ai-status, sample and sample/info (12 total) |
+| Streamlit page with all required elements | Done - upload, extraction status, summary, key dates, clause table, obligations, risks, missing clauses, source references, chat and export controls |
+| Sample contracts with the six listed conditions | Done - six fictional contracts in three formats, 21 documented scenarios |
+| Tests: PDF/DOCX/TXT extraction, clause validation, dates, references, injection resistance, citations, endpoints | Done - 212 new tests |
+
+### Files created
+
+```text
+app/services/documents/
+  base.py                 ExtractedPage, ExtractionResult, DocumentExtractor, text normalisation
+  text_extractors.py      PDF (pypdf), DOCX (python-docx), TXT/MD
+  ocr.py                  OcrProvider interface + none/local/AWS Textract/Azure, capability reporting
+  factory.py              extractor routing, OCR fallback, describe_extractors()
+  pdf_writer.py           minimal dependency-free text-PDF writer for fixtures and samples
+
+app/modules/contract_assistant/
+  thresholds.py           Pydantic-validated config; every regex compiled at load time
+  segmentation.py         DocumentIndex: pages, sections, offset -> page/heading, excerpting
+  dates.py                date, duration and notice-period parsing; calendar arithmetic
+  clauses.py              clause matching, grouping, confidence, structured values
+  obligations.py          duty-sentence extraction and party attribution
+  risk_rules.py           20 isolated rules (CA-R001..CA-R020)
+  qa.py                   deterministic question answering with citations
+  engine.py               the pipeline; title, parties, key dates, rule isolation
+  ai_narrative.py         optional narrative layer
+  service.py              orchestration and persistence
+  config/contract_rules.json
+
+app/api/v1/contracts.py                       one router, 12 routes
+app/models/contract_assistant.py              5 tables
+app/schemas/contract_assistant.py             request/response contract
+app/services/exports/contract_report_builder.py   xlsx (6 sheets), csv, json
+streamlit_app/pages/6_Contract_Assistant.py
+scripts/generate_contract_sample_data.py
+tests/unit/test_contract_extraction.py, test_contract_clauses.py, test_contract_qa.py
+tests/api/test_contract_api.py
+tests/integration/test_contract_sample_data.py
+migrations/versions/c9f2a1e6b3d4_contract_assistant_schema.py
+data/sample/sample_contract_{msa_nordwind,supply_ravenna,saas_helvetia,services_baltic,nda_meridian,hostile_calder}.{txt,pdf,docx}
+data/sample/CONTRACT_SCENARIO_MANIFEST.md, contract_scenario_manifest.json
+data/sample/expected_contract_baseline.json
+```
+
+### Files modified
+
+`app/core/config.py` (document/OCR settings), `app/services/files/validation.py`
+(`validate_document_upload`), `app/api/v1/router.py`, `app/main.py`, `app/models/__init__.py`,
+`app/services/ai/prompts.py`, `app/services/ai/mock_provider.py`, `streamlit_app/Home.py`,
+`streamlit_app/components/api_client.py`, `tests/conftest.py`, `tests/factories.py`, and the
+documentation set.
+
+### Bugs this module surfaced, and the fixes
+
+- **A PDF hard-wraps sentences.** `...in force until 31 March\n2029` was invisible to any pattern
+  that excludes newlines to stop at a sentence boundary, so the engine fell back to a term length
+  read from the *confidentiality* clause and reported an expiry three years wrong. Fixed with
+  `DocumentIndex.flat_text` - a newline-free view of exactly the same length, so offsets still map
+  to a page - and by scoping duration parsing to the clause it belongs to.
+- **`re.IGNORECASE` defeats `[A-Z]`.** Structure patterns compiled case-insensitively matched
+  anything, producing party names like `is entered into between Nordwind Industrie GmbH`. Headings,
+  titles and party names are now compiled case-sensitively.
+- **A phrase is not its own negation.** "This Agreement does not renew automatically" contains
+  "renew automatically". Clause specs now carry `negation_patterns` that veto a hit in the same
+  sentence.
+- **Short is not scanned.** The needs-OCR heuristic flagged a 36-character `.txt` as a scan. It now
+  applies only to formats that can carry an image; a text file can only be *empty*.
+- **Excerpts ran past their clause.** A payment-terms excerpt quoted the three clauses after it.
+  Excerpts are now clamped to the section they were found in.
+
+### Verification performed
+
+- Full suite: 876 collected, 875 passed. One pre-existing module 5 failure
+  (`test_category_averages_reproduce_the_baseline`, 20.19 vs 20.20) reproduces on an unmodified
+  checkout in this environment and is unrelated to module 6.
+- Live `uvicorn` run: upload the sample MSA as PDF (3 pages), analyse with an AI narrative, list
+  clauses, ask five questions including an injected one, and download all three export formats.
+- Live check that the multi-page PDF attributes clauses to the right pages (insurance -> page 3,
+  service levels -> page 2).
+- Live run of the hostile contract: `CA-R016` fires, the markers are quoted back, the ordinary
+  clauses still extract, and the only occurrence of `api_key` anywhere in the response is the
+  quotation of the document's own text.
+- Streamlit page rendered headlessly with `AppTest`, both empty and with a real analysis loaded:
+  no exceptions, all seven sections, five tables, five tabs and three export buttons.
+- The three formats of each sample contract produce identical clause sets and identical rule sets.
+- Alembic `upgrade head` -> `downgrade -1` -> `upgrade head` on a scratch database.
+
+### Design notes carried forward
+
+- **Deterministic extraction, additive AI.** The requirement lists clause extraction as an AI task,
+  and `CLAUDE.md` also forbids using AI for anything code can do reliably. Resolved by making
+  pattern matching the source of truth - it is reproducible, free, auditable and can cite a page -
+  and letting AI only rephrase results, in separate fields labelled with their origin. The lab
+  therefore works fully in mock mode, which is the default.
+- **Provenance is the product.** A clause without a page, an excerpt and a confidence is not usable
+  evidence, so the source reference is part of every output type rather than an optional extra.
+- **Derived is never presented as stated.** Every key date carries a `*_basis`.
+
+---
+
 ## Known limitations
 
 **Module 1**
@@ -490,6 +605,24 @@ than module 1, because the shared layers already exist.
 - Alternatives are proposed from the loaded records only and are not a sourcing decision.
 - Country risk is a configured index, not a live feed.
 
+**Module 6 - Contract Assistant**
+
+- Clause extraction is pattern matching over English-language contracts. A clause worded far
+  outside the configured vocabulary is reported as absent, which is why every clause carries a
+  confidence and a page to check rather than being presented as certain.
+- Only English is supported; the clause, date and duty vocabularies are English-only.
+- OCR is a declared seam, not a working integration: `local`, `aws_textract` and
+  `azure_document_intelligence` are unconfigured by default, and the two cloud providers'
+  `extract` methods raise a clear "not implemented in this lab" error rather than billing an
+  account. Scanned documents therefore cannot be processed out of the box.
+- A month is treated as 30 days when comparing a duration against a threshold (renewal *dates* use
+  calendar arithmetic), so `renewal_term_days` for "twelve months" reads 360.
+- Party extraction reads the opening of the document; parties introduced only in a signature block
+  or an annex may be missed.
+- Obligations are sentence-level. A duty spread across a lead-in and a bulleted list is captured as
+  the sentence that carries the modal verb, not as the full list.
+- Nothing here is legal advice, and no output has been checked by a lawyer.
+
 **Project-wide**
 
 - No authentication or authorisation - the lab is local-only.
@@ -504,13 +637,19 @@ than module 1, because the shared layers already exist.
 
 ## Recommended next step
 
-**Module 6 - Contract Assistant.** Module 5 stops at contract *status* and *expiry dates*; the
-contract documents themselves are still unread. The Contract Assistant is the natural continuation:
-it introduces document parsing (PDF/DOCX) and clause extraction, which is the first genuinely
-AI-shaped task in the lab - clause extraction cannot be done reliably by rules, unlike every
-calculation built so far. It would also feed module 5, since extracted clause data (notice periods,
-auto-renewal, penalties) would sharpen contract risk beyond a status label.
+**Module 7 - Inventory Predictor.** It is the last major module that is purely deterministic, and
+it is the one the existing data best supports: modules 1, 2 and 4 already carry order quantities,
+delivery dates and lead times, so a demand and stock forecast can be built on data the lab already
+generates rather than a seventh sample dataset invented from nothing. It also introduces the
+`forecast` output origin, which exists in `OutputOrigin` but no module has produced yet, and
+`statsmodels`/`scikit-learn`, which are installed but unused.
 
-Worth weighing against building the next module: the operational work listed under limitations -
-authentication, a job queue, and a PostgreSQL run. Five modules now share one database and one
-upload table, so the cost of adding authentication grows with each module rather than staying flat.
+Two smaller pieces of work are worth weighing against it:
+
+- **Feed module 6 back into module 5.** The Contract Assistant now extracts notice periods,
+  auto-renewal terms, liability caps and penalty exposure from the document itself. Module 5's
+  contract risk category still scores from a status label and an expiry date. Joining them would
+  make contract risk materially sharper, and it is the first real cross-module data flow in the lab.
+- **The operational backlog** listed under limitations - authentication, a job queue and a
+  PostgreSQL run. Six modules now share one database and one upload table, so the cost of adding
+  authentication grows with every module rather than staying flat.

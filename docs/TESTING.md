@@ -39,6 +39,11 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_supplier_risk_copilot.py` | Intent detection, supplier resolution, citations, unavailable answers |
 | `tests/api/test_supplier_risk_api.py` | Supplier risk endpoints, calculate, chat, filters |
 | `tests/integration/test_supplier_risk_sample_data.py` | Supplier risk anchor manifest and scoring baseline |
+| `tests/unit/test_contract_extraction.py` | PDF/DOCX/TXT extraction, page segmentation, needs-OCR detection, document upload validation, OCR capability reporting |
+| `tests/unit/test_contract_clauses.py` | Section detection, clause extraction, structured values, date parsing, source references, the 20 risk rules, configuration-driven behaviour |
+| `tests/unit/test_contract_qa.py` | Question intent routing, answers and citations, prompt-injection resistance, AI-is-additive-only |
+| `tests/api/test_contract_api.py` | Contract endpoints, upload/analyse/clauses/questions/export, cross-format agreement |
+| `tests/integration/test_contract_sample_data.py` | All 21 documented contract scenarios, the recorded baseline, end-to-end through the API |
 
 ### Isolation
 

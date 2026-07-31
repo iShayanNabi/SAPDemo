@@ -35,6 +35,7 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   matching.py, engine.py, rules/ (17 rules)      │
 │                                                                  │
 │                   app/modules/supplier_risk/                     │
+│                   app/modules/contract_assistant/                │
 │                   scoring.py  metric -> category -> overall      │
 │                   engine.py   assessment, trend, actions         │
 │                   copilot.py  deterministic Q&A with citations   │
@@ -356,6 +357,11 @@ Four tables (`app/models/po_risk.py`):
 | `supplier_risk_records` | normalised risk facts per supplier, with that supplier's events |
 | `supplier_risk_assessments` | weights, as-of date, portfolio summary, AI narrative |
 | `supplier_risk_profiles` | one row per supplier: 10 category scores, overall, band, trend, full breakdown |
+| `contracts` | one row per uploaded contract: extraction metadata, title, parties, key dates, summary, AI narrative |
+| `contract_pages` | the extracted text, one row per page - what keeps a citation resolvable after the upload is gone |
+| `contract_clauses` | one row per clause type: present/absent, confidence, page, heading, excerpt, parsed values |
+| `contract_risks` | one row per rule finding, with its evidence and references |
+| `contract_obligations` | one duty sentence per row, quoted verbatim, with its party and page |
 
 ``uploaded_files`` is shared by every module and carries a ``module`` column.
 

@@ -1,0 +1,102 @@
+MASTER SERVICES AGREEMENT
+
+This Master Services Agreement is entered into between Nordwind Industrie GmbH (the "Customer"),
+registered at Hafenstrasse 14, 20359 Hamburg, and Kestrel Field Maintenance BV (the "Supplier"),
+registered at Havenweg 220, 3011 Rotterdam.
+
+1. SCOPE OF SERVICES
+The Supplier shall provide preventive and corrective maintenance for the Customer's packaging
+lines at the plants listed in Schedule 1. The Supplier shall perform the Services with the skill
+and care reasonably expected of a specialist maintenance contractor.
+
+2. TERM
+This Agreement is effective as of 1 September 2024 and shall remain in force until
+30 September 2026 (the "Initial Term").
+
+3. RENEWAL
+Upon expiry of the Initial Term this Agreement shall automatically renew for successive periods
+of twelve months, unless either party gives 90 days written notice of non-renewal before the end
+of the then current term. Each renewal is on the terms in force at the date of renewal.
+
+4. TERMINATION
+Either party may terminate this Agreement for convenience by giving 14 days written notice to
+the other party. Either party may terminate this Agreement with immediate effect if the other
+party commits a material breach and fails to remedy the breach within 30 days of written notice.
+The Supplier shall return all Customer property within 10 business days of termination.
+
+5. CHARGES AND PRICING
+The prices for the Services are set out in the rate card in Schedule 2 and are exclusive of VAT.
+Prices are firm for the Initial Term. Thereafter the Supplier may increase prices once per
+contract year by no more than the change in the Harmonised Index of Consumer Prices, on 60 days
+written notice.
+
+6. PAYMENT TERMS
+The Customer shall pay all undisputed invoices net 90 days from the date of invoice. Invoices
+must quote the purchase order number. A 2% discount applies if paid within 10 days. The Customer
+shall not be obliged to pay any invoice that does not quote a valid purchase order number.
+
+7. SERVICE LEVELS
+The Supplier shall respond to a Priority 1 fault within 4 hours and shall restore service within
+24 hours. The Supplier shall maintain an availability of 98.5% measured monthly across all
+covered equipment.
+
+8. LIQUIDATED DAMAGES
+If the Supplier fails to meet the response time in clause 7, the Supplier shall pay liquidated
+damages of EUR 2,500 per day of delay, capped at 10% of the charges for the affected month. The
+parties agree these liquidated damages are a genuine pre-estimate of loss and are the Customer's
+sole financial remedy for delay.
+
+9. LIMITATION OF LIABILITY
+The total aggregate liability of each party under this Agreement shall not exceed the total
+charges paid in the twelve months preceding the event giving rise to the claim. Neither party is
+liable for indirect or consequential loss, or for loss of profit. Nothing in this clause limits
+liability for death, personal injury, or fraud.
+
+10. INDEMNIFICATION
+The Supplier shall indemnify and hold harmless the Customer against all third party claims
+arising from the Supplier's negligence. The Customer shall indemnify the Supplier against third
+party claims arising from the Customer's written instructions.
+
+11. CONFIDENTIALITY
+Each party shall keep the other party's Confidential Information confidential and shall not
+disclose it to any third party, for a period of five years after the end of this Agreement. Each
+party shall return or destroy Confidential Information on request.
+
+12. DATA PROTECTION
+Where the Supplier processes personal data on behalf of the Customer, the Supplier acts as data
+processor and the Customer as data controller within the meaning of the General Data Protection
+Regulation. The parties shall enter into the data processing agreement in Schedule 4. The
+Supplier shall notify the Customer of any personal data breach without undue delay and in any
+event within 48 hours.
+
+13. INSURANCE
+The Supplier shall maintain public liability insurance with a minimum cover of EUR 5,000,000 per
+occurrence and professional indemnity insurance of EUR 2,000,000 in the aggregate, and shall
+provide a certificate of insurance on request.
+
+14. AUDIT RIGHTS
+The Customer may audit the Supplier's records relating to the Services once per calendar year, on
+20 business days written notice, during normal business hours and at the Customer's own cost.
+
+15. ASSIGNMENT
+Neither party may assign this Agreement without the prior written consent of the other party,
+which shall not be unreasonably withheld. Either party may assign to an affiliate on notice.
+
+16. FORCE MAJEURE
+Neither party is liable for a failure to perform caused by an event beyond its reasonable
+control, including natural disaster, war, epidemic or government action. The affected party shall
+notify the other party within 5 business days.
+
+17. GOVERNING LAW
+This Agreement is governed by and construed in accordance with the laws of Germany, without
+regard to its conflict of law rules.
+
+18. DISPUTE RESOLUTION
+The parties shall attempt in good faith to resolve any dispute by negotiation between their
+senior managers. Failing resolution within 30 days, the dispute shall be finally settled by
+arbitration under the rules of the German Arbitration Institute, seated in Hamburg.
+
+19. NOTICES
+All notices under this Agreement must be in writing and sent to the addresses above.
+
+Signed on 22 August 2024 for and on behalf of the parties.
