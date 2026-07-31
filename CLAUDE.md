@@ -235,12 +235,16 @@ manifest and assert each documented condition is detected.
 # setup
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+python scripts/verify_setup.py
+
+# regenerate sample data - NOT part of setup: data/sample/ is committed, so a fresh
+# clone already has it. Only run these after deleting/editing data/sample/, or when
+# changing a generator. Each is seeded and also rewrites its expected_*_baseline.json.
 python scripts/generate_sample_data.py
 python scripts/generate_spend_sample_data.py
 python scripts/generate_supplier_sample_data.py
 python scripts/generate_invoice_sample_data.py
 python scripts/generate_supplier_risk_sample_data.py
-python scripts/verify_setup.py
 
 # run
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
