@@ -232,3 +232,148 @@ def spend_rows_to_xlsx(rows: list[dict[str, Any]]) -> bytes:
     buffer = io.BytesIO()
     workbook.save(buffer)
     return buffer.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# Supplier Recommendation factories
+# ---------------------------------------------------------------------------
+
+#: A healthy, well-rounded supplier. A test overrides only what it exercises.
+DEFAULT_SUPPLIER: dict[str, Any] = {
+    "supplier_id": "0000300001",
+    "supplier_name": "Nordwind Industrie GmbH",
+    "materials_supplied": ["MAT-1000"],
+    "plants_served": ["1010"],
+    "regions_served": ["EU"],
+    "unit_price": 100.0,
+    "currency": "EUR",
+    "lead_time_days": 14,
+    "available_capacity": 1000.0,
+    "on_time_delivery_rate": 95.0,
+    "quality_score": 90.0,
+    "defect_rate": 1.5,
+    "risk_score": 25.0,
+    "esg_score": 80.0,
+    "contract_status": "Active",
+    "contract_expiration": date(2028, 1, 1),
+    "payment_terms": "NT30",
+    "historical_order_count": 40,
+    "historical_spend": 400000.0,
+}
+
+
+def make_supplier(**overrides: Any):
+    """Build one :class:`NormalizedSupplier` on top of a healthy default."""
+    from app.modules.supplier_reco.normalizer import NormalizedSupplier
+    from app.modules.supplier_reco.thresholds import get_supplier_reco_config
+
+    data = {**DEFAULT_SUPPLIER, **overrides}
+    config = get_supplier_reco_config()
+    rate = config.conversion_rate(data["currency"])
+    price = data["unit_price"]
+    spend = data["historical_spend"]
+    return NormalizedSupplier(
+        row_number=overrides.get("row_number", 2),
+        supplier_id=str(data["supplier_id"]),
+        supplier_name=data["supplier_name"],
+        materials_supplied=list(data["materials_supplied"]),
+        plants_served=list(data["plants_served"]),
+        regions_served=list(data["regions_served"]),
+        unit_price=price,
+        currency=data["currency"],
+        unit_price_base=None if price is None else round(price * rate, 4),
+        lead_time_days=data["lead_time_days"],
+        available_capacity=data["available_capacity"],
+        on_time_delivery_rate=data["on_time_delivery_rate"],
+        quality_score=data["quality_score"],
+        defect_rate=data["defect_rate"],
+        risk_score=data["risk_score"],
+        esg_score=data["esg_score"],
+        contract_status=data["contract_status"],
+        contract_expiration=data["contract_expiration"],
+        payment_terms=data["payment_terms"],
+        historical_order_count=data["historical_order_count"],
+        historical_spend=spend,
+        historical_spend_base=None if spend is None else round(spend * rate, 2),
+    )
+
+
+def make_suppliers(count: int, **overrides: Any) -> list[Any]:
+    """Build ``count`` suppliers with incrementing supplier ids."""
+    suppliers = []
+    for index in range(count):
+        data = dict(overrides)
+        data.setdefault("supplier_id", f"{300001 + index:010d}")
+        if "supplier_id" not in overrides:
+            data["supplier_id"] = f"{300001 + index:010d}"
+        suppliers.append(make_supplier(**data))
+    return suppliers
+
+
+def make_requirement(**overrides: Any):
+    """Build a :class:`Requirement` with sensible defaults for the canonical material."""
+    from app.modules.supplier_reco.requirement import Requirement
+
+    defaults: dict[str, Any] = {
+        "material": "MAT-1000",
+        "quantity": 100.0,
+        "plant": "1010",
+        "preferred_region": "EU",
+        "required_delivery_date": date(2026, 10, 1),
+        "order_date": date(2026, 8, 1),
+        "target_price": 120.0,
+        "currency": "EUR",
+        "risk_tolerance": "medium",
+    }
+    defaults.update(overrides)
+    return Requirement(**defaults)
+
+
+def supplier_rows_to_csv(rows: list[dict[str, Any]], headers: dict[str, str] | None = None) -> bytes:
+    """Serialise supplier rows as CSV, optionally renaming the headers.
+
+    List fields (materials/plants/regions) are joined with ``;``.
+    """
+    from app.modules.supplier_reco.field_definitions import CANONICAL_FIELDS as SUPPLIER_FIELDS
+
+    headers = headers or {}
+    field_names = [headers.get(name, name) for name in SUPPLIER_FIELDS]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=field_names, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(
+            {headers.get(name, name): _supplier_cell(row.get(name)) for name in SUPPLIER_FIELDS}
+        )
+    return buffer.getvalue().encode("utf-8")
+
+
+def supplier_rows_to_xlsx(rows: list[dict[str, Any]]) -> bytes:
+    """Serialise supplier rows as an XLSX workbook."""
+    from app.modules.supplier_reco.field_definitions import CANONICAL_FIELDS as SUPPLIER_FIELDS
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Suppliers"
+    sheet.append(list(SUPPLIER_FIELDS))
+    for row in rows:
+        sheet.append([_supplier_cell(row.get(name)) for name in SUPPLIER_FIELDS])
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    return buffer.getvalue()
+
+
+def supplier_row(**overrides: Any) -> dict[str, Any]:
+    """Build a raw canonical supplier row dict (lists as Python lists) for file builders."""
+    return {**DEFAULT_SUPPLIER, **overrides}
+
+
+def _supplier_cell(value: Any) -> Any:
+    """Render a supplier cell the way a file export would."""
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple)):
+        return ";".join(str(item) for item in value)
+    if isinstance(value, date):
+        return value.isoformat()
+    return value

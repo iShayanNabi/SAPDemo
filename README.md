@@ -17,7 +17,7 @@ are required.**
 | --- | --- | --- |
 | 1 | **Purchase Order Risk Checker** | **Implemented** |
 | 2 | **Spend Analytics Dashboard** | **Implemented** |
-| 3 | Supplier Recommendation Engine | Planned |
+| 3 | **Supplier Recommendation Engine** | **Implemented** |
 | 4 | Invoice Validator | Planned |
 | 5 | Supplier Risk Copilot | Planned |
 | 6 | Contract Assistant | Planned |
@@ -41,8 +41,9 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # 3. Generate the fictional demo datasets
-python scripts/generate_sample_data.py         # PO risk
-python scripts/generate_spend_sample_data.py   # spend analytics
+python scripts/generate_sample_data.py            # PO risk
+python scripts/generate_spend_sample_data.py      # spend analytics
+python scripts/generate_supplier_sample_data.py   # supplier catalogue
 
 # 4. Check the installation
 python scripts/verify_setup.py
@@ -168,6 +169,57 @@ All assumptions live in
 
 ---
 
+## Module 3 - Supplier Recommendation Engine
+
+Upload a supplier master file, describe a purchasing requirement, tune the scoring weights and get
+a transparent ranking of the eligible suppliers.
+
+**Workflow:** upload supplier catalogue → requirement form → weight controls (validated to 100%) →
+eligibility filtering → weighted scoring → ranked cards → comparison table → score breakdown →
+radar chart → optional AI summary → export.
+
+**Supported files:** CSV, XLSX, JSON (up to 25 MB). The 19 supplier fields reuse the shared
+[`FieldRegistry`](app/services/tabular/field_registry.py) and SAP alias conventions (`LIFNR`,
+`WAERS`, `ZTERM`), so a supplier extract with technical headers maps with no manual correction.
+Materials, plants and regions served are multi-valued columns, split into lists by the normaliser.
+
+### Eligibility filters (applied *before* ranking)
+
+Material match · plant served · minimum available capacity (and capacity covering the quantity) ·
+minimum quality score · risk tolerance (low/medium/high ceilings) · sustainability requirement
+(minimum ESG) · contract requirement. Each filter maps to a requirement field, can be switched off
+in configuration, and every rejection carries a human-readable reason.
+
+### The nine normalized scores
+
+| Score | Formula (all 0-100, higher is better) |
+| --- | --- |
+| Cost | min-max (lower price is better) of the unit price in base currency |
+| Delivery | on-time-delivery-rate blended with lead-time fitness |
+| Quality | quality score blended with a defect-rate penalty |
+| Capacity | available capacity against `quantity x target coverage ratio` |
+| Risk | `100 - risk score` |
+| ESG | the ESG score directly |
+| Contract | fixed score per contract status (active / expiring / none / unknown) |
+| Geographic | share of the specified region/plant criteria the supplier satisfies |
+| Past performance | historical order count blended with historical spend |
+
+Users set the nine weights; the API **rejects any set that does not total 100%**. The overall
+score is the weighted sum. Every weight and formula lives in
+[`app/modules/supplier_reco/config/supplier_reco_rules.json`](app/modules/supplier_reco/config/supplier_reco_rules.json)
+and is echoed back by `GET /api/v1/supplier-recommendations/scoring`.
+
+### What each ranked result contains
+
+Rank · supplier · eligibility status · overall score · the nine sub-scores · estimated total cost ·
+estimated delivery date · contract status · advantages · risks · a rule-based explanation. AI may
+summarise the ranking, but **the ranking is entirely deterministic - AI never decides the order.**
+
+> **Estimated costs and delivery dates are indicative planning figures, not quotations.** Nothing
+> here has been negotiated with a supplier or validated in SAP.
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -216,6 +268,18 @@ population is deliberately built *not* to trigger rules, which makes every findi
   [`data/sample/SPEND_SCENARIO_MANIFEST.md`](data/sample/SPEND_SCENARIO_MANIFEST.md)
 - `expected_spend_baseline.json`, the exact figures the current engine produces
 
+`python scripts/generate_supplier_sample_data.py` produces the supplier catalogue:
+
+- **55 fictional suppliers** with intentionally varied prices, lead times, quality, capacity, risk,
+  ESG scores, contract status, regions and materials, across 3 currencies
+- **7 documented anchor suppliers** covering the lowest-cost bidder, a high-risk supplier, one that
+  does not supply the material, a weak-ESG supplier, one with no contract, one that cannot cover the
+  quantity, and one whose contract expires before delivery - listed in
+  [`data/sample/SUPPLIER_SCENARIO_MANIFEST.md`](data/sample/SUPPLIER_SCENARIO_MANIFEST.md) with a
+  canonical requirement
+- `expected_supplier_baseline.json`, the exact ranking the current engine produces for that
+  requirement
+
 ---
 
 ## Project layout
@@ -229,6 +293,7 @@ app/
   services/        ai/, files/, exports/, tabular/ (shared mapping + parsing)
   modules/po_risk/ field definitions, rules, engine, service
   modules/spend/   field definitions, normaliser, metrics, analytics, filters, savings
+  modules/supplier_reco/ field definitions, normaliser, eligibility, scoring, engine, service
 streamlit_app/     temporary UI - calls the API over HTTP
 data/              sample/, uploads/, exports/
 tests/             unit/, api/, integration/
@@ -245,14 +310,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (394 tests, ~60s)
-pytest tests/unit         # 239 - rules, metrics, savings, mapping, parsing, security, AI
-pytest tests/api          # 95  - endpoints against a temporary database
-pytest tests/integration  # 60  - full journeys over both sample datasets
+pytest                    # everything (456 tests, ~100s)
+pytest tests/unit         # 270 - rules, metrics, savings, scoring, eligibility, mapping, parsing, security, AI
+pytest tests/api          # 112 - endpoints against a temporary database
+pytest tests/integration  # 74  - full journeys over all three sample datasets
 ```
 
-The integration suites read the anomaly and scenario manifests and assert that every documented
-condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario and supplier manifests and assert that every
+documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 
@@ -301,3 +366,4 @@ uploaded file are never executed.
 | [`docs/FUTURE_WEBSITE_INTEGRATION.md`](docs/FUTURE_WEBSITE_INTEGRATION.md) | Replacing Streamlit with React/Next.js |
 | [`data/sample/ANOMALY_MANIFEST.md`](data/sample/ANOMALY_MANIFEST.md) | Documented PO risk anomalies |
 | [`data/sample/SPEND_SCENARIO_MANIFEST.md`](data/sample/SPEND_SCENARIO_MANIFEST.md) | Documented spend scenarios |
+| [`data/sample/SUPPLIER_SCENARIO_MANIFEST.md`](data/sample/SUPPLIER_SCENARIO_MANIFEST.md) | Documented supplier anchors and the canonical requirement |

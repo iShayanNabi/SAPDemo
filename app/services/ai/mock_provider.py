@@ -41,6 +41,8 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_explain_finding(payload), ensure_ascii=False)
         elif task == "spend_summary":
             text = json.dumps(_spend_summary(payload), ensure_ascii=False)
+        elif task == "supplier_recommendation":
+            text = json.dumps(_supplier_recommendation(payload), ensure_ascii=False)
         else:
             text = json.dumps(
                 {
@@ -80,6 +82,8 @@ def _infer_task(prompt: str) -> str:
         return "executive_summary"
     if "spend review" in lowered or "spend summary" in lowered:
         return "spend_summary"
+    if "supplier ranking" in lowered or "supplier recommendation" in lowered:
+        return "supplier_recommendation"
     if "finding" in lowered:
         return "explain_finding"
     return "unknown"
@@ -245,6 +249,83 @@ def _spend_summary(payload: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "summary": summary,
+        "key_findings": key_findings,
+        "recommended_actions": actions,
+    }
+
+
+def _supplier_recommendation(payload: dict[str, Any]) -> dict[str, Any]:
+    """Build the mock supplier-recommendation narrative from the deterministic ranking.
+
+    Every number below is copied from the ranking the engine already produced.
+    The mock provider never re-ranks or recomputes anything.
+    """
+    requirement: dict[str, Any] = payload.get("requirement", {}) or {}
+    summary_data: dict[str, Any] = payload.get("ranking_summary", {}) or {}
+    suppliers: list[dict[str, Any]] = payload.get("top_suppliers", []) or []
+
+    currency = summary_data.get("base_currency", "EUR")
+    total = int(summary_data.get("total_supplier_count", 0) or 0)
+    eligible = int(summary_data.get("eligible_count", 0) or 0)
+    ineligible = int(summary_data.get("ineligible_count", 0) or 0)
+    material = requirement.get("material") or "the requirement"
+
+    lead = suppliers[0] if suppliers else {}
+    lead_id = lead.get("supplier_id")
+    lead_name = lead.get("supplier_name") or "the top-ranked supplier"
+    lead_score = float(lead.get("overall_score", 0) or 0)
+    lead_cost = lead.get("estimated_total_cost_base")
+
+    sentences = [
+        f"Of {total} suppliers assessed for {material}, {eligible} passed the eligibility filters "
+        f"and {ineligible} were excluded before ranking.",
+    ]
+    if lead_id:
+        cost_text = (
+            f" with an estimated total cost of {float(lead_cost):,.0f} {currency}"
+            if lead_cost is not None
+            else ""
+        )
+        sentences.append(
+            f"{lead_name} ({lead_id}) ranks first with an overall score of {lead_score:g}/100"
+            f"{cost_text}."
+        )
+    sentences.append(
+        "The ranking is produced by a deterministic weighted-scoring model; the figures here are "
+        "indicative planning estimates, not quotations or commitments."
+    )
+
+    key_findings: list[str] = []
+    for supplier in suppliers[:3]:
+        if supplier.get("rank") is None:
+            continue
+        key_findings.append(
+            f"#{supplier.get('rank')} {supplier.get('supplier_name') or supplier.get('supplier_id')} "
+            f"- overall {float(supplier.get('overall_score', 0) or 0):g}/100 "
+            f"(cost {float(supplier.get('cost_score', 0) or 0):g}, "
+            f"delivery {float(supplier.get('delivery_score', 0) or 0):g}, "
+            f"risk {float(supplier.get('risk_score', 0) or 0):g})."
+        )
+    if not key_findings:
+        key_findings.append("No supplier passed the eligibility filters for this requirement.")
+
+    actions: list[str] = []
+    if lead_id:
+        actions.append(
+            f"Request a firm quotation from {lead_name} ({lead_id}) and confirm capacity and lead time."
+        )
+    if len(suppliers) > 1:
+        runner_up = suppliers[1]
+        actions.append(
+            f"Keep {runner_up.get('supplier_name') or runner_up.get('supplier_id')} as a backup "
+            "and use it to benchmark the negotiation."
+        )
+    actions.append(
+        "Review the advantages and risks listed for each supplier before committing."
+    )
+
+    return {
+        "summary": " ".join(sentences),
         "key_findings": key_findings,
         "recommended_actions": actions,
     }

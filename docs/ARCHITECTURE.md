@@ -334,8 +334,12 @@ Four tables (`app/models/po_risk.py`):
 | `spend_analyses` | filter applied, every metric, all breakdowns, AI narrative |
 | `spend_transactions` | normalised transactions, indexed for drill-down |
 | `spend_opportunities` | one row per modelled saving, with evidence and `is_estimate` |
+| `supplier_catalogs` | one row per uploaded supplier master file |
+| `suppliers` | normalised supplier master data (lists stored as JSON) |
+| `supplier_recommendations` | requirement, weights, eligibility summary, AI narrative |
+| `supplier_recommendation_entries` | one row per supplier: rank, 9 sub-scores, cost/delivery, advantages, risks |
 
-``uploaded_files`` is shared by both modules and carries a ``module`` column.
+``uploaded_files`` is shared by all three modules and carries a ``module`` column.
 
 SQLite by default with `check_same_thread=False`; PostgreSQL works by changing `DATABASE_URL`
 only. Alembic migrations use batch mode so they run on SQLite too, and the migration was verified

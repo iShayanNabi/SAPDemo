@@ -162,9 +162,15 @@ def index() -> dict[str, object]:
                 "status": "available",
                 "base_path": f"{settings.api_v1_prefix}/spend",
             },
+            {
+                "id": "supplier_recommendation",
+                "name": "Supplier Recommendation Engine",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/supplier-recommendations",
+            },
         ],
         "planned_modules": [
-            "supplier_recommendation", "invoice_validator",
+            "invoice_validator",
             "supplier_risk_copilot", "contract_assistant", "inventory_predictor",
             "test_case_generator", "blueprint_generator", "interview_coach",
         ],

@@ -66,6 +66,7 @@ def main() -> int:
     from app.modules.po_risk.rules import RULE_IDS
     from app.modules.po_risk.thresholds import get_rule_config
     from app.modules.spend.thresholds import get_spend_config
+    from app.modules.supplier_reco.thresholds import get_supplier_reco_config
     from app.services.ai.factory import describe_active_provider
 
     # 3. Directories
@@ -111,6 +112,17 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/spend/config/spend_rules.json")
 
+    try:
+        reco_config = get_supplier_reco_config()
+        reco_config.validate_weights(reco_config.default_weights)
+        print(
+            f"{PASS} supplier recommendation configuration v{reco_config.config_version}: "
+            f"default weights sum to {reco_config.default_weights.total():g}%"
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/supplier_reco/config/supplier_reco_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -135,6 +147,7 @@ def main() -> int:
     for label, filename, script in (
         ("PO risk", "sample_purchase_orders.csv", "scripts/generate_sample_data.py"),
         ("spend", "sample_spend_transactions.csv", "scripts/generate_spend_sample_data.py"),
+        ("suppliers", "sample_suppliers.csv", "scripts/generate_supplier_sample_data.py"),
     ):
         sample = settings.sample_dir / filename
         if sample.is_file():

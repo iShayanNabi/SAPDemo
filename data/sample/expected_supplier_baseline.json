@@ -1,0 +1,38 @@
+{
+  "note": "Observed output of the current engine on the generated catalogue for the canonical requirement with default weights. Used by the test suite to detect unintended changes in the engine or the generator.",
+  "seed": 20260301,
+  "config_version": "1.0.0",
+  "scoring_engine_version": "1.0.0",
+  "supplier_count": 55,
+  "eligible_count": 30,
+  "ineligible_count": 25,
+  "top_supplier_id": "0000300007",
+  "top_supplier_score": 80.7,
+  "top_five": [
+    {
+      "rank": 1,
+      "supplier_id": "0000300007",
+      "overall_score": 80.7
+    },
+    {
+      "rank": 2,
+      "supplier_id": "0000300001",
+      "overall_score": 78.56
+    },
+    {
+      "rank": 3,
+      "supplier_id": "0000300035",
+      "overall_score": 78.38
+    },
+    {
+      "rank": 4,
+      "supplier_id": "0000300008",
+      "overall_score": 77.35
+    },
+    {
+      "rank": 5,
+      "supplier_id": "0000300011",
+      "overall_score": 75.7
+    }
+  ]
+}

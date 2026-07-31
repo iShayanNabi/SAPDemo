@@ -1,12 +1,12 @@
 # Testing
 
-**394 tests, about 60 seconds, no network and no API key.**
+**456 tests, about 100 seconds, no network and no API key.**
 
 ```bash
 pytest                              # everything
-pytest tests/unit                   # 239
-pytest tests/api                    # 95
-pytest tests/integration            # 60
+pytest tests/unit                   # 270
+pytest tests/api                    # 112
+pytest tests/integration            # 74
 pytest -k duplicate -v              # by name
 pytest tests/unit/test_rules.py::test_split_purchase_detected
 ```
@@ -17,9 +17,9 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 239 | Does each rule and metric produce the right number - and stay quiet on healthy data? Do mapping, parsing, filtering, security and the AI abstraction behave? |
-| `tests/api` | 95 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
-| `tests/integration` | 60 | Over the full demo datasets, is every documented anomaly and scenario actually detected, end to end through HTTP? |
+| `tests/unit` | 270 | Does each rule, metric and score produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, security and the AI abstraction behave? |
+| `tests/api` | 112 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
+| `tests/integration` | 74 | Over the full demo datasets, is every documented anomaly, scenario and supplier anchor actually detected, end to end through HTTP? |
 
 | File | Covers |
 | --- | --- |
@@ -29,8 +29,12 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_spend_savings.py` | The six savings models and the configuration |
 | `tests/api/test_po_risk_api.py` | PO risk endpoints |
 | `tests/api/test_spend_api.py` | Spend endpoints, drill-down, exports |
+| `tests/unit/test_supplier_scoring.py` | The 9 scores, weight validation, ranking, determinism |
+| `tests/unit/test_supplier_eligibility.py` | The 7 eligibility filters |
+| `tests/api/test_supplier_reco_api.py` | Supplier endpoints, recommend, weight validation, exports |
 | `tests/integration/test_sample_data_anomalies.py` | PO risk anomaly manifest |
 | `tests/integration/test_spend_sample_data.py` | Spend scenario manifest |
+| `tests/integration/test_supplier_sample_data.py` | Supplier anchor manifest and ranking baseline |
 
 ### Isolation
 

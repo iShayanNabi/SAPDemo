@@ -1,0 +1,114 @@
+{
+  "config_version": "1.0.0",
+  "description": "Deterministic configuration for the Supplier Recommendation Engine. Every weight, scoring blend, eligibility rule and classification list the module uses lives in this file. Editing a value here changes the next recommendation; no code change is required.",
+  "base_currency": "EUR",
+  "currency_rates": {
+    "EUR": 1.0,
+    "USD": 0.92,
+    "GBP": 1.17,
+    "CHF": 1.05,
+    "SEK": 0.088,
+    "PLN": 0.23
+  },
+  "default_weights": {
+    "cost": 20.0,
+    "delivery": 15.0,
+    "quality": 15.0,
+    "capacity": 10.0,
+    "risk": 15.0,
+    "esg": 10.0,
+    "contract": 5.0,
+    "geographic": 5.0,
+    "past_performance": 5.0
+  },
+  "weight_total": 100.0,
+  "weight_total_tolerance": 0.01,
+  "scoring": {
+    "delivery": {
+      "description": "Delivery score blends the reported on-time delivery rate with a lead-time fitness score (shortest lead time in the eligible pool scores highest).",
+      "on_time_weight": 0.6,
+      "lead_time_weight": 0.4
+    },
+    "quality": {
+      "description": "Quality score blends the reported quality score with a defect-rate penalty (defect rate as a percentage, scaled so defect_rate_scale x rate is subtracted from 100).",
+      "quality_weight": 0.75,
+      "defect_weight": 0.25,
+      "defect_rate_scale": 10.0
+    },
+    "capacity": {
+      "description": "Capacity score rewards headroom over the requested quantity. Full marks are earned at target_coverage_ratio times the requested quantity; when no quantity is given the eligible pool is ranked by available capacity.",
+      "target_coverage_ratio": 1.5
+    },
+    "risk": {
+      "description": "Risk score is the inverse of the supplier risk score (0-100, higher risk score = riskier), so a low-risk supplier scores highly."
+    },
+    "esg": {
+      "description": "ESG score is the reported ESG / sustainability score (0-100) used directly."
+    },
+    "contract": {
+      "description": "Contract score is driven by the contract status classification, with a penalty when the contract expires before the required delivery date.",
+      "active_score": 100.0,
+      "expiring_score": 60.0,
+      "none_score": 20.0,
+      "unknown_score": 40.0,
+      "expiring_within_days": 90
+    },
+    "geographic": {
+      "description": "Geographic fit rewards a supplier that serves the preferred region and the requested plant. When neither is specified every eligible supplier scores no_preference_score.",
+      "region_match_score": 60.0,
+      "plant_match_score": 40.0,
+      "no_preference_score": 100.0
+    },
+    "past_performance": {
+      "description": "Past performance blends the historical order count and historical spend, each ranked within the eligible pool.",
+      "order_weight": 0.5,
+      "spend_weight": 0.5
+    }
+  },
+  "eligibility": {
+    "description": "Hard constraints applied before any supplier is scored or ranked. Each one maps to a field on the purchasing requirement.",
+    "risk_tolerance_max_score": {
+      "low": 30.0,
+      "medium": 60.0,
+      "high": 100.0
+    },
+    "default_risk_tolerance": "medium",
+    "enforce_material_match": true,
+    "enforce_plant_match": true,
+    "enforce_min_capacity": true,
+    "enforce_min_quality": true,
+    "enforce_risk_tolerance": true,
+    "enforce_sustainability": true,
+    "enforce_contract_requirement": true,
+    "require_capacity_covers_quantity": true
+  },
+  "classification": {
+    "active_contract_values": [
+      "active", "valid", "in place", "current", "yes", "true", "y", "x", "1",
+      "framework", "contracted", "under contract", "on contract"
+    ],
+    "expiring_contract_values": [
+      "expiring", "expiring soon", "renewal", "pending renewal", "pending", "review"
+    ],
+    "no_contract_values": [
+      "none", "no contract", "not contracted", "off contract", "no", "false", "n", "0",
+      "expired", "inactive", "spot", "ad hoc"
+    ]
+  },
+  "advantages": {
+    "description": "Thresholds controlling the rule-based advantages and risks generated for each ranked supplier.",
+    "high_score_threshold": 80.0,
+    "low_score_threshold": 45.0,
+    "elevated_risk_score": 60.0,
+    "high_defect_rate_pct": 5.0,
+    "max_advantages": 4,
+    "max_risks": 4
+  },
+  "reporting": {
+    "top_n_default": 10,
+    "max_suppliers_per_catalog": 5000,
+    "include_ineligible_in_results": true,
+    "recommendation_disclaimer": "Supplier scores and ranking are calculated deterministically from the supplier data provided, using the documented weights and formulas in the configuration. Estimated costs and delivery dates are indicative planning figures, not quotations or commitments. This application is not connected to a live SAP system and no recommendation has been validated in a live SAP environment. Any AI generated text summarises the ranking and never determines it."
+  },
+  "list_delimiters": [";", "|", ",", "/"]
+}

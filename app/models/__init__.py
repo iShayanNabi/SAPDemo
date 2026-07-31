@@ -3,6 +3,12 @@
 from app.models.base import Base, TimestampMixin
 from app.models.po_risk import PoAnalysis, PoFinding, PoRecord, UploadedFile
 from app.models.spend import SpendAnalysis, SpendOpportunity, SpendTransaction
+from app.models.supplier_reco import (
+    Supplier,
+    SupplierCatalog,
+    SupplierRecommendation,
+    SupplierRecommendationEntry,
+)
 
 __all__ = [
     "Base",
@@ -14,4 +20,8 @@ __all__ = [
     "SpendAnalysis",
     "SpendTransaction",
     "SpendOpportunity",
+    "SupplierCatalog",
+    "Supplier",
+    "SupplierRecommendation",
+    "SupplierRecommendationEntry",
 ]

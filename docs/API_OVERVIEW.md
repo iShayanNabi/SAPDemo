@@ -92,6 +92,29 @@ Binary downloads (exports, sample files) return the file itself, not an envelope
 | GET | `/api/v1/spend/sample` | Download the demo file |
 | GET | `/api/v1/spend/sample/info` | Describe the demo dataset |
 
+### Supplier Recommendation Engine
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/suppliers/upload` | Upload a supplier master file into a catalogue |
+| GET | `/api/v1/suppliers` | List suppliers (filter by material, region, plant, contract) |
+| GET | `/api/v1/suppliers/{supplier_id}` | One supplier's master data |
+| GET | `/api/v1/suppliers/catalogs` | List uploaded catalogues |
+| GET | `/api/v1/suppliers/fields` | Canonical supplier fields and their aliases |
+| GET | `/api/v1/suppliers/sample` | Download the demo supplier file |
+| GET | `/api/v1/suppliers/sample/info` | Describe the demo catalogue |
+| POST | `/api/v1/supplier-recommendations/recommend` | Rank suppliers for a requirement |
+| GET | `/api/v1/supplier-recommendations` | List past recommendations |
+| GET | `/api/v1/supplier-recommendations/{id}` | One recommendation with ranked results |
+| GET | `/api/v1/supplier-recommendations/{id}/export` | Download xlsx, csv or json |
+| GET | `/api/v1/supplier-recommendations/scoring` | Weights, formulas and eligibility filters |
+| GET | `/api/v1/supplier-recommendations/ai-status` | Active AI provider (never a key) |
+
+The `recommend` body is `{catalog_id?, requirement, weights?, top_n?, generate_ai_summary?,
+include_ineligible?}`. `weights` must total 100% (nine dimensions: cost, delivery, quality,
+capacity, risk, esg, contract, geographic, past_performance) or the request is rejected with a
+`validation_error` (422). When `catalog_id` is omitted the most recent catalogue is used.
+
 ---
 
 ## Health
