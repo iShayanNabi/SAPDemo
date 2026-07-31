@@ -195,6 +195,7 @@ different in a spend cube.
 | Document text extraction (PDF/DOCX/TXT) | `app/services/documents/` |
 | AI providers and prompts | `app/services/ai/` |
 | Export building | `app/services/exports/` |
+| Rounding a reported figure | `app/core/rounding.py` (`decimal_mean`, `round_half_up`) |
 
 ### Rule and model isolation
 
@@ -254,7 +255,7 @@ uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 1,028 tests
+pytest                                  # 902 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -342,6 +343,18 @@ only appeared when the API was driven by hand:
   it belongs to, never from the whole document. The same wrapping had truncated a party name to
   `Trading Pte Ltd`. **A document is not a string** - it has a geometry, and the geometry is what
   makes a citation true.
+
+- Module 5, found while finishing module 6: `category_averages` reported `20.19` on one
+  interpreter and `20.20` on another **from byte-identical inputs**. The 54 supplier invoice
+  scores are each exactly two decimals and sum to exactly `1090.53`, so the true mean is exactly
+  `20.195` - a rounding tie. Binary `sum()` reached `1090.5299999999997`, dragging the mean just
+  under the tie, and the built-in `round()` (half-to-even, on the *binary* value) then reported
+  `20.19`. Left-to-right and sorted-order summation of the same list disagree. Fix:
+  `app/core/rounding.py` - interpret each float as the decimal it prints as, sum in `Decimal`,
+  round half away from zero - applied where a figure becomes a *reported* value. Proof it was the
+  code and not the baseline: re-running the generator now reproduces the committed baseline byte
+  for byte. **Never `round(sum(xs) / len(xs), 2)` on a published aggregate.** Intermediate
+  arithmetic can stay in float; the boundary where a number becomes an answer cannot.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.

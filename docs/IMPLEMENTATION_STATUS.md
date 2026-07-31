@@ -9,7 +9,7 @@ Last updated: 2026-07-31
 | | |
 | --- | --- |
 | Modules complete | 6 of 10 |
-| Tests | 876 passing (515 unit, 208 API, 153 integration) |
+| Tests | 902 passing (537 unit, 208 API, 157 integration) |
 | Python source | ~38,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
@@ -394,6 +394,20 @@ regression test in `tests/unit/test_pipeline.py`.
 - Alembic `upgrade head` -> `downgrade -1` -> `upgrade head` on a scratch database, and an
   autogenerate diff confirmed the migration matches the models.
 
+### A rounding policy this module's baseline exposed
+
+`category_averages["invoice"]` reported `20.19` here and `20.20` on the machine the baseline was
+recorded on, from identical inputs. The 54 invoice scores are each exactly two decimals and sum to
+exactly `1090.53`, so the true mean is exactly `20.195` - a rounding tie. Float `sum()` reached
+`1090.5299999999997`, which put the mean a hair under the tie, and `round()` (half-to-even, applied
+to the *binary* value) then reported `20.19`. The same list summed in sorted order gives `20.20`.
+
+Fixed in `app/core/rounding.py`: reported aggregates interpret each float as the decimal it prints
+as, sum in `Decimal`, and round half away from zero. `run_risk_assessment` now uses `decimal_mean`
+for both `category_averages` and `average_overall_score`, and `round_half_up` for the trend
+figures. The committed baseline was **not** edited - it was already correct, and re-running the
+generator now reproduces it byte for byte.
+
 ### Design notes carried forward
 
 - **Joining three files, not one.** The invoice file is mandatory; the PO and GR files are optional,
@@ -516,9 +530,9 @@ documentation set.
 
 ### Verification performed
 
-- Full suite: 876 collected, 875 passed. One pre-existing module 5 failure
-  (`test_category_averages_reproduce_the_baseline`, 20.19 vs 20.20) reproduces on an unmodified
-  checkout in this environment and is unrelated to module 6.
+- Full suite: 902 passed. A pre-existing module 5 aggregate that reported 20.19 instead of 20.20
+  on this interpreter was traced to float accumulation drift and fixed at the same time; see
+  "Module 5 - a rounding policy this module's baseline exposed" below.
 - Live `uvicorn` run: upload the sample MSA as PDF (3 pages), analyse with an AI narrative, list
   clauses, ask five questions including an injected one, and download all three export formats.
 - Live check that the multi-page PDF attributes clauses to the right pages (insurance -> page 3,

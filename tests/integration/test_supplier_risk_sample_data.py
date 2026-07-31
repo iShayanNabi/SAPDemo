@@ -470,3 +470,166 @@ def test_as_of_date_changes_contract_expiry_reporting(
         later_assessment["summary"]["contracts_expiring_count"]
         >= sample_assessment["assessment"]["summary"]["contracts_expiring_count"]
     )
+
+
+# ---------------------------------------------------------------------------
+# Aggregate stability
+#
+# The invoice category average over this dataset is exactly 20.195 - a value
+# that sits precisely on a two-decimal rounding tie. Summing the 54 supplier
+# scores in binary floating point drifts by ~1e-15, which was enough to report
+# 20.19 on one interpreter and 20.20 on another from identical inputs. These
+# assert that the aggregate no longer depends on anything but the data.
+# ---------------------------------------------------------------------------
+
+
+def test_the_invoice_average_sits_on_a_rounding_tie(
+    supplier_risk_sample_csv_path,
+    supplier_risk_event_sample_csv_path,
+    supplier_risk_scenario_manifest,
+    supplier_risk_config,
+):
+    """Pin the condition itself, so a data change that removes it is visible."""
+    from decimal import Decimal
+
+    result = _run_engine_directly(
+        supplier_risk_sample_csv_path,
+        supplier_risk_event_sample_csv_path,
+        supplier_risk_scenario_manifest,
+        supplier_risk_config,
+    )
+    scores = [
+        profile.score.categories["invoice"].score
+        for profile in result.profiles
+        if "invoice" in profile.score.categories
+        and profile.score.categories["invoice"].score is not None
+    ]
+
+    exact_mean = sum(Decimal(str(score)) for score in scores) / len(scores)
+    assert exact_mean == Decimal("20.195"), (
+        "the regression this guards depends on the mean landing on a tie; "
+        f"it is now {exact_mean}"
+    )
+    assert result.category_averages["invoice"] == 20.2
+
+
+def test_repeated_runs_produce_identical_aggregates(
+    supplier_risk_sample_csv_path,
+    supplier_risk_event_sample_csv_path,
+    supplier_risk_scenario_manifest,
+    supplier_risk_config,
+):
+    """The same files must produce the same figures on every run."""
+    runs = [
+        _run_engine_directly(
+            supplier_risk_sample_csv_path,
+            supplier_risk_event_sample_csv_path,
+            supplier_risk_scenario_manifest,
+            supplier_risk_config,
+        )
+        for _ in range(5)
+    ]
+
+    first = runs[0]
+    for other in runs[1:]:
+        assert other.category_averages == first.category_averages
+        assert other.average_overall_score == first.average_overall_score
+        assert other.band_counts == first.band_counts
+
+
+def test_aggregates_do_not_depend_on_supplier_order(
+    supplier_risk_sample_csv_path,
+    supplier_risk_event_sample_csv_path,
+    supplier_risk_scenario_manifest,
+    supplier_risk_config,
+):
+    """Reordering the input rows must not move an average.
+
+    This is the defect in its purest form: binary accumulation error depends on
+    the order values are added in, so a mean on a tie moved when the rows did.
+    """
+    import random
+
+    from app.modules.supplier_risk.engine import run_risk_assessment
+
+    profiles, events, as_of = _load_records(
+        supplier_risk_sample_csv_path,
+        supplier_risk_event_sample_csv_path,
+        supplier_risk_scenario_manifest,
+        supplier_risk_config,
+    )
+    baseline = run_risk_assessment(
+        profiles, events, supplier_risk_config.default_weights, supplier_risk_config, as_of
+    )
+
+    for seed in range(4):
+        shuffled = list(profiles)
+        random.Random(seed).shuffle(shuffled)
+        result = run_risk_assessment(
+            shuffled, events, supplier_risk_config.default_weights, supplier_risk_config, as_of
+        )
+
+        assert result.category_averages == baseline.category_averages, f"seed {seed}"
+        assert result.average_overall_score == baseline.average_overall_score, f"seed {seed}"
+
+
+def test_the_generator_and_the_api_share_one_calculation_path(
+    sample_assessment, supplier_risk_sample_csv_path,
+    supplier_risk_event_sample_csv_path, supplier_risk_scenario_manifest,
+    supplier_risk_config,
+):
+    """The baseline generator must not have its own copy of the arithmetic.
+
+    ``scripts/generate_supplier_risk_sample_data.py`` and
+    ``app/modules/supplier_risk/service.py`` both call ``run_risk_assessment``.
+    Calling the engine directly here and comparing against the figures the HTTP
+    API returned proves the two agree, so a baseline recorded by the generator
+    is a statement about what the API will actually serve.
+    """
+    from app.modules.supplier_risk import service
+    from app.modules.supplier_risk.engine import run_risk_assessment
+
+    import scripts.generate_supplier_risk_sample_data as generator
+
+    # Neither has its own copy: both hold the identical function object.
+    assert generator.run_risk_assessment is run_risk_assessment
+    assert service.run_risk_assessment is run_risk_assessment
+
+    direct = _run_engine_directly(
+        supplier_risk_sample_csv_path,
+        supplier_risk_event_sample_csv_path,
+        supplier_risk_scenario_manifest,
+        supplier_risk_config,
+    )
+    served = sample_assessment["assessment"]["summary"]
+
+    assert direct.category_averages == served["category_averages"]
+    assert direct.average_overall_score == served["average_overall_score"]
+
+
+def _load_records(profiles_path, events_path, manifest, config):
+    """Load the sample files through the real reader, mapper and normaliser."""
+    from app.modules.supplier_risk.field_definitions import EVENT_REGISTRY, REGISTRY
+    from app.modules.supplier_risk.normalizer import (
+        normalize_risk_event_dataframe,
+        normalize_supplier_risk_dataframe,
+    )
+    from app.services.files.readers import read_tabular
+    from app.services.tabular.mapping import suggest_mapping
+
+    def _load(path, registry, normalise):
+        read_result = read_tabular(path.read_bytes(), ".csv")
+        mapping = suggest_mapping(read_result.source_columns, registry).mapping
+        return normalise(read_result.dataframe, mapping, config)
+
+    profiles = _load(profiles_path, REGISTRY, normalize_supplier_risk_dataframe).profiles
+    events = _load(events_path, EVENT_REGISTRY, normalize_risk_event_dataframe).events
+    return profiles, events, date.fromisoformat(manifest["as_of_date"])
+
+
+def _run_engine_directly(profiles_path, events_path, manifest, config):
+    """Run the engine over the sample files, bypassing HTTP and the database."""
+    from app.modules.supplier_risk.engine import run_risk_assessment
+
+    profiles, events, as_of = _load_records(profiles_path, events_path, manifest, config)
+    return run_risk_assessment(profiles, events, config.default_weights, config, as_of)

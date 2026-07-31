@@ -598,10 +598,10 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (876 tests, ~130s)
-pytest tests/unit         # 515 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, prompt-injection resistance, security, AI
+pytest                    # everything (902 tests, ~80s)
+pytest tests/unit         # 537 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, prompt-injection resistance, security, AI
 pytest tests/api          # 208 - endpoints against a temporary database
-pytest tests/integration  # 153 - full journeys over all six sample datasets
+pytest tests/integration  # 157 - full journeys over all six sample datasets
 ```
 
 The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk and contract
