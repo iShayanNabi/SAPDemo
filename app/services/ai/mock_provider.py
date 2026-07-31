@@ -47,6 +47,10 @@ class MockAIProvider(AIProvider):
             text = json.dumps(_invoice_validation(payload), ensure_ascii=False)
         elif task == "supplier_risk":
             text = json.dumps(_supplier_risk(payload), ensure_ascii=False)
+        elif task == "contract_analysis":
+            text = json.dumps(_contract_analysis(payload), ensure_ascii=False)
+        elif task == "contract_answer":
+            text = json.dumps(_contract_answer(payload), ensure_ascii=False)
         else:
             text = json.dumps(
                 {
@@ -92,6 +96,10 @@ def _infer_task(prompt: str) -> str:
         return "invoice_validation"
     if "supplier risk" in lowered or "risk assessment" in lowered:
         return "supplier_risk"
+    if "contract answer" in lowered or "contract question" in lowered:
+        return "contract_answer"
+    if "contract review" in lowered or "contract analysis" in lowered:
+        return "contract_analysis"
     if "finding" in lowered:
         return "explain_finding"
     return "unknown"
@@ -494,4 +502,130 @@ def _supplier_risk(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": " ".join(sentences),
         "key_findings": key_findings,
         "recommended_actions": recommended_actions,
+    }
+
+
+def _contract_analysis(payload: dict[str, Any]) -> dict[str, Any]:
+    """Build the mock contract narrative from the deterministic extraction.
+
+    Every clause name, page number, date and severity below is copied out of
+    the payload the engine produced. The mock never decides that a clause
+    exists, never invents a page and never softens a finding.
+    """
+    summary_data: dict[str, Any] = payload.get("contract_summary", {}) or {}
+    key_dates: dict[str, Any] = payload.get("key_dates", {}) or {}
+    clauses: list[dict[str, Any]] = payload.get("clauses", []) or []
+    risks: list[dict[str, Any]] = payload.get("risks", []) or []
+    missing: list[dict[str, Any]] = payload.get("missing_clauses", []) or []
+
+    title = summary_data.get("contract_title") or "The uploaded document"
+    found = summary_data.get("clauses_found", 0)
+    expected = summary_data.get("clauses_expected", 0)
+    pages = summary_data.get("page_count", 0)
+    severity = summary_data.get("severity_counts", {}) or {}
+
+    sentences = [
+        f"{title} was read across {pages} page(s) and {found} of {expected} expected clause "
+        f"types were located by pattern matching."
+    ]
+
+    effective = key_dates.get("effective_date")
+    expiration = key_dates.get("expiration_date")
+    if effective or expiration:
+        sentences.append(
+            f"The term runs from {effective or 'a start date that is not stated'} to "
+            f"{expiration or 'an end date that is not stated'}."
+        )
+    if key_dates.get("auto_renewal"):
+        deadline = key_dates.get("notice_deadline")
+        sentences.append(
+            "The agreement renews automatically"
+            + (f", with notice required by {deadline}." if deadline else ".")
+        )
+    if risks:
+        sentences.append(
+            f"{len(risks)} risk finding(s) were raised, including "
+            f"{severity.get('critical', 0)} critical and {severity.get('high', 0)} high."
+        )
+    else:
+        sentences.append("No risk findings were raised by the contract rules.")
+    sentences.append(
+        "Every statement above comes from the deterministic extraction, which records a page "
+        "reference and a confidence score for each clause. This is an assistive review, not "
+        "legal advice."
+    )
+
+    key_findings: list[str] = []
+    for risk in risks[:4]:
+        page = risk.get("page_number")
+        where = f" (page {page})" if page else ""
+        key_findings.append(
+            f"[{str(risk.get('severity', '')).upper()}] {risk.get('title')}{where}."
+        )
+    for item in missing[:3]:
+        key_findings.append(
+            f"Expected clause not found: {item.get('label')} ({item.get('importance')} "
+            f"importance)."
+        )
+    weak = [item for item in clauses if item.get("needs_review")]
+    if weak:
+        key_findings.append(
+            f"{len(weak)} clause(s) were extracted with low confidence and should be checked "
+            f"against the cited pages: "
+            + ", ".join(str(item.get("label")) for item in weak[:4])
+            + "."
+        )
+    if summary_data.get("injection_detected"):
+        key_findings.append(
+            "The document contained text written as an instruction to an automated system. It "
+            "was treated as data only and was not acted on."
+        )
+
+    recommended_actions = [risk["recommended_action"] for risk in risks[:4] if risk.get("recommended_action")]
+    if not recommended_actions:
+        recommended_actions.append(
+            "No contract rule was triggered; file the extracted dates in the contract register."
+        )
+
+    return {
+        "summary": " ".join(sentences),
+        "key_findings": key_findings,
+        "recommended_actions": list(dict.fromkeys(recommended_actions)),
+    }
+
+
+def _contract_answer(payload: dict[str, Any]) -> dict[str, Any]:
+    """Rephrase one deterministic contract answer, preserving every citation."""
+    question = payload.get("question", "")
+    answer: dict[str, Any] = payload.get("deterministic_answer", {}) or {}
+    citations: list[dict[str, Any]] = payload.get("citations", []) or []
+
+    body = str(answer.get("answer", "")).strip()
+    if answer.get("answered") is False:
+        summary = (
+            f"The contract does not answer '{question}' as extracted. "
+            f"{body.splitlines()[0] if body else ''}".strip()
+        )
+    else:
+        first_lines = " ".join(line.strip() for line in body.splitlines()[:3] if line.strip())
+        summary = (
+            f"In answer to '{question}': {first_lines} "
+            f"This restates the deterministic extraction; it adds no new facts."
+        ).strip()
+
+    key_findings = []
+    for citation in citations[:4]:
+        page = citation.get("page_number")
+        heading = citation.get("section_heading")
+        where = ", ".join(
+            part for part in ([f"page {page}"] if page else []) + ([heading] if heading else [])
+        )
+        key_findings.append(f"{where}: {str(citation.get('excerpt', ''))[:180]}".strip(": "))
+
+    return {
+        "summary": summary,
+        "key_findings": key_findings,
+        "recommended_actions": [
+            "Open the cited page in the original document before relying on this answer."
+        ],
     }

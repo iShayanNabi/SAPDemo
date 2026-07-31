@@ -1,0 +1,1216 @@
+{
+  "config_version": "1.0.0",
+  "description": "Deterministic configuration for the SAP AI Application Lab Contract Assistant. Every clause pattern, confidence weight, date window and risk threshold lives here - no rule may hardcode one. Editing this file changes what the engine finds without touching a line of Python.",
+  "extraction": {
+    "description": "How much text a clause carries with it and when a match is discarded.",
+    "excerpt_chars": 320,
+    "max_excerpt_chars": 700,
+    "min_confidence": 0.3,
+    "max_instances_per_clause": 3,
+    "context_chars_before": 60,
+    "review_below_confidence": 0.55
+  },
+  "confidence": {
+    "description": "Confidence is deterministic: it is built from the evidence the matcher actually saw, never guessed. Start at 'base', add 'heading_match' when the clause sits under a heading that names it, add 'primary_keyword' for the defining phrase, add 'secondary_keyword' per supporting phrase (capped), add 'value_extracted' when a number/date was parsed out of the clause, and subtract 'scattered_penalty' when the only evidence is spread across unrelated pages.",
+    "base": 0.3,
+    "heading_match": 0.32,
+    "primary_keyword": 0.2,
+    "secondary_keyword": 0.05,
+    "max_secondary": 0.15,
+    "value_extracted": 0.1,
+    "scattered_penalty": 0.08,
+    "minimum": 0.05,
+    "maximum": 0.99
+  },
+  "sections": {
+    "description": "How a heading is recognised in extracted text. PDF extraction discards blank lines, so headings are detected from numbering and capitalisation, never from spacing.",
+    "min_heading_chars": 3,
+    "max_heading_chars": 90,
+    "max_heading_words": 12,
+    "numbered_patterns": [
+      "^\\s*(?P<number>\\d{1,2}(?:\\.\\d{1,2}){0,3})\\.?\\s+(?P<title>[A-Z][^.]{2,88})$",
+      "^\\s*(?P<number>(?:ARTICLE|SECTION|CLAUSE|SCHEDULE|ANNEX|APPENDIX|EXHIBIT)\\s+[0-9IVXLC]{1,6})\\s*[.:\\-]?\\s*(?P<title>[A-Za-z][^.]{2,88})?$",
+      "^\\s*(?P<number>\\([a-z]\\)|\\(\\d{1,2}\\))\\s+(?P<title>[A-Z][^.]{2,88})$"
+    ],
+    "uppercase_pattern": "^\\s*(?P<title>[A-Z][A-Z0-9 ,&'()/\\-]{2,88})\\s*$",
+    "title_case_pattern": "^\\s*(?P<title>(?:[A-Z][a-zA-Z]*)(?:[ \\-](?:of|and|or|to|the|for|in|a|an|[A-Z][a-zA-Z]*)){0,9})\\s*$",
+    "stop_words_in_heading": [
+      "shall",
+      "will",
+      "hereby",
+      "agrees",
+      "means"
+    ]
+  },
+  "document": {
+    "description": "How the contract title and the parties are recognised.",
+    "title_patterns": [
+      "^\\s*(?P<title>[A-Z][A-Za-z0-9 ,&'()/\\-]{6,110}(?:AGREEMENT|CONTRACT|ORDER|TERMS|SOW|STATEMENT OF WORK|ADDENDUM|AMENDMENT))\\s*$",
+      "^\\s*(?P<title>(?:MASTER|SERVICE|SERVICES|SUPPLY|SOFTWARE|LICENCE|LICENSE|MAINTENANCE|FRAMEWORK|CONSULTING|PURCHASE)[A-Z ]{0,60}AGREEMENT)\\s*$"
+    ],
+    "title_scan_lines": 40,
+    "party_patterns": [
+      "(?P<name>[A-Z][A-Za-z0-9.&'\\-]{1,30}(?:[ \\-][A-Za-z0-9.&'\\-]{1,30}){0,5}[ ](?:GmbH|AG|SE|BV|B\\.V\\.|NV|N\\.V\\.|SA|S\\.A\\.|SAS|Srl|S\\.r\\.l\\.|Ltd\\.?|Limited|LLC|L\\.L\\.C\\.|Inc\\.?|PLC|plc|Oy|AB|A/S|ApS|Pty Ltd))(?![A-Za-z])",
+      "\\bbetween\\s+(?P<name>[A-Z][A-Za-z0-9.&'\\- ]{2,60}?)\\s*(?:\\(|,\\s*(?:a|an|the)\\b|\\band\\b)",
+      "\\band\\s+(?P<name>[A-Z][A-Za-z0-9.&'\\- ]{2,60}?)\\s*\\(\\s*(?:the|\"|')"
+    ],
+    "party_stop_words": [
+      "this",
+      "the",
+      "and",
+      "between",
+      "by",
+      "of",
+      "made",
+      "dated",
+      "entered",
+      "into"
+    ],
+    "party_reject_words": [
+      "agreement",
+      "contract",
+      "schedule",
+      "annex",
+      "appendix",
+      "exhibit",
+      "addendum",
+      "parties",
+      "party"
+    ],
+    "role_patterns": {
+      "customer": [
+        "\\bcustomer\\b",
+        "\\bbuyer\\b",
+        "\\bpurchaser\\b",
+        "\\bclient\\b",
+        "\\bprincipal\\b"
+      ],
+      "supplier": [
+        "\\bsupplier\\b",
+        "\\bvendor\\b",
+        "\\bcontractor\\b",
+        "\\bservice provider\\b",
+        "\\bprovider\\b",
+        "\\bseller\\b",
+        "\\blicensor\\b"
+      ]
+    },
+    "party_scan_chars": 4000,
+    "max_parties": 6
+  },
+  "dates": {
+    "description": "Date parsing and the windows used to report a contract as expiring. day_first controls how an ambiguous 03/04/2026 is read - true means 3 April, which is the European convention SAP exports use.",
+    "day_first": true,
+    "expiring_within_days": 90,
+    "critical_within_days": 30,
+    "notice_deadline_warning_days": 45,
+    "effective_date_patterns": [
+      "effective\\s+(?:as\\s+of\\s+|date[:\\s]+|on\\s+)(?P<date>[^.,;\\n)]{4,40})",
+      "(?:commence|commences|commencing|start(?:s|ing)?)\\s+on\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "effective\\s+date\\s+of\\s+this\\s+agreement\\s+is\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "with\\s+effect\\s+from\\s+(?P<date>[^.,;\\n)]{4,40})"
+    ],
+    "expiration_date_patterns": [
+      "(?:expire|expires|expiring|expiration\\s+date|end\\s+date|terminates)\\s*(?:on|:)?\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "(?:until|through|up\\s+to\\s+and\\s+including)\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "shall\\s+(?:continue|remain\\s+in\\s+(?:force|effect))\\s+until\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "initial\\s+term\\s+(?:shall\\s+)?end(?:s|ing)?\\s+on\\s+(?P<date>[^.,;\\n)]{4,40})"
+    ],
+    "renewal_date_patterns": [
+      "renew(?:s|al|ed)?\\s+(?:automatically\\s+)?on\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "renewal\\s+date\\s*(?:is|:)?\\s+(?P<date>[^.,;\\n)]{4,40})",
+      "next\\s+renewal\\s+(?:date\\s+)?(?:is|:)?\\s+(?P<date>[^.,;\\n)]{4,40})"
+    ],
+    "signature_date_patterns": [
+      "(?:signed|executed|dated)\\s+(?:on|this)?\\s*(?P<date>[^.,;\\n)]{4,40})"
+    ],
+    "term_length_patterns": [
+      "(?:initial\\s+)?term\\s+of\\s+(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|twenty-four|thirty-six)\\s+(?P<unit>days|day|weeks|week|months|month|years|year)",
+      "for\\s+a\\s+period\\s+of\\s+(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|twenty-four|thirty-six)\\s+(?P<unit>days|day|weeks|week|months|month|years|year)"
+    ],
+    "renewal_term_patterns": [
+      "(?:renew(?:s|ed|al|ing)?|extend(?:s|ed|ing)?)\\s+(?:automatically\\s+)?(?:for|by)\\s+(?:successive\\s+|additional\\s+|further\\s+|consecutive\\s+)*(?:periods?\\s+of\\s+)?(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|twenty-four|thirty-six)\\s+(?P<unit>days|day|weeks|week|months|month|years|year)",
+      "(?:successive|additional|further)\\s+(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve)[\\s\\-](?P<unit>days|day|weeks|week|months|month|years|year)\\s+(?:term|period)"
+    ],
+    "notice_period_patterns": [
+      "(?:written\\s+)?notice\\s+(?:of\\s+)?(?:not\\s+less\\s+than\\s+|at\\s+least\\s+|a\\s+minimum\\s+of\\s+)?(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|thirty|sixty|ninety)[\\s\\-](?P<unit>days|day|weeks|week|months|month|years|year)",
+      "(?:at\\s+least\\s+|not\\s+less\\s+than\\s+|a\\s+minimum\\s+of\\s+)(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|thirty|sixty|ninety)[\\s\\-](?P<unit>days|day|weeks|week|months|month|years|year)['\\u2019]?s?\\s+(?:prior\\s+)?(?:written\\s+)?notice",
+      "(?P<count>\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten|twelve|thirty|sixty|ninety)[\\s\\-](?P<unit>days|day|weeks|week|months|month)['\\u2019]?s?\\s+(?:prior\\s+)?(?:written\\s+)?notice"
+    ],
+    "number_words": {
+      "one": 1,
+      "two": 2,
+      "three": 3,
+      "four": 4,
+      "five": 5,
+      "six": 6,
+      "seven": 7,
+      "eight": 8,
+      "nine": 9,
+      "ten": 10,
+      "twelve": 12,
+      "thirty": 30,
+      "sixty": 60,
+      "ninety": 90,
+      "twenty-four": 24,
+      "thirty-six": 36
+    },
+    "unit_days": {
+      "day": 1,
+      "days": 1,
+      "week": 7,
+      "weeks": 7,
+      "month": 30,
+      "months": 30,
+      "year": 365,
+      "years": 365
+    }
+  },
+  "payment": {
+    "description": "Payment term parsing and the company policy the extracted terms are checked against.",
+    "net_days_patterns": [
+      "net\\s*(?P<days>\\d{1,3})",
+      "(?:within|after)\\s+(?P<days>\\d{1,3})\\s+(?:calendar\\s+|business\\s+|working\\s+)?days\\s+(?:of|from|after|following)",
+      "payable\\s+(?:within\\s+)?(?P<days>\\d{1,3})\\s+days",
+      "\\bNT\\s?(?P<days>\\d{1,3})\\b"
+    ],
+    "early_payment_discount_patterns": [
+      "(?P<pct>\\d{1,2}(?:\\.\\d{1,2})?)\\s*(?:%|per\\s+cent|percent)\\s*(?:cash\\s+)?discount\\b.{0,40}?within\\s+(?P<days>\\d{1,3})\\s+(?:calendar\\s+)?days"
+    ],
+    "policy_max_days": 60,
+    "policy_min_days": 14
+  },
+  "amounts": {
+    "description": "How monetary caps and penalties are recognised inside a clause.",
+    "currency_symbols": {
+      "EUR": [
+        "EUR",
+        "€"
+      ],
+      "USD": [
+        "USD",
+        "$"
+      ],
+      "GBP": [
+        "GBP",
+        "£"
+      ],
+      "CHF": [
+        "CHF"
+      ]
+    },
+    "amount_pattern": "(?P<currency>EUR|USD|GBP|CHF|€|\\$|£)\\s?(?P<amount>\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{1,2})?)",
+    "percentage_pattern": "(?P<pct>\\d{1,3}(?:\\.\\d{1,2})?)\\s*(?:%|per\\s+cent|percent)"
+  },
+  "clauses": {
+    "term": {
+      "label": "Contract term",
+      "description": "How long the agreement runs, and the dates that bound it.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "\\bterm\\b",
+        "duration",
+        "period of (the )?agreement",
+        "commencement"
+      ],
+      "primary_patterns": [
+        "initial term",
+        "term of this agreement",
+        "shall commence on",
+        "remain in (force|effect) until",
+        "effective date",
+        "(?:is|shall be) effective (?:as of|from|on)",
+        "shall (?:continue|expire|end)\\b",
+        "expires? on\\b",
+        "with effect from"
+      ],
+      "secondary_patterns": [
+        "expire",
+        "expiration",
+        "end date",
+        "period of \\d+",
+        "anniversary"
+      ],
+      "question_patterns": [
+        "how long",
+        "\\bterm\\b",
+        "duration",
+        "when does .*(start|begin|commence)",
+        "effective date"
+      ],
+      "missing_message": "No contract term or duration was stated, so the agreement's start and end cannot be established from the document."
+    },
+    "auto_renewal": {
+      "label": "Auto-renewal",
+      "description": "Whether the contract renews itself unless notice is given.",
+      "required": false,
+      "importance": "high",
+      "heading_patterns": [
+        "renewal",
+        "extension",
+        "evergreen"
+      ],
+      "primary_patterns": [
+        "automatically renew",
+        "auto-renew",
+        "automatic renewal",
+        "shall renew",
+        "renew(s|ed)? automatically",
+        "evergreen",
+        "tacit renewal",
+        "unless (either party gives|notice is given|terminated)"
+      ],
+      "secondary_patterns": [
+        "successive",
+        "additional (one|two|three|twelve|\\d+)",
+        "further period",
+        "renewal term",
+        "rolling"
+      ],
+      "question_patterns": [
+        "auto.?renew",
+        "does it renew",
+        "renewal",
+        "roll over",
+        "evergreen"
+      ],
+      "missing_message": "No renewal or extension clause was found, so the agreement does not appear to renew itself.",
+      "negation_patterns": [
+        "does not (?:automatically )?renew",
+        "shall not (?:automatically )?renew",
+        "not renew automatically",
+        "no automatic renewal",
+        "will not (?:automatically )?renew",
+        "does not renew"
+      ]
+    },
+    "termination": {
+      "label": "Termination and notice",
+      "description": "How either party ends the agreement and how much notice is required.",
+      "required": true,
+      "importance": "critical",
+      "heading_patterns": [
+        "termination",
+        "cancellation",
+        "notice",
+        "exit"
+      ],
+      "primary_patterns": [
+        "may terminate",
+        "right to terminate",
+        "terminate this agreement",
+        "termination for convenience",
+        "termination for cause",
+        "notice of termination"
+      ],
+      "secondary_patterns": [
+        "written notice",
+        "material breach",
+        "cure period",
+        "remedy the breach",
+        "immediate effect",
+        "wind.?down"
+      ],
+      "question_patterns": [
+        "terminat",
+        "cancel",
+        "notice period",
+        "how (do|can) (i|we) (get )?out",
+        "exit"
+      ],
+      "missing_message": "No termination clause was found, so the document does not say how either party can end the agreement.",
+      "negation_patterns": [
+        "may not terminate"
+      ]
+    },
+    "payment_terms": {
+      "label": "Payment terms",
+      "description": "When invoices fall due and on what conditions.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "payment",
+        "invoicing",
+        "invoice",
+        "fees and payment",
+        "billing"
+      ],
+      "primary_patterns": [
+        "payment terms",
+        "net \\d{1,3}",
+        "payable within",
+        "days of (receipt of|the) invoice",
+        "due (and payable )?within",
+        "\\bNT\\s?\\d{1,3}\\b"
+      ],
+      "secondary_patterns": [
+        "undisputed invoice",
+        "late payment interest",
+        "cash discount",
+        "purchase order number",
+        "bank transfer",
+        "remittance"
+      ],
+      "question_patterns": [
+        "payment term",
+        "when .*(pay|due)",
+        "net \\d+",
+        "invoice",
+        "payment"
+      ],
+      "missing_message": "No payment terms were found, so the invoice due date cannot be established from the document."
+    },
+    "pricing": {
+      "label": "Pricing terms",
+      "description": "Prices, rate cards, indexation and how prices may change.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "price",
+        "pricing",
+        "charges",
+        "fees",
+        "rates",
+        "remuneration"
+      ],
+      "primary_patterns": [
+        "unit price",
+        "price list",
+        "rate card",
+        "(?:price|charge|fee|rate)s?\\s+(?:is|are|shall be)",
+        "(?:annual |monthly )?(?:subscription |rental )?(?:fee|charge) (?:is|of)\\b",
+        "price adjustment",
+        "indexation"
+      ],
+      "secondary_patterns": [
+        "exclusive of vat",
+        "excluding taxes",
+        "annual increase",
+        "consumer price index",
+        "\\bCPI\\b",
+        "firm fixed price",
+        "time and materials"
+      ],
+      "question_patterns": [
+        "pricing",
+        "\\bprice",
+        "how much",
+        "rate",
+        "\\bfees?\\b",
+        "cost"
+      ],
+      "missing_message": "No pricing terms were found, so the commercial basis of the agreement is not stated in the document."
+    },
+    "service_levels": {
+      "label": "Service levels",
+      "description": "Committed availability, response and resolution targets.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "service level",
+        "\\bSLA\\b",
+        "performance",
+        "availability",
+        "key performance"
+      ],
+      "primary_patterns": [
+        "service level",
+        "\\bSLA\\b",
+        "availability of \\d",
+        "uptime",
+        "response time",
+        "resolution time",
+        "key performance indicator",
+        "\\bKPI\\b"
+      ],
+      "secondary_patterns": [
+        "measured monthly",
+        "business hours",
+        "priority 1",
+        "\\bP1\\b",
+        "severity 1",
+        "monthly report",
+        "credit"
+      ],
+      "question_patterns": [
+        "service level",
+        "\\bsla\\b",
+        "uptime",
+        "availability",
+        "response time",
+        "\\bkpi\\b"
+      ],
+      "missing_message": "No service levels were found, so no availability, response or resolution commitment is measurable from the document."
+    },
+    "penalties": {
+      "label": "Penalties and service credits",
+      "description": "Liquidated damages, service credits and other financial consequences.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "penalt",
+        "liquidated damages",
+        "service credit",
+        "remedies"
+      ],
+      "primary_patterns": [
+        "liquidated damages",
+        "penalty",
+        "penalties",
+        "service credit",
+        "contractual penalty",
+        "shall pay .{0,40}(damages|credit)"
+      ],
+      "secondary_patterns": [
+        "per (day|week) of delay",
+        "capped at",
+        "maximum of",
+        "deducted from",
+        "sole remedy"
+      ],
+      "question_patterns": [
+        "penalt",
+        "liquidated damages",
+        "service credit",
+        "what happens if .*(late|fail|miss)"
+      ],
+      "missing_message": "No penalty or service-credit clause was found, so late or failed performance carries no stated financial consequence."
+    },
+    "liability": {
+      "label": "Limitation of liability",
+      "description": "The cap on each party's liability and what is excluded from it.",
+      "required": true,
+      "importance": "critical",
+      "heading_patterns": [
+        "liability",
+        "limitation of liability",
+        "limitations"
+      ],
+      "primary_patterns": [
+        "limitation of liability",
+        "total liability",
+        "aggregate liability",
+        "liability (shall|is) (be )?limited",
+        "liable for",
+        "unlimited liability"
+      ],
+      "secondary_patterns": [
+        "indirect",
+        "consequential",
+        "loss of profit",
+        "loss of data",
+        "gross negligence",
+        "wilful misconduct",
+        "willful misconduct",
+        "shall not exceed"
+      ],
+      "question_patterns": [
+        "liabilit",
+        "\\bcap\\b",
+        "how much .*(liable|risk)",
+        "limitation"
+      ],
+      "missing_message": "No limitation of liability was found, so neither party's exposure is capped by the document."
+    },
+    "indemnification": {
+      "label": "Indemnification",
+      "description": "Who holds whom harmless, and for what.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "indemnit",
+        "indemnif",
+        "hold harmless"
+      ],
+      "primary_patterns": [
+        "indemnify",
+        "indemnification",
+        "indemnity",
+        "hold harmless",
+        "defend .{0,30}against"
+      ],
+      "secondary_patterns": [
+        "third party claim",
+        "intellectual property infringement",
+        "reasonable attorney",
+        "legal costs",
+        "at its own expense"
+      ],
+      "question_patterns": [
+        "indemnif",
+        "indemnit",
+        "hold harmless"
+      ],
+      "missing_message": "No indemnification clause was found, so neither party is contractually protected against the other's third-party claims."
+    },
+    "confidentiality": {
+      "label": "Confidentiality",
+      "description": "Protection of confidential information and how long it lasts.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "confidential",
+        "non.?disclosure",
+        "secrecy"
+      ],
+      "primary_patterns": [
+        "confidential information",
+        "shall (keep|treat|hold) .{0,80}confidential",
+        "non-disclosure",
+        "confidentiality obligation"
+      ],
+      "secondary_patterns": [
+        "trade secret",
+        "in writing and marked",
+        "period of \\d+ years after",
+        "return or destroy",
+        "need.to.know"
+      ],
+      "question_patterns": [
+        "confidential",
+        "\\bnda\\b",
+        "non.?disclosure",
+        "secrecy"
+      ],
+      "missing_message": "No confidentiality clause was found, so information exchanged under the agreement is not contractually protected."
+    },
+    "data_privacy": {
+      "label": "Data privacy",
+      "description": "Personal-data processing, GDPR roles and any data processing agreement.",
+      "required": true,
+      "importance": "critical",
+      "heading_patterns": [
+        "data protection",
+        "data privacy",
+        "personal data",
+        "\\bGDPR\\b",
+        "processing of personal"
+      ],
+      "primary_patterns": [
+        "personal data",
+        "\\bGDPR\\b",
+        "general data protection regulation",
+        "data process(or|ing) agreement",
+        "\\bDPA\\b",
+        "data controller",
+        "data processor",
+        "\\bCCPA\\b"
+      ],
+      "secondary_patterns": [
+        "data subject",
+        "sub-processor",
+        "standard contractual clauses",
+        "article 28",
+        "breach notification",
+        "technical and organisational measures",
+        "technical and organizational measures"
+      ],
+      "question_patterns": [
+        "data (privacy|protection)",
+        "\\bgdpr\\b",
+        "personal data",
+        "\\bdpa\\b",
+        "privacy"
+      ],
+      "missing_message": "No data-privacy or GDPR clause was found. If any personal data is exchanged, the agreement lacks the processing terms Article 28 GDPR requires."
+    },
+    "insurance": {
+      "label": "Insurance requirements",
+      "description": "Cover the supplier must carry and the minimum sums insured.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "insurance",
+        "insurance cover",
+        "coverage"
+      ],
+      "primary_patterns": [
+        "shall (maintain|carry|effect) .{0,40}insurance",
+        "insurance policy",
+        "public liability insurance",
+        "professional indemnity insurance",
+        "minimum (cover|coverage|sum insured)"
+      ],
+      "secondary_patterns": [
+        "certificate of insurance",
+        "per occurrence",
+        "in the aggregate",
+        "additional insured",
+        "waiver of subrogation"
+      ],
+      "question_patterns": [
+        "insurance",
+        "insured",
+        "coverage"
+      ],
+      "missing_message": "No insurance requirement was found, so the supplier is not obliged to carry any cover under this agreement."
+    },
+    "governing_law": {
+      "label": "Governing law",
+      "description": "The law the agreement is construed under.",
+      "required": true,
+      "importance": "high",
+      "heading_patterns": [
+        "governing law",
+        "applicable law",
+        "choice of law",
+        "jurisdiction"
+      ],
+      "primary_patterns": [
+        "governed by .{0,60}laws? of",
+        "governing law",
+        "construed in accordance with the laws? of",
+        "subject to the laws? of"
+      ],
+      "secondary_patterns": [
+        "without regard to .{0,40}conflict",
+        "exclusive jurisdiction",
+        "courts of",
+        "united nations convention"
+      ],
+      "question_patterns": [
+        "governing law",
+        "which law",
+        "applicable law",
+        "jurisdiction"
+      ],
+      "missing_message": "No governing law was found, so the law applying to the agreement is not stated in the document."
+    },
+    "dispute_resolution": {
+      "label": "Dispute resolution",
+      "description": "How disputes are escalated and where they are finally decided.",
+      "required": true,
+      "importance": "medium",
+      "heading_patterns": [
+        "dispute",
+        "arbitration",
+        "mediation",
+        "escalation"
+      ],
+      "primary_patterns": [
+        "dispute resolution",
+        "arbitration",
+        "shall be (finally )?settled",
+        "mediation",
+        "escalat(e|ion) .{0,30}dispute",
+        "exclusive jurisdiction"
+      ],
+      "secondary_patterns": [
+        "\\bICC\\b",
+        "\\bLCIA\\b",
+        "\\bUNCITRAL\\b",
+        "arbitral tribunal",
+        "seat of arbitration",
+        "good faith negotiation"
+      ],
+      "question_patterns": [
+        "dispute",
+        "arbitrat",
+        "mediat",
+        "court",
+        "litigation"
+      ],
+      "missing_message": "No dispute-resolution clause was found, so the route for resolving a disagreement is not stated in the document."
+    },
+    "force_majeure": {
+      "label": "Force majeure",
+      "description": "Relief from performance for events beyond a party's control.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "force majeure",
+        "act of god",
+        "events beyond"
+      ],
+      "primary_patterns": [
+        "force majeure",
+        "beyond (its|the) reasonable control",
+        "act of god"
+      ],
+      "secondary_patterns": [
+        "epidemic",
+        "pandemic",
+        "natural disaster",
+        "war",
+        "strike",
+        "government action",
+        "suspend(ed)? .{0,30}obligations"
+      ],
+      "question_patterns": [
+        "force majeure",
+        "act of god",
+        "beyond .*control"
+      ],
+      "missing_message": "No force majeure clause was found, so neither party has stated relief for events beyond its control."
+    },
+    "assignment": {
+      "label": "Assignment rights",
+      "description": "Whether the agreement can be transferred to another entity.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "assignment",
+        "transfer",
+        "novation",
+        "change of control"
+      ],
+      "primary_patterns": [
+        "may not assign",
+        "shall not assign",
+        "may assign",
+        "assignment of this agreement",
+        "transfer(red)? .{0,40}(rights|obligations)",
+        "novat(e|ion)"
+      ],
+      "secondary_patterns": [
+        "prior written consent",
+        "not be unreasonably withheld",
+        "affiliate",
+        "change of control",
+        "successors and assigns"
+      ],
+      "question_patterns": [
+        "assign",
+        "transfer",
+        "novat",
+        "change of control"
+      ],
+      "missing_message": "No assignment clause was found, so the document does not restrict transferring the agreement to another entity."
+    },
+    "audit_rights": {
+      "label": "Audit rights",
+      "description": "The right to inspect records, systems or premises.",
+      "required": false,
+      "importance": "medium",
+      "heading_patterns": [
+        "audit",
+        "inspection",
+        "records",
+        "books and records"
+      ],
+      "primary_patterns": [
+        "right to audit",
+        "audit rights",
+        "shall (permit|allow) .{0,40}audit",
+        "inspect .{0,40}(records|books|premises)",
+        "books and records"
+      ],
+      "secondary_patterns": [
+        "once per (calendar )?year",
+        "reasonable notice",
+        "during normal business hours",
+        "at its own cost",
+        "retain .{0,20}records for"
+      ],
+      "question_patterns": [
+        "audit",
+        "inspect",
+        "books and records"
+      ],
+      "missing_message": "No audit rights were found, so the customer cannot contractually inspect the supplier's records under this agreement."
+    }
+  },
+  "obligations": {
+    "description": "An obligation is a sentence carrying a duty verb. The sentence is kept verbatim as evidence and attributed to a party only when the party is actually named in it - never guessed.",
+    "modal_patterns": [
+      "\\bshall\\b",
+      "\\bmust\\b",
+      "\\bis required to\\b",
+      "\\bare required to\\b",
+      "\\bagrees to\\b",
+      "\\bundertakes to\\b",
+      "\\bwill (?:provide|deliver|maintain|ensure|pay|notify|indemnify|comply)\\b",
+      "\\bis responsible for\\b",
+      "\\bare responsible for\\b",
+      "\\bat its own (?:cost|expense)\\b"
+    ],
+    "negative_patterns": [
+      "\\bshall not\\b",
+      "\\bmust not\\b",
+      "\\bmay not\\b"
+    ],
+    "min_words": 6,
+    "max_chars": 400,
+    "max_obligations": 80,
+    "duty_type_patterns": {
+      "payment": [
+        "\\bpay\\b",
+        "invoice",
+        "remit",
+        "reimburse"
+      ],
+      "delivery": [
+        "deliver",
+        "supply",
+        "provide",
+        "perform",
+        "ship"
+      ],
+      "reporting": [
+        "report",
+        "notify",
+        "inform",
+        "submit",
+        "\\bin writing\\b"
+      ],
+      "compliance": [
+        "comply",
+        "adhere",
+        "conform",
+        "in accordance with",
+        "applicable law"
+      ],
+      "maintenance": [
+        "maintain",
+        "keep",
+        "retain",
+        "preserve",
+        "insur"
+      ],
+      "protection": [
+        "protect",
+        "safeguard",
+        "confidential",
+        "indemnif",
+        "hold harmless"
+      ]
+    }
+  },
+  "questions": {
+    "description": "The Contract Assistant answers from the clauses it extracted, never from free text. When the question does not match a clause that exists in the document, it says so instead of producing a plausible sentence.",
+    "max_citations": 4,
+    "max_answer_clauses": 3,
+    "min_intent_score": 1.0,
+    "heading_match_score": 2.0,
+    "keyword_match_score": 1.0,
+    "not_found_message": "That information is not in this contract as extracted. The answer below lists what the document does cover.",
+    "no_analysis_message": "This contract has not been analysed yet. Run the analysis first, then ask again.",
+    "needs_ocr_message": "No text could be extracted from this document, so no question can be answered from it.",
+    "suggested_questions": [
+      "What are the payment terms?",
+      "When does this contract expire?",
+      "Does it renew automatically?",
+      "How much notice is needed to terminate?",
+      "Is liability capped?",
+      "Does it cover personal data / GDPR?",
+      "Which law governs this contract?",
+      "What are the service levels?"
+    ]
+  },
+  "risk": {
+    "description": "Deterministic risk rules. Each is independent: one broken rule is reported in rule_errors and the others still produce findings.",
+    "severity_by_importance": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low"
+    },
+    "score_weights": {
+      "critical": 25.0,
+      "high": 12.0,
+      "medium": 5.0,
+      "low": 2.0
+    },
+    "score_cap": 100.0,
+    "bands": [
+      {
+        "label": "low",
+        "min_score": 0.0,
+        "max_score": 20.0
+      },
+      {
+        "label": "medium",
+        "min_score": 20.0,
+        "max_score": 45.0
+      },
+      {
+        "label": "high",
+        "min_score": 45.0,
+        "max_score": 75.0
+      },
+      {
+        "label": "critical",
+        "min_score": 75.0,
+        "max_score": 100.0
+      }
+    ]
+  },
+  "rules": {
+    "CA-R001": {
+      "name": "Auto-renewal clause present",
+      "category": "Renewal",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Diarise the notice deadline and decide well before it whether to renew, renegotiate or exit.",
+      "params": {}
+    },
+    "CA-R002": {
+      "name": "Short termination notice period",
+      "category": "Termination",
+      "enabled": true,
+      "base_severity": "high",
+      "recommended_action": "Confirm the business can react inside this notice window, or negotiate a longer one at renewal.",
+      "params": {
+        "minimum_notice_days": 30,
+        "critical_notice_days": 14
+      }
+    },
+    "CA-R003": {
+      "name": "No termination clause",
+      "category": "Termination",
+      "enabled": true,
+      "base_severity": "high",
+      "recommended_action": "Ask legal to add an express termination clause before signature.",
+      "params": {}
+    },
+    "CA-R004": {
+      "name": "Required clause missing",
+      "category": "Completeness",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Confirm with legal whether the missing clause is intentional or has to be added before signature.",
+      "params": {}
+    },
+    "CA-R005": {
+      "name": "Unlimited or uncapped liability",
+      "category": "Liability",
+      "enabled": true,
+      "base_severity": "critical",
+      "recommended_action": "Escalate to legal: unlimited liability is normally only acceptable for a defined, narrow set of breaches.",
+      "params": {
+        "unlimited_patterns": [
+          "unlimited liability",
+          "liability (shall|is) (be )?unlimited",
+          "without limit",
+          "no limitation (of|on) liability",
+          "shall be liable without limitation"
+        ]
+      }
+    },
+    "CA-R006": {
+      "name": "Liability clause states no cap",
+      "category": "Liability",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Ask legal to confirm the intended cap and state it as an amount or a multiple of the annual charges.",
+      "params": {
+        "cap_patterns": [
+          "shall not exceed",
+          "limited to",
+          "capped at",
+          "maximum (aggregate )?liability",
+          "aggregate liability .{0,40}(shall|will) not exceed"
+        ]
+      }
+    },
+    "CA-R007": {
+      "name": "Penalty or liquidated damages exposure",
+      "category": "Financial",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Quantify the worst-case exposure and confirm operations can meet the committed levels.",
+      "params": {}
+    },
+    "CA-R008": {
+      "name": "Contract expired or expiring soon",
+      "category": "Key dates",
+      "enabled": true,
+      "base_severity": "high",
+      "recommended_action": "Start the renewal or replacement process now, and check whether the notice deadline has already passed.",
+      "params": {
+        "expiring_within_days": 90,
+        "critical_within_days": 30
+      }
+    },
+    "CA-R009": {
+      "name": "Auto-renewal notice deadline approaching",
+      "category": "Renewal",
+      "enabled": true,
+      "base_severity": "critical",
+      "recommended_action": "Decide before the notice deadline. After it passes the contract renews for the full renewal term.",
+      "params": {
+        "warning_days": 45
+      }
+    },
+    "CA-R010": {
+      "name": "Payment terms outside policy",
+      "category": "Payment",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Align the payment terms with company policy, or record an approved exception.",
+      "params": {
+        "policy_max_days": 60,
+        "policy_min_days": 14
+      }
+    },
+    "CA-R011": {
+      "name": "One-sided indemnification",
+      "category": "Liability",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Ask legal whether a mutual indemnity is appropriate for this type of agreement.",
+      "params": {
+        "customer_indemnifies_patterns": [
+          "customer shall indemnify",
+          "buyer shall indemnify",
+          "client shall indemnify",
+          "purchaser shall indemnify"
+        ],
+        "supplier_indemnifies_patterns": [
+          "supplier shall indemnify",
+          "vendor shall indemnify",
+          "contractor shall indemnify",
+          "provider shall indemnify",
+          "licensor shall indemnify"
+        ]
+      }
+    },
+    "CA-R012": {
+      "name": "Service levels without a stated remedy",
+      "category": "Performance",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Add service credits or another remedy, otherwise a missed service level carries no consequence.",
+      "params": {}
+    },
+    "CA-R013": {
+      "name": "Assignment permitted without consent",
+      "category": "Control",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Require prior written consent for assignment, at least outside the supplier's own group.",
+      "params": {
+        "consent_patterns": [
+          "prior written consent",
+          "may not assign",
+          "shall not assign",
+          "without the consent"
+        ],
+        "free_assignment_patterns": [
+          "may assign",
+          "free(ly)? (to )?assign",
+          "may transfer this agreement"
+        ]
+      }
+    },
+    "CA-R014": {
+      "name": "No audit rights",
+      "category": "Control",
+      "enabled": true,
+      "base_severity": "low",
+      "recommended_action": "Consider adding an audit right where the supplier holds company data or bills on a time basis.",
+      "params": {}
+    },
+    "CA-R015": {
+      "name": "Governing law outside the approved list",
+      "category": "Legal",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Confirm legal accepts this jurisdiction, or negotiate one from the approved list.",
+      "params": {
+        "approved_jurisdictions": [
+          "austria",
+          "austrian",
+          "belgian",
+          "belgium",
+          "czech",
+          "czechia",
+          "danish",
+          "denmark",
+          "dutch",
+          "england",
+          "english",
+          "estonia",
+          "estonian",
+          "finland",
+          "finnish",
+          "france",
+          "french",
+          "german",
+          "germany",
+          "ireland",
+          "irish",
+          "italian",
+          "italy",
+          "latvia",
+          "latvian",
+          "lithuania",
+          "lithuanian",
+          "luxembourg",
+          "netherlands",
+          "northern ireland",
+          "norway",
+          "norwegian",
+          "poland",
+          "polish",
+          "portugal",
+          "portuguese",
+          "scotland",
+          "scots",
+          "spain",
+          "spanish",
+          "sweden",
+          "swedish",
+          "swiss",
+          "switzerland",
+          "wales"
+        ]
+      }
+    },
+    "CA-R016": {
+      "name": "Document contains instruction-like text",
+      "category": "Security",
+      "enabled": true,
+      "base_severity": "high",
+      "recommended_action": "Treat this document with suspicion and confirm its provenance. The instruction-like text was neutralised and never acted on.",
+      "params": {}
+    },
+    "CA-R017": {
+      "name": "Document holds little or no extractable text",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "high",
+      "recommended_action": "Upload a text-based version of the document, or configure an OCR provider.",
+      "params": {
+        "min_chars": 400
+      }
+    },
+    "CA-R018": {
+      "name": "Key date missing",
+      "category": "Key dates",
+      "enabled": true,
+      "base_severity": "medium",
+      "recommended_action": "Record the missing date in the contract register from the signed original.",
+      "params": {
+        "required_dates": [
+          "effective_date",
+          "expiration_date"
+        ]
+      }
+    },
+    "CA-R019": {
+      "name": "Clause extracted with low confidence",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "low",
+      "recommended_action": "Open the cited page and confirm the clause was read correctly before relying on it.",
+      "params": {
+        "below_confidence": 0.55
+      }
+    },
+    "CA-R020": {
+      "name": "No liability cap amount stated",
+      "category": "Liability",
+      "enabled": true,
+      "base_severity": "low",
+      "recommended_action": "Confirm the cap is expressed as an amount or a multiple that can be reported in the contract register.",
+      "params": {}
+    }
+  },
+  "reporting": {
+    "top_risks_default": 10,
+    "contract_disclaimer": "Clauses, dates and risks are extracted from the uploaded document by deterministic pattern matching, with a stated confidence and a page reference for every result. This is an assistive review, not legal advice, and it is not a substitute for reading the contract. The application is not connected to a live SAP system and nothing here has been validated in a live SAP environment. Any AI generated text summarises the extracted results and never determines them.",
+    "injection_notice": "Text inside an uploaded document is treated strictly as data. Instruction-like text found in a contract is neutralised before any AI call and is reported as a finding; it never changes how this application behaves."
+  }
+}

@@ -1,0 +1,244 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 2 /Kids [4 0 R 6 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 2271 >>
+stream
+BT
+/F1 10.5 Tf
+14 TL
+1 0 0 1 56 736 Tm
+(SOFTWARE SUBSCRIPTION AGREEMENT) Tj
+T*
+() Tj
+T*
+(This Software Subscription Agreement is entered into between Nordwind Industrie GmbH \(the) Tj
+T*
+("Customer"\) and Helvetia Signal Systems AG \(the "Provider"\).) Tj
+T*
+() Tj
+T*
+(1. SUBSCRIPTION) Tj
+T*
+(The Provider grants the Customer a non-exclusive subscription to the planning platform) Tj
+T*
+(described) Tj
+T*
+(in Schedule A for the number of named users stated in the order form.) Tj
+T*
+() Tj
+T*
+(2. TERM) Tj
+T*
+(This Agreement is effective as of 1 October 2025 and shall expire on 15 September 2026.) Tj
+T*
+() Tj
+T*
+(3. AUTOMATIC RENEWAL) Tj
+T*
+(This Agreement shall automatically renew for a further period of twelve months at the end of) Tj
+T*
+(the) Tj
+T*
+(then current term, unless either party gives 92 days written notice of non-renewal. The) Tj
+T*
+(subscription fee for a renewal term may increase by up to 5 per cent.) Tj
+T*
+() Tj
+T*
+(4. TERMINATION) Tj
+T*
+(Either party may terminate this Agreement on 90 days written notice with effect from the end) Tj
+T*
+(of) Tj
+T*
+(the then current term. The Provider may suspend the service if an undisputed invoice remains) Tj
+T*
+(unpaid 30 days after its due date.) Tj
+T*
+() Tj
+T*
+(5. FEES) Tj
+T*
+(The annual subscription fee is EUR 148,000, invoiced annually in advance. Fees are exclusive) Tj
+T*
+(of) Tj
+T*
+(VAT and of any third party connectivity charges.) Tj
+T*
+() Tj
+T*
+(6. PAYMENT TERMS) Tj
+T*
+(The Customer shall pay each invoice net 30 days from the date of invoice.) Tj
+T*
+() Tj
+T*
+(7. SERVICE LEVELS) Tj
+T*
+(The Provider shall maintain a monthly availability of 99.9% for the production environment,) Tj
+T*
+(measured monthly and excluding scheduled maintenance. The Provider shall respond to a) Tj
+T*
+(Severity 1) Tj
+T*
+(incident within 30 minutes and shall provide a monthly service report.) Tj
+T*
+() Tj
+T*
+(8. SERVICE CREDITS) Tj
+T*
+(If monthly availability falls below the level in clause 7, the Customer is entitled to a) Tj
+T*
+(service) Tj
+T*
+(credit of 5 per cent of the monthly fee for each full percentage point below the target,) Tj
+T*
+(capped) Tj
+T*
+(at 25 per cent of the monthly fee. Service credits are the Customer's sole remedy for a) Tj
+T*
+(failure) Tj
+T*
+(to meet the service levels.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 2050 >>
+stream
+BT
+/F1 10.5 Tf
+14 TL
+1 0 0 1 56 736 Tm
+(9. LIMITATION OF LIABILITY) Tj
+T*
+(The Provider's total aggregate liability under this Agreement shall not exceed the fees paid) Tj
+T*
+(in) Tj
+T*
+(the twelve months preceding the claim. Neither party is liable for indirect or consequential) Tj
+T*
+(loss.) Tj
+T*
+() Tj
+T*
+(10. INDEMNIFICATION) Tj
+T*
+(The Provider shall indemnify the Customer against third party claims that the platform) Tj
+T*
+(infringes) Tj
+T*
+(an intellectual property right, and shall defend the Customer against such claims at its own) Tj
+T*
+(expense.) Tj
+T*
+() Tj
+T*
+(11. CONFIDENTIALITY) Tj
+T*
+(Each party shall keep the other party's Confidential Information confidential and shall use) Tj
+T*
+(it) Tj
+T*
+(only for the purposes of this Agreement.) Tj
+T*
+() Tj
+T*
+(12. DATA PROTECTION) Tj
+T*
+(The Provider acts as data processor for personal data processed in the platform. The parties) Tj
+T*
+(have) Tj
+T*
+(entered into the data processing agreement in Schedule C, which reflects Article 28 of the) Tj
+T*
+(General Data Protection Regulation. The Provider shall not appoint a sub-processor without) Tj
+T*
+(the) Tj
+T*
+(Customer's prior written consent, and shall notify the Customer of any personal data breach) Tj
+T*
+(without undue delay.) Tj
+T*
+() Tj
+T*
+(13. INSURANCE) Tj
+T*
+(The Provider shall maintain professional indemnity insurance with a minimum cover of) Tj
+T*
+(CHF 3,000,000 in the aggregate.) Tj
+T*
+() Tj
+T*
+(14. ASSIGNMENT) Tj
+T*
+(Neither party may assign this Agreement without the prior written consent of the other) Tj
+T*
+(party.) Tj
+T*
+() Tj
+T*
+(15. FORCE MAJEURE) Tj
+T*
+(Neither party is liable for a failure to perform caused by an event beyond its reasonable) Tj
+T*
+(control.) Tj
+T*
+() Tj
+T*
+(16. GOVERNING LAW) Tj
+T*
+(This Agreement is governed by and construed in accordance with the laws of Switzerland.) Tj
+T*
+() Tj
+T*
+(17. DISPUTE RESOLUTION) Tj
+T*
+(The courts of Zurich have exclusive jurisdiction over any dispute arising out of this) Tj
+T*
+(Agreement.) Tj
+T*
+() Tj
+T*
+(Signed on 12 September 2025.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Title (SOFTWARE SUBSCRIPTION AGREEMENT) /Producer (SAP AI Application Lab) >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000224 00000 n 
+0000000350 00000 n 
+0000002673 00000 n 
+0000002799 00000 n 
+0000004901 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R /Info 8 0 R >>
+startxref
+4998
+%%EOF

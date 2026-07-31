@@ -16,6 +16,7 @@ from datetime import date, timedelta
 from typing import Any
 
 from app.core.logging import get_logger
+from app.core.rounding import decimal_mean, round_half_up
 from app.modules.supplier_risk.normalizer import (
     NormalizedRiskEvent,
     NormalizedSupplierProfile,
@@ -290,8 +291,8 @@ def compute_trend(
     if dated_total < config.trend.minimum_events:
         return RiskTrend(
             direction="unknown",
-            recent_weight=round(recent_weight, 2),
-            previous_weight=round(previous_weight, 2),
+            recent_weight=round_half_up(recent_weight),
+            previous_weight=round_half_up(previous_weight),
             delta=0.0,
             recent_event_count=recent_count,
             previous_event_count=previous_count,
@@ -303,7 +304,12 @@ def compute_trend(
             data_available=False,
         )
 
-    delta = round(recent_weight - previous_weight, 2)
+    # The shipped severity weights are whole numbers, so this subtraction is
+    # exact today. It is rounded through the same decimal policy anyway,
+    # because ``delta`` is both a reported figure and the input to the
+    # improving/deteriorating comparison below, and the weights are
+    # configurable - a retune to 1.5 / 2.3 would make it drift.
+    delta = round_half_up(recent_weight - previous_weight)
     if delta <= config.trend.improving_delta:
         direction = "improving"
     elif delta >= config.trend.deteriorating_delta:
@@ -318,8 +324,8 @@ def compute_trend(
     )
     return RiskTrend(
         direction=direction,
-        recent_weight=round(recent_weight, 2),
-        previous_weight=round(previous_weight, 2),
+        recent_weight=round_half_up(recent_weight),
+        previous_weight=round_half_up(previous_weight),
         delta=delta,
         recent_event_count=recent_count,
         previous_event_count=previous_count,
@@ -542,6 +548,12 @@ def run_risk_assessment(
         if item.overall_band:
             band_counts[item.overall_band] = band_counts.get(item.overall_band, 0) + 1
 
+    # Portfolio aggregates are averages of figures that were already published
+    # at two decimals, so they are computed as decimals rather than floats.
+    # Summing 54 two-decimal values in binary drifts by ~1e-15, which is enough
+    # to flip a mean that lands on a rounding tie: the invoice average here is
+    # exactly 20.195, and the float sum reported 20.19 on one interpreter and
+    # 20.20 on another from identical inputs. See app/core/rounding.py.
     category_averages: dict[str, float | None] = {}
     for name in RISK_CATEGORIES:
         values = [
@@ -549,13 +561,9 @@ def run_risk_assessment(
             for item in profiles
             if name in item.score.categories and item.score.categories[name].score is not None
         ]
-        category_averages[name] = round(sum(values) / len(values), 2) if values else None
+        category_averages[name] = decimal_mean(values)
 
-    average_overall = (
-        round(sum(float(item.overall_score or 0.0) for item in scored) / len(scored), 2)
-        if scored
-        else None
-    )
+    average_overall = decimal_mean(item.overall_score for item in scored)
 
     ranked = sorted(
         scored, key=lambda item: (-(item.overall_score or 0.0), item.supplier_id)

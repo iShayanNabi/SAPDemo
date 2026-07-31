@@ -174,10 +174,22 @@ def index() -> dict[str, object]:
                 "status": "available",
                 "base_path": f"{settings.api_v1_prefix}/invoices",
             },
+            {
+                "id": "supplier_risk_copilot",
+                "name": "Supplier Risk Copilot",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/supplier-risk",
+            },
+            {
+                "id": "contract_assistant",
+                "name": "Contract Assistant",
+                "status": "available",
+                "base_path": f"{settings.api_v1_prefix}/contracts",
+            },
         ],
         "planned_modules": [
-            "supplier_risk_copilot", "contract_assistant", "inventory_predictor",
-            "test_case_generator", "blueprint_generator", "interview_coach",
+            "inventory_predictor", "test_case_generator", "blueprint_generator",
+            "interview_coach",
         ],
         "disclaimer": (
             "Demo application. Not connected to any SAP system; no output has been validated "

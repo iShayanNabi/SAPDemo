@@ -19,6 +19,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]
 
 AIProviderName = Literal["mock", "anthropic", "openai"]
+OcrProviderName = Literal["none", "local", "aws_textract", "azure_document_intelligence"]
+
+
+def _extension_set(raw: str) -> set[str]:
+    """Parse a comma separated extension list into a normalised set."""
+    return {
+        ext.strip().lower() if ext.strip().startswith(".") else f".{ext.strip().lower()}"
+        for ext in raw.split(",")
+        if ext.strip()
+    }
 
 
 class Settings(BaseSettings):
@@ -73,6 +83,34 @@ class Settings(BaseSettings):
     allowed_upload_extensions: str = ".csv,.xlsx,.json"
 
     # ------------------------------------------------------------------
+    # Document uploads (module 6 - Contract Assistant)
+    # ------------------------------------------------------------------
+    # Documents travel a separate allow list from the tabular uploads: a
+    # contract is a PDF/DOCX/TXT, never a spreadsheet, and a spreadsheet module
+    # must never start accepting PDFs because this list grew.
+    allowed_document_extensions: str = ".pdf,.docx,.txt,.md"
+    #: Image types that are only accepted when an OCR provider is configured.
+    allowed_image_extensions: str = ".png,.jpg,.jpeg,.tif,.tiff"
+    max_document_bytes: int = 20 * 1024 * 1024  # 20 MB
+    max_document_pages: int = 400
+    #: A page holding fewer characters than this is treated as image-only.
+    min_chars_per_text_page: int = 40
+
+    # ------------------------------------------------------------------
+    # OCR providers
+    # ------------------------------------------------------------------
+    # ``none`` is the default and is what makes the lab runnable with no
+    # credentials: scanned documents are reported honestly as unprocessable
+    # rather than silently producing an empty analysis.
+    ocr_provider: OcrProviderName = "none"
+    ocr_language: str = "eng"
+    aws_textract_region: str | None = None
+    aws_access_key_id: str | None = Field(default=None, repr=False)
+    aws_secret_access_key: str | None = Field(default=None, repr=False)
+    azure_document_intelligence_endpoint: str | None = None
+    azure_document_intelligence_key: str | None = Field(default=None, repr=False)
+
+    # ------------------------------------------------------------------
     # AI providers
     # ------------------------------------------------------------------
     # Mock is the default. A real provider is only used when a key exists.
@@ -107,11 +145,41 @@ class Settings(BaseSettings):
     @property
     def allowed_extension_set(self) -> set[str]:
         """Allowed upload extensions, normalised to lowercase with a leading dot."""
-        return {
-            ext.strip().lower() if ext.strip().startswith(".") else f".{ext.strip().lower()}"
-            for ext in self.allowed_upload_extensions.split(",")
-            if ext.strip()
-        }
+        return _extension_set(self.allowed_upload_extensions)
+
+    @property
+    def allowed_document_extension_set(self) -> set[str]:
+        """Document extensions accepted by the Contract Assistant."""
+        return _extension_set(self.allowed_document_extensions)
+
+    @property
+    def allowed_image_extension_set(self) -> set[str]:
+        """Image extensions, only accepted when an OCR provider is configured."""
+        return _extension_set(self.allowed_image_extensions)
+
+    def resolved_ocr_provider(self) -> OcrProviderName:
+        """Return the OCR provider that will actually be used.
+
+        Like :meth:`resolved_ai_provider`, this falls back to ``none`` whenever
+        the configured provider is missing its credentials, so a half-configured
+        environment reports "OCR unavailable" instead of failing at request time.
+        """
+        if self.ocr_provider == "local":
+            return "local"
+        if (
+            self.ocr_provider == "aws_textract"
+            and self.aws_access_key_id
+            and self.aws_secret_access_key
+            and self.aws_textract_region
+        ):
+            return "aws_textract"
+        if (
+            self.ocr_provider == "azure_document_intelligence"
+            and self.azure_document_intelligence_endpoint
+            and self.azure_document_intelligence_key
+        ):
+            return "azure_document_intelligence"
+        return "none"
 
     def resolved_ai_provider(self) -> AIProviderName:
         """Return the provider that will actually be used.

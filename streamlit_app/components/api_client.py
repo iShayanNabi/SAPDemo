@@ -478,3 +478,73 @@ class ApiClient:
         if supplier_id:
             payload["supplier_id"] = supplier_id
         return self._request("POST", "/supplier-risk/chat", json=payload)
+
+    # -- Contract Assistant ----------------------------------------------
+    def contract_upload(
+        self, filename: str, content: bytes, content_type: str
+    ) -> dict[str, Any]:
+        """Upload a contract document and extract its text."""
+        return self._request(
+            "POST", "/contracts/upload", files={"file": (filename, content, content_type)}
+        )
+
+    def contract_analyze(
+        self,
+        contract_id: str,
+        *,
+        as_of_date: str | None = None,
+        enabled_rules: list[str] | None = None,
+        generate_ai_summary: bool = False,
+    ) -> dict[str, Any]:
+        """Run the deterministic clause, date and risk analysis."""
+        payload: dict[str, Any] = {"generate_ai_summary": generate_ai_summary}
+        if as_of_date:
+            payload["as_of_date"] = as_of_date
+        if enabled_rules:
+            payload["enabled_rules"] = enabled_rules
+        return self._request("POST", f"/contracts/{contract_id}/analyze", json=payload)
+
+    def contract(self, contract_id: str) -> dict[str, Any]:
+        """Fetch one contract with its full analysis."""
+        return self._request("GET", f"/contracts/{contract_id}")
+
+    def contracts(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List uploaded contracts, newest first."""
+        return self._request("GET", "/contracts", params={"limit": limit, "offset": offset})
+
+    def contract_clauses(self, contract_id: str, **filters: Any) -> dict[str, Any]:
+        """Fetch the clause table, with optional filters."""
+        params = {key: value for key, value in filters.items() if value not in (None, "", [])}
+        return self._request("GET", f"/contracts/{contract_id}/clauses", params=params)
+
+    def contract_question(
+        self, contract_id: str, question: str, *, generate_ai_summary: bool = False
+    ) -> dict[str, Any]:
+        """Ask a question about a contract and get an answer with citations."""
+        return self._request(
+            "POST",
+            f"/contracts/{contract_id}/questions",
+            json={"question": question, "generate_ai_summary": generate_ai_summary},
+        )
+
+    def contract_methodology(self) -> dict[str, Any]:
+        """Fetch the clause catalogue, the risk rules and the confidence formula."""
+        return self._request("GET", "/contracts/methodology")
+
+    def contract_extractors(self) -> dict[str, Any]:
+        """Report which document types can be read and whether OCR is configured."""
+        return self._request("GET", "/contracts/extractors")
+
+    def contract_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional sample contracts."""
+        return self._request("GET", "/contracts/sample/info")
+
+    def contract_sample_file(self, name: str, file_format: str) -> bytes:
+        """Download one bundled fictional contract."""
+        return self.download_bytes("/contracts/sample", {"name": name, "format": file_format})
+
+    def contract_export(self, contract_id: str, export_format: str) -> bytes:
+        """Download a contract report."""
+        return self.download_bytes(
+            f"/contracts/{contract_id}/export", {"format": export_format}
+        )

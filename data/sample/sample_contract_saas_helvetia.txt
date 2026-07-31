@@ -1,0 +1,79 @@
+SOFTWARE SUBSCRIPTION AGREEMENT
+
+This Software Subscription Agreement is entered into between Nordwind Industrie GmbH (the
+"Customer") and Helvetia Signal Systems AG (the "Provider").
+
+1. SUBSCRIPTION
+The Provider grants the Customer a non-exclusive subscription to the planning platform described
+in Schedule A for the number of named users stated in the order form.
+
+2. TERM
+This Agreement is effective as of 1 October 2025 and shall expire on 15 September 2026.
+
+3. AUTOMATIC RENEWAL
+This Agreement shall automatically renew for a further period of twelve months at the end of the
+then current term, unless either party gives 92 days written notice of non-renewal. The
+subscription fee for a renewal term may increase by up to 5 per cent.
+
+4. TERMINATION
+Either party may terminate this Agreement on 90 days written notice with effect from the end of
+the then current term. The Provider may suspend the service if an undisputed invoice remains
+unpaid 30 days after its due date.
+
+5. FEES
+The annual subscription fee is EUR 148,000, invoiced annually in advance. Fees are exclusive of
+VAT and of any third party connectivity charges.
+
+6. PAYMENT TERMS
+The Customer shall pay each invoice net 30 days from the date of invoice.
+
+7. SERVICE LEVELS
+The Provider shall maintain a monthly availability of 99.9% for the production environment,
+measured monthly and excluding scheduled maintenance. The Provider shall respond to a Severity 1
+incident within 30 minutes and shall provide a monthly service report.
+
+8. SERVICE CREDITS
+If monthly availability falls below the level in clause 7, the Customer is entitled to a service
+credit of 5 per cent of the monthly fee for each full percentage point below the target, capped
+at 25 per cent of the monthly fee. Service credits are the Customer's sole remedy for a failure
+to meet the service levels.
+
+9. LIMITATION OF LIABILITY
+The Provider's total aggregate liability under this Agreement shall not exceed the fees paid in
+the twelve months preceding the claim. Neither party is liable for indirect or consequential
+loss.
+
+10. INDEMNIFICATION
+The Provider shall indemnify the Customer against third party claims that the platform infringes
+an intellectual property right, and shall defend the Customer against such claims at its own
+expense.
+
+11. CONFIDENTIALITY
+Each party shall keep the other party's Confidential Information confidential and shall use it
+only for the purposes of this Agreement.
+
+12. DATA PROTECTION
+The Provider acts as data processor for personal data processed in the platform. The parties have
+entered into the data processing agreement in Schedule C, which reflects Article 28 of the
+General Data Protection Regulation. The Provider shall not appoint a sub-processor without the
+Customer's prior written consent, and shall notify the Customer of any personal data breach
+without undue delay.
+
+13. INSURANCE
+The Provider shall maintain professional indemnity insurance with a minimum cover of
+CHF 3,000,000 in the aggregate.
+
+14. ASSIGNMENT
+Neither party may assign this Agreement without the prior written consent of the other party.
+
+15. FORCE MAJEURE
+Neither party is liable for a failure to perform caused by an event beyond its reasonable
+control.
+
+16. GOVERNING LAW
+This Agreement is governed by and construed in accordance with the laws of Switzerland.
+
+17. DISPUTE RESOLUTION
+The courts of Zurich have exclusive jurisdiction over any dispute arising out of this Agreement.
+
+Signed on 12 September 2025.

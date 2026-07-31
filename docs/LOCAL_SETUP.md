@@ -114,6 +114,7 @@ manifests and the recorded baselines the integration tests assert against:
 | `scripts/generate_supplier_sample_data.py` | `sample_suppliers.*` (module 3) |
 | `scripts/generate_invoice_sample_data.py` | `sample_invoices.*`, `sample_invoice_purchase_orders.*`, `sample_goods_receipts.*` (module 4) |
 | `scripts/generate_supplier_risk_sample_data.py` | `sample_supplier_risk_profiles.*`, `sample_supplier_risk_events.*` (module 5) |
+| `scripts/generate_contract_sample_data.py` | `sample_contract_*.{txt,pdf,docx}` - six fictional contracts (module 6) |
 
 You only need to run one of them if you have deleted or edited the files in `data/sample/`, or if
 you are changing a generator itself. Every generator is seeded, so re-running it reproduces the same

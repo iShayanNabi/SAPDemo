@@ -281,6 +281,72 @@ def supplier_risk_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def contract_config():
+    """The default Contract Assistant configuration."""
+    from app.modules.contract_assistant.thresholds import get_contract_config
+
+    return get_contract_config()
+
+
+def _contract_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_contract_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def contract_sample_dir() -> Path:
+    """The directory holding the bundled fictional contracts."""
+    _contract_sample("contract_scenario_manifest.json")
+    return SAMPLE_DIR
+
+
+@pytest.fixture(scope="session")
+def contract_sample_pdf_path() -> Path:
+    """Path of the generated MSA sample as a text-based PDF."""
+    return _contract_sample("sample_contract_msa_nordwind.pdf")
+
+
+@pytest.fixture(scope="session")
+def contract_sample_docx_path() -> Path:
+    """Path of the generated MSA sample as a Word document."""
+    return _contract_sample("sample_contract_msa_nordwind.docx")
+
+
+@pytest.fixture(scope="session")
+def contract_sample_txt_path() -> Path:
+    """Path of the generated MSA sample as plain text."""
+    return _contract_sample("sample_contract_msa_nordwind.txt")
+
+
+@pytest.fixture(scope="session")
+def hostile_contract_pdf_path() -> Path:
+    """Path of the contract carrying prompt-injection bait."""
+    return _contract_sample("sample_contract_hostile_calder.pdf")
+
+
+@pytest.fixture(scope="session")
+def contract_scenario_manifest() -> dict:
+    """The documented contract scenarios and the reference date."""
+    import json
+
+    return json.loads(
+        _contract_sample("contract_scenario_manifest.json").read_text(encoding="utf-8")
+    )
+
+
+@pytest.fixture(scope="session")
+def contract_baseline() -> dict:
+    """The recorded engine output for the bundled sample contracts."""
+    import json
+
+    return json.loads(
+        _contract_sample("expected_contract_baseline.json").read_text(encoding="utf-8")
+    )
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"
