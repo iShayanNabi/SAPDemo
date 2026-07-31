@@ -27,9 +27,7 @@ pip install -r requirements.txt
 # 5. Optional settings file (defaults work without it)
 cp .env.example .env
 
-# 6. Demo data and health check
-python scripts/generate_sample_data.py
-python scripts/generate_spend_sample_data.py
+# 6. Health check (the demo datasets already ship with the repository)
 python scripts/verify_setup.py
 ```
 
@@ -57,9 +55,7 @@ pip install -r requirements.txt
 # 5. Optional settings file
 Copy-Item .env.example .env
 
-# 6. Demo data and health check
-python scripts\generate_sample_data.py
-python scripts\generate_spend_sample_data.py
+# 6. Health check (the demo datasets already ship with the repository)
 python scripts\verify_setup.py
 ```
 
@@ -94,13 +90,35 @@ pip install -r requirements.txt
 # 5. Optional settings file
 cp .env.example .env
 
-# 6. Demo data and health check
-python scripts/generate_sample_data.py
-python scripts/generate_spend_sample_data.py
+# 6. Health check (the demo datasets already ship with the repository)
 python scripts/verify_setup.py
 ```
 
 Fedora/RHEL: `sudo dnf install python3.12 python3-pip`.
+
+---
+
+## Demo data
+
+**The demo datasets are committed to the repository, so a fresh clone already has them.** You do not
+need to run any generator before `python scripts/verify_setup.py`, before `pytest`, or before using
+the app - all three work on a clean checkout.
+
+`data/sample/` ships one dataset per module, each as CSV, XLSX and JSON, together with the scenario
+manifests and the recorded baselines the integration tests assert against:
+
+| Script | Produces |
+| --- | --- |
+| `scripts/generate_sample_data.py` | `sample_purchase_orders.*` and the anomaly manifest (module 1) |
+| `scripts/generate_spend_sample_data.py` | `sample_spend_transactions.*` (module 2) |
+| `scripts/generate_supplier_sample_data.py` | `sample_suppliers.*` (module 3) |
+| `scripts/generate_invoice_sample_data.py` | `sample_invoices.*`, `sample_invoice_purchase_orders.*`, `sample_goods_receipts.*` (module 4) |
+| `scripts/generate_supplier_risk_sample_data.py` | `sample_supplier_risk_profiles.*`, `sample_supplier_risk_events.*` (module 5) |
+
+You only need to run one of them if you have deleted or edited the files in `data/sample/`, or if
+you are changing a generator itself. Every generator is seeded, so re-running it reproduces the same
+data byte for byte - and also rewrites that module's `expected_*_baseline.json`, which is what the
+integration tests compare against.
 
 ---
 
@@ -219,13 +237,13 @@ only strictly needed when you change a model.
 | --- | --- |
 | `ModuleNotFoundError: app` | Run commands from the project root with the venv activated. |
 | Streamlit: "Cannot reach the API" | The API is not running, or `API_BASE_URL` is wrong. Start `uvicorn app.main:app --reload`. |
-| "No sample file yet" | Run `python scripts/generate_sample_data.py`. |
+| "No sample file yet" | The demo files ship with the repository, so this means they were deleted from `data/sample/`. Restore them with `git checkout -- data/sample/`, or re-run that module's generator (see [Demo data](#demo-data)). |
 | `Address already in use` | Another process holds the port: `uvicorn app.main:app --port 8001` (then set `API_BASE_URL` to match) or `streamlit run ... --server.port 8502`. |
 | Upload rejected: "does not look like a valid ... file" | The extension and the actual content disagree (for example a CSV renamed to `.xlsx`). Re-export in the right format. |
 | `.xls` rejected | Legacy binary Excel is not supported. Save as `.xlsx`. |
 | Analysis rejected: missing required fields | The mapper could not find PO number, item, supplier, quantity, unit price or order date. Map them by hand in the mapping panel. |
 | Slow analysis on a very large file | 1,200 rows take ~2 s. Files of several hundred thousand rows will be slower; `MAX_ROWS_PER_UPLOAD` caps the size. |
-| Tests skipped | A sample dataset is missing. Run both generator scripts. |
+| Tests skipped | A sample dataset is missing from `data/sample/`. On a clean checkout nothing is skipped, because the demo data is committed - so this means the files were deleted. Restore them with `git checkout -- data/sample/`, or re-run the generator for the module named in the skip message (see [Demo data](#demo-data)). |
 | Spend: "A date column is required" | Neither a transaction date nor an order date was mapped. Map one in the mapping panel. |
 | Spend: "A spend value is required" | Map a total value column, or both quantity and unit price. |
 | Spend savings look too large or too small | They are modelled estimates. Tune the assumptions in `app/modules/spend/config/spend_rules.json` - especially `realization_factor` and `assumed_saving_pct`. |
@@ -237,8 +255,15 @@ only strictly needed when you change a model.
 ```bash
 rm -f data/*.db                       # drop the local database
 rm -f data/uploads/* data/exports/*   # clear stored uploads and reports
-python scripts/generate_sample_data.py
-python scripts/generate_spend_sample_data.py
+```
+
+That is the whole reset. `data/sample/` is committed and is never written to by the app, so there is
+nothing to regenerate here - the demo datasets survive the reset untouched.
+
+If you did edit or delete something under `data/sample/`, restore it with:
+
+```bash
+git checkout -- data/sample/
 ```
 
 Nothing outside the project folder is touched. The test suite uses its own temporary directory and

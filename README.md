@@ -40,22 +40,20 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Generate the fictional demo datasets
-python scripts/generate_sample_data.py            # PO risk
-python scripts/generate_spend_sample_data.py      # spend analytics
-python scripts/generate_supplier_sample_data.py   # supplier catalogue
-python scripts/generate_invoice_sample_data.py    # invoices, POs, goods receipts
-python scripts/generate_supplier_risk_sample_data.py  # supplier risk profiles + risk events
-
-# 4. Check the installation
+# 3. Check the installation
 python scripts/verify_setup.py
 
-# 5. Start the API (terminal 1)
+# 4. Start the API (terminal 1)
 uvicorn app.main:app --reload       # http://127.0.0.1:8000/docs
 
-# 6. Start the UI (terminal 2)
+# 5. Start the UI (terminal 2)
 streamlit run streamlit_app/Home.py # http://localhost:8501
 ```
+
+**No data generation step is needed.** The fictional demo datasets are committed to the repository,
+so a fresh clone can run `verify_setup.py`, `pytest` and the app straight away. The generator
+scripts under `scripts/` only need re-running if you delete or edit the files in `data/sample/`, or
+if you change a generator itself - see [Sample data](#sample-data).
 
 Platform-specific instructions (macOS, Windows, Linux) are in
 [`docs/LOCAL_SETUP.md`](docs/LOCAL_SETUP.md).
@@ -380,6 +378,10 @@ or `demo_data`.
 ---
 
 ## Sample data
+
+Everything below is already committed under `data/sample/`, so you do not need to run any of these
+scripts to use the lab or the test suite. Each generator is seeded and reproducible: re-running one
+recreates its dataset byte for byte, and rewrites that module's `expected_*_baseline.json`.
 
 `python scripts/generate_sample_data.py` produces a fictional dataset in `data/sample/`:
 
