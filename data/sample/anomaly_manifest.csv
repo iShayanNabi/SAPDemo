@@ -1,0 +1,90 @@
+record_identifier,po_number,po_item,supplier_id,expected_rule_id,expected_risk,expected_severity,expected_scope,severity_may_escalate,reason
+4500548,4500548,,,PO-R001,Duplicate purchase order,high,purchase_order,yes,"Exact copy of purchase order 4500411 on the same supplier, raised 3 day(s) later with an identical value."
+4500549,4500549,,,PO-R001,Duplicate purchase order,high,purchase_order,yes,"Exact copy of purchase order 4500281 on the same supplier, raised 4 day(s) later with an identical value."
+4500550,4500550,,,PO-R001,Duplicate purchase order,high,purchase_order,yes,"Exact copy of purchase order 4500523 on the same supplier, raised 2 day(s) later with an identical value."
+4500551,4500551,,,PO-R001,Duplicate purchase order,high,purchase_order,yes,"Exact copy of purchase order 4500515 on the same supplier, raised 2 day(s) later with an identical value."
+4500480/00040,4500480,00040,,PO-R002,Duplicate line item,medium,purchase_order,yes,"Item 00040 repeats item 00010: same material, quantity and unit price inside the same purchase order."
+4500305/00030,4500305,00030,,PO-R002,Duplicate line item,medium,purchase_order,yes,"Item 00030 repeats item 00010: same material, quantity and unit price inside the same purchase order."
+4500504/00030,4500504,00030,,PO-R002,Duplicate line item,medium,purchase_order,yes,"Item 00030 repeats item 00010: same material, quantity and unit price inside the same purchase order."
+4500525/00030,4500525,00030,,PO-R002,Duplicate line item,medium,purchase_order,yes,"Item 00030 repeats item 00010: same material, quantity and unit price inside the same purchase order."
+"4500552, 4500553, 4500554, 4500555",4500552,,,PO-R003,Split purchase,high,purchase_order,yes,"Four orders between 8,200 and 9,900 base currency raised on the same supplier within 5 days; combined value crosses the 25,000 bundling threshold while every single order stays below it."
+"4500556, 4500557, 4500558, 4500559",4500556,,,PO-R003,Split purchase,high,purchase_order,yes,"Four orders between 8,200 and 9,900 base currency raised on the same supplier within 5 days; combined value crosses the 25,000 bundling threshold while every single order stays below it."
+"4500560, 4500561, 4500562, 4500563",4500560,,,PO-R003,Split purchase,high,purchase_order,yes,"Four orders between 8,200 and 9,900 base currency raised on the same supplier within 5 days; combined value crosses the 25,000 bundling threshold while every single order stays below it."
+4500564,4500564,,,PO-R004,Order value just below an approval threshold,medium,purchase_order,yes,"Order built to 9,902.64 document currency so that its base value lands within 3% below the 10,000 release threshold."
+4500565,4500565,,,PO-R004,Order value just below an approval threshold,medium,purchase_order,yes,"Order built to 10,798.63 document currency so that its base value lands within 3% below the 10,000 release threshold."
+4500566,4500566,,,PO-R004,Order value just below an approval threshold,medium,purchase_order,yes,"Order built to 42,306.44 document currency so that its base value lands within 3% below the 50,000 release threshold."
+4500567,4500567,,,PO-R004,Order value just below an approval threshold,medium,purchase_order,yes,"Order built to 46,760.96 document currency so that its base value lands within 3% below the 50,000 release threshold."
+4500568,4500568,,,PO-R004,Order value just below an approval threshold,medium,purchase_order,yes,"Order built to 247,759.66 document currency so that its base value lands within 3% below the 250,000 release threshold."
+4500425/00020,4500425,00020,,PO-R005,Unusual unit price increase,high,purchase_order,yes,Unit price raised by 51% versus the previous order of material MAT-100560 from the same supplier (alert level is 20%). May also trigger PO-R006.
+4500393/00010,4500393,00010,,PO-R005,Unusual unit price increase,high,purchase_order,yes,Unit price raised by 49% versus the previous order of material MAT-100252 from the same supplier (alert level is 20%). May also trigger PO-R006.
+4500166/00030,4500166,00030,,PO-R005,Unusual unit price increase,high,purchase_order,yes,Unit price raised by 35% versus the previous order of material MAT-100133 from the same supplier (alert level is 20%). May also trigger PO-R006.
+4500440/00010,4500440,00010,,PO-R005,Unusual unit price increase,high,purchase_order,yes,Unit price raised by 66% versus the previous order of material MAT-100427 from the same supplier (alert level is 20%). May also trigger PO-R006.
+4500246/00020,4500246,00020,,PO-R006,Price variance for the same material,medium,purchase_order,yes,Unit price set to 62% above the median paid for material MAT-100014 across the dataset (alert level is 25%).
+4500444/00030,4500444,00030,,PO-R006,Price variance for the same material,medium,purchase_order,yes,Unit price set to 63% above the median paid for material MAT-100336 across the dataset (alert level is 25%).
+4500464/00010,4500464,00010,,PO-R006,Price variance for the same material,medium,purchase_order,yes,Unit price set to 78% above the median paid for material MAT-100616 across the dataset (alert level is 25%).
+4500236/00020,4500236,00020,,PO-R006,Price variance for the same material,medium,purchase_order,yes,Unit price set to 85% above the median paid for material MAT-100021 across the dataset (alert level is 25%).
+4500352/00030,4500352,00030,,PO-R006,Price variance for the same material,medium,purchase_order,yes,Unit price set to 92% above the median paid for material MAT-100259 across the dataset (alert level is 25%).
+4500315/00010,4500315,00010,,PO-R007,Off-contract purchase,medium,purchase_order,yes,Contract reference removed although the same supplier supplies material MAT-100007 under an outline agreement on other lines.
+4500096/00040,4500096,00040,,PO-R007,Off-contract purchase,medium,purchase_order,yes,Contract reference removed although the same supplier supplies material MAT-100238 under an outline agreement on other lines.
+4500052/00010,4500052,00010,,PO-R007,Off-contract purchase,medium,purchase_order,yes,Contract reference removed although the same supplier supplies material MAT-100399 under an outline agreement on other lines.
+4500426/00010,4500426,00010,,PO-R007,Off-contract purchase,medium,purchase_order,yes,Contract reference removed although the same supplier supplies material MAT-100175 under an outline agreement on other lines.
+4500401/00020,4500401,00020,,PO-R007,Off-contract purchase,medium,purchase_order,yes,Contract reference removed although the same supplier supplies material MAT-100406 under an outline agreement on other lines.
+4500569/00010,4500569,00010,,PO-R008,Missing contract reference on a significant order,low,purchase_order,yes,"Free-text purchase of 40,630.51 for material MAT-100210, which no supplier holds under contract, so the outline agreement reference stays empty above the 25,000 review level."
+4500570/00010,4500570,00010,,PO-R008,Missing contract reference on a significant order,low,purchase_order,yes,"Free-text purchase of 37,718.78 for material MAT-100546, which no supplier holds under contract, so the outline agreement reference stays empty above the 25,000 review level."
+4500571/00010,4500571,00010,,PO-R008,Missing contract reference on a significant order,low,purchase_order,yes,"Free-text purchase of 38,626.58 for material MAT-100420, which no supplier holds under contract, so the outline agreement reference stays empty above the 25,000 review level."
+4500572/00010,4500572,00010,,PO-R008,Missing contract reference on a significant order,low,purchase_order,yes,"Free-text purchase of 35,431.07 for material MAT-100210, which no supplier holds under contract, so the outline agreement reference stays empty above the 25,000 review level."
+4500573/00010,4500573,00010,,PO-R008,Missing contract reference on a significant order,low,purchase_order,yes,"Free-text purchase of 48,330.46 for material MAT-100252, which no supplier holds under contract, so the outline agreement reference stays empty above the 25,000 review level."
+4500371,4500371,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 18,432.25 base currency carries the status 'Not Approved', which is not a released state."
+4500066,4500066,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 15,400.27 base currency carries the status 'Pending', which is not a released state."
+4500133,4500133,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 42,977.97 base currency carries the status 'Open', which is not a released state."
+4500368,4500368,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 34,510.06 base currency carries the status 'In Review', which is not a released state."
+4500320,4500320,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 41,848.80 base currency carries the status 'Blocked', which is not a released state."
+4500137,4500137,,,PO-R009,High value order without approval,critical,purchase_order,no,"Order worth 17,993.14 base currency carries the status 'Not Approved', which is not a released state."
+4500404/00030,4500404,00030,,PO-R010,Late delivery,low,purchase_order,no,Goods receipt posted 12 days after the requested delivery date.
+4500330/00020,4500330,00020,,PO-R010,Late delivery,low,purchase_order,no,Goods receipt posted 18 days after the requested delivery date.
+4500412/00040,4500412,00040,,PO-R010,Late delivery,low,purchase_order,no,Goods receipt posted 25 days after the requested delivery date.
+4500073/00010,4500073,00010,,PO-R010,Late delivery,high,purchase_order,no,Goods receipt posted 35 days after the requested delivery date.
+4500134/00020,4500134,00020,,PO-R010,Late delivery,high,purchase_order,no,Goods receipt posted 44 days after the requested delivery date.
+4500146/00020,4500146,00020,,PO-R010,Late delivery,critical,purchase_order,no,Goods receipt posted 62 days after the requested delivery date.
+4500075/00040,4500075,00040,,PO-R010,Late delivery,critical,purchase_order,no,Goods receipt posted 75 days after the requested delivery date.
+4500203/00020,4500203,00020,,PO-R010,Late delivery,critical,purchase_order,no,Goods receipt posted 95 days after the requested delivery date.
+4500294/00030,4500294,00030,,PO-R011,Requested delivery date before order date,medium,purchase_order,yes,"Requirement date backdated to before the purchase order date. The unchanged goods receipt date is then also late, so PO-R010 fires on the same line."
+4500461/00010,4500461,00010,,PO-R011,Requested delivery date before order date,medium,purchase_order,yes,"Requirement date backdated to before the purchase order date. The unchanged goods receipt date is then also late, so PO-R010 fires on the same line."
+4500054/00020,4500054,00020,,PO-R011,Requested delivery date before order date,medium,purchase_order,yes,"Requirement date backdated to before the purchase order date. The unchanged goods receipt date is then also late, so PO-R010 fires on the same line."
+4500181/00010,4500181,00010,,PO-R011,Requested delivery date before order date,medium,purchase_order,yes,"Requirement date backdated to before the purchase order date. The unchanged goods receipt date is then also late, so PO-R010 fires on the same line."
+4500334/00020,4500334,00020,,PO-R012,Actual delivery before order date,high,purchase_order,yes,Goods receipt dated before the purchase order date - the classic after-the-fact purchase order pattern.
+4500282/00010,4500282,00010,,PO-R012,Actual delivery before order date,high,purchase_order,yes,Goods receipt dated before the purchase order date - the classic after-the-fact purchase order pattern.
+4500418/00010,4500418,00010,,PO-R012,Actual delivery before order date,high,purchase_order,yes,Goods receipt dated before the purchase order date - the classic after-the-fact purchase order pattern.
+4500317/00020,4500317,00020,,PO-R013,Quantity anomaly (non-positive quantity),high,purchase_order,yes,"Order quantity set to zero, which cannot be received."
+4500036/00020,4500036,00020,,PO-R013,Quantity anomaly (non-positive quantity),high,purchase_order,yes,"Order quantity set to zero, which cannot be received."
+4500101/00020,4500101,00020,,PO-R013,Quantity anomaly (non-positive quantity),high,purchase_order,yes,"Order quantity set to zero, which cannot be received."
+4500370/00020,4500370,00020,,PO-R013,Quantity anomaly (outlier versus material median),medium,purchase_order,yes,Quantity set to about 30-45x the median ordered quantity for material MAT-100147 (alert level is 20x).
+4500474/00010,4500474,00010,,PO-R013,Quantity anomaly (outlier versus material median),medium,purchase_order,yes,Quantity set to about 30-45x the median ordered quantity for material MAT-100154 (alert level is 20x).
+4500351/00020,4500351,00020,,PO-R013,Quantity anomaly (outlier versus material median),medium,purchase_order,yes,Quantity set to about 30-45x the median ordered quantity for material MAT-100574 (alert level is 20x).
+4500304/00030,4500304,00030,,PO-R014,Currency anomaly,medium,purchase_order,yes,Document currency changed from CHF to EUR while company code 4000 is configured for CHF.
+4500539/00020,4500539,00020,,PO-R014,Currency anomaly,medium,purchase_order,yes,Document currency changed from GBP to USD while company code 3000 is configured for GBP.
+4500379/00020,4500379,00020,,PO-R014,Currency anomaly,medium,purchase_order,yes,Document currency changed from GBP to USD while company code 3000 is configured for GBP.
+4500015/00030,4500015,00030,,PO-R014,Currency anomaly,medium,purchase_order,yes,Document currency changed from USD to EUR while company code 2000 is configured for USD.
+4500052/00040,4500052,00040,,PO-R015,Missing required fields,medium,purchase_order,yes,Material group deleted. The field is on the PO-R015 watch list.
+4500200/00010,4500200,00010,,PO-R015,Missing required fields,medium,purchase_order,yes,Plant deleted. The field is on the PO-R015 watch list.
+4500518/00020,4500518,00020,,PO-R015,Missing required fields,medium,purchase_order,yes,Payment terms deleted. The field is on the PO-R015 watch list.
+4500497/00010,4500497,00010,,PO-R015,Missing required fields,medium,purchase_order,yes,Purchasing group deleted. The field is on the PO-R015 watch list.
+4500512/00020,4500512,00020,,PO-R015,Missing required fields,medium,purchase_order,yes,Material group deleted (second occurrence). The field is on the PO-R015 watch list.
+4500286/00020,4500286,00020,,PO-R016,Unusual payment terms,medium,purchase_order,yes,"Payment terms set to 'NT120', which is outside the approved list."
+4500291/00010,4500291,00010,,PO-R016,Unusual payment terms,medium,purchase_order,yes,"Payment terms set to 'CASH', which is outside the approved list."
+4500520/00020,4500520,00020,,PO-R016,Unusual payment terms,medium,purchase_order,yes,"Payment terms set to 'Z999', which is outside the approved list."
+4500399/00010,4500399,00010,,PO-R016,Unusual payment terms,medium,purchase_order,yes,"Payment terms set to 'NT007', which is outside the approved list."
+4500080/00040,4500080,00040,,PO-R016,Unusual payment terms,medium,purchase_order,yes,"Payment terms set to 'PREPAY', which is outside the approved list."
+4500037,4500037,,,PO-R017,Excessive manual changes,medium,purchase_order,yes,Change count set to 7 (alert level is more than 5 changes).
+4500074,4500074,,,PO-R017,Excessive manual changes,medium,purchase_order,yes,Change count set to 9 (alert level is more than 5 changes).
+4500175,4500175,,,PO-R017,Excessive manual changes,high,purchase_order,yes,Change count set to 13 (alert level is more than 5 changes).
+4500142,4500142,,,PO-R017,Excessive manual changes,high,purchase_order,yes,Change count set to 16 (alert level is more than 5 changes).
+MG90/0000100008,4500070,,0000100008,PO-R018,Supplier concentration in a material group,high,supplier,no,"Material group MG90 (specialised tooling) is single-sourced from supplier 0000100008 by design, giving a 100% share of roughly 386,925 in document currency."
+4500574/00010,4500574,00010,,PO-R019,Maverick spending,high,purchase_order,yes,Material MAT-100483 bought from supplier 0000100039 without a contract while other suppliers hold an outline agreement for it.
+4500575/00010,4500575,00010,,PO-R019,Maverick spending,high,purchase_order,yes,Material MAT-100035 bought from supplier 0000100045 without a contract while other suppliers hold an outline agreement for it.
+4500576/00010,4500576,00010,,PO-R019,Maverick spending,high,purchase_order,yes,Material MAT-100280 bought from supplier 0000100044 without a contract while other suppliers hold an outline agreement for it.
+4500577/00010,4500577,00010,,PO-R019,Maverick spending,high,purchase_order,yes,Material MAT-100385 bought from supplier 0000100018 without a contract while other suppliers hold an outline agreement for it.
+4500578/00010,4500578,00010,,PO-R019,Maverick spending,high,purchase_order,yes,Material MAT-100245 bought from supplier 0000100006 without a contract while other suppliers hold an outline agreement for it.
+supplier 0000100013 (11 purchase orders),4500117,,0000100013,PO-R020,Purchase from a high-risk supplier,high,purchase_order,yes,"Supplier 0000100013 is on the configured watch list, so every one of its 11 purchase orders is expected to raise PO-R020."
+supplier 0000100027 (9 purchase orders),4500255,,0000100027,PO-R020,Purchase from a high-risk supplier,high,purchase_order,yes,"Supplier 0000100027 is on the configured watch list, so every one of its 9 purchase orders is expected to raise PO-R020."
+supplier 0000100041 (9 purchase orders),4500394,,0000100041,PO-R020,Purchase from a high-risk supplier,high,purchase_order,yes,"Supplier 0000100041 is on the configured watch list, so every one of its 9 purchase orders is expected to raise PO-R020."

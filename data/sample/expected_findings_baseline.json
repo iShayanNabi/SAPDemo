@@ -1,0 +1,36 @@
+{
+  "note": "Observed output of the current engine on the generated sample file. Counts can exceed the anomaly manifest because rules legitimately overlap.",
+  "seed": 20260101,
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "record_count": 1238,
+  "findings_total": 131,
+  "severity_counts": {
+    "low": 11,
+    "medium": 42,
+    "high": 57,
+    "critical": 21
+  },
+  "findings_by_rule": {
+    "PO-R001": 8,
+    "PO-R002": 4,
+    "PO-R003": 3,
+    "PO-R004": 5,
+    "PO-R005": 5,
+    "PO-R006": 9,
+    "PO-R007": 5,
+    "PO-R008": 8,
+    "PO-R009": 6,
+    "PO-R010": 12,
+    "PO-R011": 4,
+    "PO-R012": 3,
+    "PO-R013": 6,
+    "PO-R014": 4,
+    "PO-R015": 5,
+    "PO-R016": 5,
+    "PO-R017": 4,
+    "PO-R018": 1,
+    "PO-R019": 5,
+    "PO-R020": 29
+  }
+}

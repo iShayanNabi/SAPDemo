@@ -1,0 +1,147 @@
+{
+  "config_version": "1.0.0",
+  "description": "Deterministic configuration for the Spend Analytics Dashboard. Every threshold, classification rule and savings assumption used by the module lives in this file. Editing a value here changes the next analysis; no code change is required.",
+  "base_currency": "EUR",
+  "currency_rates": {
+    "EUR": 1.0,
+    "USD": 0.92,
+    "GBP": 1.17,
+    "CHF": 1.05,
+    "SEK": 0.088,
+    "PLN": 0.23
+  },
+  "classification": {
+    "contracted_status_values": [
+      "contracted", "under contract", "contract", "yes", "true", "y", "x", "1",
+      "covered", "on contract", "framework"
+    ],
+    "non_contracted_status_values": [
+      "not contracted", "no contract", "off contract", "free text", "no", "false", "n", "0",
+      "spot", "uncovered", "ad hoc"
+    ],
+    "derive_contract_status_from_contract_number": true,
+    "preferred_status_values": [
+      "preferred", "strategic", "approved", "core", "yes", "true", "y", "x", "1", "partner"
+    ],
+    "non_preferred_status_values": [
+      "non-preferred", "not preferred", "unapproved", "tail", "no", "false", "n", "0",
+      "one-time", "spot"
+    ],
+    "maverick_definition": {
+      "description": "A transaction is maverick spend when it is not covered by a contract and the supplier is not a preferred supplier.",
+      "requires_no_contract": true,
+      "requires_non_preferred_supplier": true
+    },
+    "spend_under_management_definition": {
+      "description": "Spend is under management when it is contracted, or placed with a preferred supplier.",
+      "counts_contracted": true,
+      "counts_preferred_supplier": true
+    }
+  },
+  "tail_spend": {
+    "description": "Pareto classification. Suppliers are ranked by spend; those beyond the cumulative share threshold are tail suppliers. A supplier whose individual share is below the small-supplier threshold is always tail.",
+    "cumulative_share_threshold_pct": 80.0,
+    "small_supplier_share_pct": 0.5,
+    "min_suppliers_for_classification": 5
+  },
+  "concentration": {
+    "description": "Supplier concentration measures. HHI is the sum of squared supplier spend shares, expressed on a 0-10,000 scale.",
+    "top_supplier_share_warning_pct": 25.0,
+    "top_five_share_warning_pct": 60.0,
+    "hhi_moderate": 1500.0,
+    "hhi_high": 2500.0,
+    "category_concentration_warning_pct": 75.0,
+    "min_category_spend_base": 50000.0
+  },
+  "price_variance": {
+    "description": "Purchase price variance is measured per material against the configured comparison basis, in base currency.",
+    "comparison_basis": "baseline_price",
+    "fallback_basis": "material_median",
+    "min_observations": 4,
+    "variance_alert_pct": 15.0,
+    "high_variance_alert_pct": 30.0,
+    "min_line_value_base": 250.0
+  },
+  "savings_rules": {
+    "SAV-01": {
+      "name": "Price harmonisation",
+      "enabled": true,
+      "description": "Where the same material is bought at different prices, model paying the target percentile price on every line above it.",
+      "confidence": 0.6,
+      "realization_factor": 0.5,
+      "params": {
+        "target_percentile": 25,
+        "min_observations": 4,
+        "min_price_spread_pct": 10.0,
+        "min_material_spend_base": 10000.0
+      }
+    },
+    "SAV-02": {
+      "name": "Contract compliance",
+      "enabled": true,
+      "description": "Model bringing non-contracted spend under an existing or new contract at the configured saving rate.",
+      "confidence": 0.5,
+      "realization_factor": 0.6,
+      "params": {
+        "assumed_saving_pct": 8.0,
+        "min_supplier_spend_base": 25000.0,
+        "min_non_contracted_share_pct": 20.0
+      }
+    },
+    "SAV-03": {
+      "name": "Supplier consolidation",
+      "enabled": true,
+      "description": "Where a material group is split across many suppliers, model consolidating spend onto the cheapest qualified supplier.",
+      "confidence": 0.45,
+      "realization_factor": 0.4,
+      "params": {
+        "min_suppliers_in_group": 4,
+        "assumed_saving_pct": 6.0,
+        "min_group_spend_base": 50000.0,
+        "consolidation_share_pct": 60.0
+      }
+    },
+    "SAV-04": {
+      "name": "Tail spend reduction",
+      "enabled": true,
+      "description": "Model reducing transactional cost and price leakage by rationalising tail suppliers.",
+      "confidence": 0.4,
+      "realization_factor": 0.35,
+      "params": {
+        "assumed_saving_pct": 10.0,
+        "min_tail_spend_base": 20000.0,
+        "cost_per_transaction_base": 45.0
+      }
+    },
+    "SAV-05": {
+      "name": "Move to preferred suppliers",
+      "enabled": true,
+      "description": "Model moving spend from non-preferred suppliers to a preferred supplier that already sells the same material at a lower price.",
+      "confidence": 0.55,
+      "realization_factor": 0.5,
+      "params": {
+        "min_price_gap_pct": 5.0,
+        "min_spend_base": 5000.0,
+        "min_preferred_observations": 2
+      }
+    },
+    "SAV-06": {
+      "name": "Reduce high price variance",
+      "enabled": true,
+      "description": "Model paying the baseline price on lines that were bought above it.",
+      "confidence": 0.65,
+      "realization_factor": 0.6,
+      "params": {
+        "min_variance_pct": 15.0,
+        "min_line_value_base": 250.0,
+        "min_total_opportunity_base": 1000.0
+      }
+    }
+  },
+  "reporting": {
+    "top_n_default": 10,
+    "max_drilldown_rows": 1000,
+    "monthly_trend_months": 24,
+    "opportunity_disclaimer": "Estimated savings are modelled from the uploaded data using the documented assumptions above. They are indicative opportunities for investigation, not guaranteed or committed savings, and they have not been validated in a live SAP environment."
+  }
+}

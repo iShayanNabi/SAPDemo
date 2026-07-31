@@ -1,0 +1,38 @@
+# SAP AI Application Lab - Python 3.12
+# Install with: pip install -r requirements.txt
+
+# --- API layer ---
+fastapi==0.141.1
+uvicorn[standard]==0.40.0
+python-multipart==0.0.20
+
+# --- Validation and configuration ---
+pydantic==2.13.4
+pydantic-settings==2.13.0
+
+# --- Persistence (SQLite now, PostgreSQL ready) ---
+SQLAlchemy==2.0.51
+alembic==1.18.1
+# Uncomment for PostgreSQL:
+# psycopg[binary]==3.2.3
+
+# --- Data and statistics ---
+pandas==3.0.2
+numpy==2.4.4
+scikit-learn==1.8.0
+statsmodels==0.15.0
+
+# --- File processing ---
+openpyxl==3.1.5
+pypdf==5.9.0
+python-docx==1.2.0
+
+# --- HTTP client (AI providers, Streamlit -> API) ---
+httpx==0.28.1
+
+# --- Temporary local UI ---
+streamlit==1.60.0
+plotly==6.9.0
+
+# --- Testing ---
+pytest==9.0.1

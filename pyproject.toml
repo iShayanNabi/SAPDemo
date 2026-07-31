@@ -1,0 +1,24 @@
+[project]
+name = "sap-ai-application-lab"
+version = "0.1.0"
+description = "Local lab of SAP-focused AI applications. Module 1: Purchase Order Risk Checker."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: tests that process the full sample dataset",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.*",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM"]
+ignore = ["E501"]

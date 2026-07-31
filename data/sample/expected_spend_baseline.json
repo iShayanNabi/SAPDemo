@@ -1,0 +1,103 @@
+{
+  "note": "Observed output of the current engine on the generated sample file. Used by the test suite to detect unintended changes in the metrics or the generator.",
+  "seed": 20260201,
+  "config_version": "1.0.0",
+  "record_count": 3640,
+  "metrics": {
+    "total_spend": 44940172.71,
+    "purchase_order_count": 2108,
+    "line_item_count": 3640,
+    "supplier_count": 64,
+    "average_po_value": 21318.87,
+    "median_po_value": 17103.83,
+    "contracted_spend": 41201122.69,
+    "non_contracted_spend": 3739050.02,
+    "contracted_spend_pct": 91.68,
+    "maverick_spend": 1666521.07,
+    "maverick_spend_pct": 3.71,
+    "spend_under_management": 43273651.64,
+    "spend_under_management_pct": 96.29,
+    "supplier_concentration_hhi": 289.2,
+    "supplier_concentration_level": "low",
+    "top_supplier_share_pct": 7.18,
+    "top_supplier_id": "0000200004",
+    "top_five_supplier_share_pct": 23.25,
+    "tail_spend": 9839694.16,
+    "tail_spend_pct": 21.9,
+    "tail_supplier_count": 37,
+    "price_variance_base": 553084.35,
+    "price_variance_pct": 1.23,
+    "price_variance_line_count": 36,
+    "estimated_savings_opportunity": 2332368.47,
+    "spend_by_currency": [
+      {
+        "currency": "EUR",
+        "spend_document_currency": 10413775.07,
+        "spend_base": 10413775.07,
+        "share_pct": 23.17,
+        "transaction_count": 764,
+        "conversion_rate": 1.0
+      },
+      {
+        "currency": "CHF",
+        "spend_document_currency": 9888900.35,
+        "spend_base": 10383345.6,
+        "share_pct": 23.1,
+        "transaction_count": 712,
+        "conversion_rate": 1.05
+      },
+      {
+        "currency": "USD",
+        "spend_document_currency": 9380057.58,
+        "spend_base": 8629652.94,
+        "share_pct": 19.2,
+        "transaction_count": 741,
+        "conversion_rate": 0.92
+      },
+      {
+        "currency": "SEK",
+        "spend_document_currency": 90647255.64,
+        "spend_base": 7976958.38,
+        "share_pct": 17.75,
+        "transaction_count": 727,
+        "conversion_rate": 0.088
+      },
+      {
+        "currency": "GBP",
+        "spend_document_currency": 6441402.49,
+        "spend_base": 7536440.72,
+        "share_pct": 16.77,
+        "transaction_count": 696,
+        "conversion_rate": 1.17
+      }
+    ],
+    "base_currency": "EUR",
+    "metrics_version": "1.0.0"
+  },
+  "opportunities_by_rule": {
+    "SAV-04": 363494.05,
+    "SAV-03": 624154.28,
+    "SAV-06": 331850.62,
+    "SAV-01": 576519.19,
+    "SAV-05": 309350.51,
+    "SAV-02": 126999.82
+  },
+  "opportunity_count": 45,
+  "analytics_row_counts": {
+    "monthly_spend": 24,
+    "spend_by_supplier": 10,
+    "spend_by_category": 9,
+    "spend_by_subcategory": 10,
+    "spend_by_material_group": 13,
+    "spend_by_plant": 7,
+    "spend_by_company_code": 5,
+    "spend_by_purchasing_org": 5,
+    "spend_by_purchasing_group": 5,
+    "top_materials": 10,
+    "tail_spend_suppliers": 37,
+    "supplier_concentration": 13,
+    "contract_leakage": 9,
+    "maverick_spend": 27,
+    "purchase_price_variance": 124
+  }
+}

@@ -1,0 +1,292 @@
+{
+  "config_version": "1.0.0",
+  "description": "Deterministic risk rule configuration for the SAP Purchase Order Risk Checker. Every threshold used by the engine lives here - no rule may hardcode a limit.",
+  "base_currency": "EUR",
+  "currency_rates": {
+    "EUR": 1.0,
+    "USD": 0.92,
+    "GBP": 1.17,
+    "CHF": 1.05,
+    "SEK": 0.088,
+    "PLN": 0.23,
+    "JPY": 0.0062,
+    "INR": 0.011,
+    "CNY": 0.13
+  },
+  "approval_thresholds": [10000.0, 50000.0, 250000.0],
+  "approved_status_values": ["approved", "released", "freigegeben", "complete", "completed"],
+  "not_approved_status_values": ["not approved", "blocked", "pending", "open", "rejected", "in review"],
+  "standard_payment_terms": ["NT30", "NT45", "NT60", "Z030", "Z045", "Z060"],
+  "expected_currencies_by_company_code": {
+    "1000": "EUR",
+    "2000": "USD",
+    "3000": "GBP",
+    "4000": "CHF"
+  },
+  "high_risk_suppliers": [
+    {
+      "supplier_id": "0000100013",
+      "risk_level": "critical",
+      "reason": "Sanctions screening hit pending clearance (fictional demo entry)"
+    },
+    {
+      "supplier_id": "0000100027",
+      "risk_level": "high",
+      "reason": "Financial distress signal: credit rating downgraded (fictional demo entry)"
+    },
+    {
+      "supplier_id": "0000100041",
+      "risk_level": "high",
+      "reason": "Repeated quality incidents and open compliance audit (fictional demo entry)"
+    }
+  ],
+  "severity_value_escalation": {
+    "enabled": true,
+    "high_value_base": 100000.0,
+    "critical_value_base": 250000.0
+  },
+  "rules": {
+    "PO-R001": {
+      "name": "Duplicate purchase orders",
+      "category": "Duplication",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "Compare the purchase orders in ME23N before goods receipt or invoice posting and cancel the redundant document.",
+      "params": {
+        "date_window_days": 14,
+        "value_tolerance_pct": 1.0,
+        "min_total_value_base": 1000.0
+      }
+    },
+    "PO-R002": {
+      "name": "Duplicate line items within a purchase order",
+      "category": "Duplication",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.95,
+      "recommended_action": "Review the purchase order items and delete or reduce the duplicated line before goods receipt.",
+      "params": {
+        "min_total_value_base": 0.0
+      }
+    },
+    "PO-R003": {
+      "name": "Split purchases",
+      "category": "Split and threshold avoidance",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.75,
+      "recommended_action": "Consolidate the demand into a single purchase order or a contract call-off and confirm the correct approval level was applied.",
+      "params": {
+        "window_days": 7,
+        "min_order_count": 3,
+        "combined_value_threshold_base": 25000.0,
+        "max_individual_value_base": 25000.0
+      }
+    },
+    "PO-R004": {
+      "name": "Order value just below an approval threshold",
+      "category": "Split and threshold avoidance",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.7,
+      "recommended_action": "Verify with the requisitioner why the order stops just short of the release threshold and check for related orders.",
+      "params": {
+        "proximity_pct": 3.0,
+        "min_threshold_base": 10000.0
+      }
+    },
+    "PO-R005": {
+      "name": "Unusual unit price increase",
+      "category": "Pricing",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.85,
+      "recommended_action": "Request a price justification from the supplier and check the info record and contract conditions.",
+      "params": {
+        "increase_pct": 20.0,
+        "min_previous_price": 1.0,
+        "lookback_days": 365
+      }
+    },
+    "PO-R006": {
+      "name": "Price variance for the same material",
+      "category": "Pricing",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.8,
+      "recommended_action": "Benchmark the paid price against the material median and renegotiate or redirect volume to the best price supplier.",
+      "params": {
+        "deviation_pct": 25.0,
+        "min_observations": 4,
+        "min_unit_price": 1.0
+      }
+    },
+    "PO-R007": {
+      "name": "Off-contract purchase",
+      "category": "Contract compliance",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.8,
+      "recommended_action": "Route the demand through the existing outline agreement or document an approved exception.",
+      "params": {
+        "min_contract_observations": 2,
+        "min_total_value_base": 2500.0
+      }
+    },
+    "PO-R008": {
+      "name": "Missing contract reference on a significant order",
+      "category": "Contract compliance",
+      "enabled": true,
+      "base_severity": "low",
+      "confidence": 0.9,
+      "recommended_action": "Add the outline agreement reference or confirm that a free-text purchase was justified.",
+      "params": {
+        "min_total_value_base": 25000.0
+      }
+    },
+    "PO-R009": {
+      "name": "High value order without approval",
+      "category": "Approval and governance",
+      "enabled": true,
+      "base_severity": "critical",
+      "confidence": 0.95,
+      "recommended_action": "Block the order for goods receipt and obtain the missing release before processing continues.",
+      "params": {
+        "min_total_value_base": 10000.0
+      }
+    },
+    "PO-R010": {
+      "name": "Late delivery",
+      "category": "Delivery performance",
+      "enabled": true,
+      "base_severity": "low",
+      "confidence": 0.95,
+      "recommended_action": "Review the supplier delivery performance in the next business review and update the planned delivery time if needed.",
+      "params": {
+        "grace_days": 3,
+        "high_severity_days": 30,
+        "critical_days": 60,
+        "delay_cost_rate_pct_per_30_days": 1.5
+      }
+    },
+    "PO-R011": {
+      "name": "Requested delivery date before order date",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 1.0,
+      "recommended_action": "Correct the delivery schedule line; a backdated requirement date distorts MRP and supplier performance reporting.",
+      "params": {
+        "tolerance_days": 0
+      }
+    },
+    "PO-R012": {
+      "name": "Actual delivery before order date",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 1.0,
+      "recommended_action": "Investigate the goods receipt: a receipt before the order date usually indicates an after-the-fact purchase order.",
+      "params": {
+        "tolerance_days": 0
+      }
+    },
+    "PO-R013": {
+      "name": "Quantity anomaly",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.75,
+      "recommended_action": "Confirm the ordered quantity with the requisitioner before the goods receipt is posted.",
+      "params": {
+        "min_valid_quantity": 0.0001,
+        "outlier_multiple_of_median": 20.0,
+        "min_observations": 4
+      }
+    },
+    "PO-R014": {
+      "name": "Currency anomaly",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.8,
+      "recommended_action": "Verify the document currency against the company code default and correct the order if it was keyed incorrectly.",
+      "params": {
+        "dominant_share_pct": 80.0,
+        "min_observations": 5
+      }
+    },
+    "PO-R015": {
+      "name": "Missing required fields",
+      "category": "Data quality",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 1.0,
+      "recommended_action": "Complete the missing purchase order attributes; incomplete documents block automated matching and reporting.",
+      "params": {
+        "critical_fields": ["po_number", "supplier_id", "quantity", "unit_price", "order_date"],
+        "watch_fields": ["material_group", "plant", "payment_terms", "purchasing_group"]
+      }
+    },
+    "PO-R016": {
+      "name": "Unusual payment terms",
+      "category": "Contract compliance",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.85,
+      "recommended_action": "Confirm the deviating payment terms were approved by treasury; non-standard terms affect working capital.",
+      "params": {
+        "min_total_value_base": 5000.0
+      }
+    },
+    "PO-R017": {
+      "name": "Excessive manual changes",
+      "category": "Approval and governance",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.9,
+      "recommended_action": "Review the change documents (transaction ME23N, environment > changes) to confirm every amendment was authorised.",
+      "params": {
+        "max_changes": 5,
+        "critical_changes": 12
+      }
+    },
+    "PO-R018": {
+      "name": "Supplier concentration in a material group",
+      "category": "Supplier risk",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.7,
+      "recommended_action": "Assess single-source dependency for this category and qualify an alternative supplier.",
+      "params": {
+        "share_pct": 75.0,
+        "min_group_value_base": 100000.0,
+        "min_orders_in_group": 5
+      }
+    },
+    "PO-R019": {
+      "name": "Maverick spending",
+      "category": "Contract compliance",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.75,
+      "recommended_action": "Redirect the demand to the contracted supplier for this material and coach the requisitioner on the catalogue process.",
+      "params": {
+        "min_total_value_base": 1000.0,
+        "min_contract_observations": 2
+      }
+    },
+    "PO-R020": {
+      "name": "Purchase from a high-risk supplier",
+      "category": "Supplier risk",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.95,
+      "recommended_action": "Apply the enhanced due diligence process before release and check whether an alternative supplier can serve the demand.",
+      "params": {
+        "min_total_value_base": 0.0
+      }
+    }
+  }
+}

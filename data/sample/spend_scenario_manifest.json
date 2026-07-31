@@ -1,0 +1,186 @@
+{
+  "generated_with_seed": 20260201,
+  "data_origin": "demo_data",
+  "months_covered": 24,
+  "period_start": "2024-01-01",
+  "period_end": "2025-12-28",
+  "note": "Fictional dataset. The background population is healthy by construction; each scenario below injects one specific condition so every metric movement is traceable.",
+  "scenarios": [
+    {
+      "scenario_id": "SC-01",
+      "name": "Maverick spend",
+      "description": "Five non-preferred suppliers are bought from without any contract reference, which is the configured definition of maverick spend.",
+      "expects": "maverick_spend > 0 and these suppliers appear in the maverick spend breakdown; savings rule SAV-02 (contract compliance) should also fire for them.",
+      "affected_transactions": 60,
+      "affected_spend_base": 1534119.35,
+      "suppliers": [
+        "0000200001",
+        "0000200006",
+        "0000200011",
+        "0000200016",
+        "0000200021"
+      ],
+      "materials": [],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-02",
+      "name": "Contract leakage",
+      "description": "Four suppliers that hold contracts are also bought from without a contract reference on roughly a third of their orders.",
+      "expects": "these suppliers appear in the contract_leakage breakdown with leaked_spend_base greater than zero; SAV-02 should propose bringing that spend under contract.",
+      "affected_transactions": 32,
+      "affected_spend_base": 2072528.94,
+      "suppliers": [
+        "0000200002",
+        "0000200003",
+        "0000200004",
+        "0000200005"
+      ],
+      "materials": [],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-03",
+      "name": "Supplier concentration",
+      "description": "Material group MG90 (Specialised Tooling) is sourced entirely from one supplier by design.",
+      "expects": "supplier_concentration breakdown shows MG90 at a 100% top supplier share, above the configured warning threshold.",
+      "affected_transactions": 24,
+      "affected_spend_base": 455126.41,
+      "suppliers": [
+        "0000200004"
+      ],
+      "materials": [],
+      "categories": [
+        "Specialised Tooling"
+      ]
+    },
+    {
+      "scenario_id": "SC-04",
+      "name": "Purchase price variance",
+      "description": "Six materials have orders priced 20-45% above the baseline price recorded on the same line.",
+      "expects": "price_variance_base is clearly positive, these materials appear in the purchase_price_variance breakdown, and SAV-06 proposes closing the gap.",
+      "affected_transactions": 36,
+      "affected_spend_base": 2321121.21,
+      "suppliers": [],
+      "materials": [
+        "SPM-100072",
+        "SPM-100267",
+        "SPM-100324",
+        "SPM-100357",
+        "SPM-100312",
+        "SPM-100162"
+      ],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-05",
+      "name": "Tail spend",
+      "description": "22 suppliers each carry only a few small, non-contracted orders, placing them outside the Pareto threshold.",
+      "expects": "tail_supplier_count is at least 20, tail_spend is greater than zero, these suppliers appear in tail_spend_suppliers, and SAV-04 proposes rationalising them.",
+      "affected_transactions": 52,
+      "affected_spend_base": 132401.73,
+      "suppliers": [
+        "0000200043",
+        "0000200044",
+        "0000200045",
+        "0000200046",
+        "0000200047",
+        "0000200048",
+        "0000200049",
+        "0000200050",
+        "0000200051",
+        "0000200052",
+        "0000200053",
+        "0000200054",
+        "0000200055",
+        "0000200056",
+        "0000200057",
+        "0000200058",
+        "0000200059",
+        "0000200060",
+        "0000200061",
+        "0000200062",
+        "0000200063",
+        "0000200064"
+      ],
+      "materials": [],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-06",
+      "name": "Preferred supplier price gap",
+      "description": "Four materials are supplied by a preferred supplier at the baseline price and by non-preferred suppliers 18-35% higher.",
+      "expects": "SAV-05 (move to preferred suppliers) proposes migrating these materials, with a documented price gap above the configured minimum.",
+      "affected_transactions": 48,
+      "affected_spend_base": 1533487.25,
+      "suppliers": [],
+      "materials": [
+        "SPM-100084",
+        "SPM-100243",
+        "SPM-100264",
+        "SPM-100045"
+      ],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-07",
+      "name": "Supplier fragmentation",
+      "description": "Material group MG15 is deliberately spread across 31 suppliers.",
+      "expects": "SAV-03 (supplier consolidation) proposes consolidating this material group.",
+      "affected_transactions": 210,
+      "affected_spend_base": 6934163.42,
+      "suppliers": [
+        "0000200001",
+        "0000200002",
+        "0000200003",
+        "0000200004",
+        "0000200005",
+        "0000200006",
+        "0000200007",
+        "0000200008",
+        "0000200009",
+        "0000200012",
+        "0000200013",
+        "0000200015",
+        "0000200016",
+        "0000200017",
+        "0000200018",
+        "0000200020",
+        "0000200021",
+        "0000200022",
+        "0000200023",
+        "0000200024",
+        "0000200027",
+        "0000200028",
+        "0000200030",
+        "0000200031",
+        "0000200032",
+        "0000200034",
+        "0000200035",
+        "0000200037",
+        "0000200039",
+        "0000200040",
+        "0000200042"
+      ],
+      "materials": [],
+      "categories": []
+    },
+    {
+      "scenario_id": "SC-08",
+      "name": "Price dispersion",
+      "description": "Five materials are bought at prices ranging from 15% below to 40% above their usual level, with the baseline kept in line with each payment so the dispersion shows up as inconsistent pricing rather than variance against a baseline.",
+      "expects": "SAV-01 (price harmonisation) proposes moving all lines to the target percentile.",
+      "affected_transactions": 60,
+      "affected_spend_base": 1715126.43,
+      "suppliers": [],
+      "materials": [
+        "SPM-100300",
+        "SPM-100072",
+        "SPM-100348",
+        "SPM-100270",
+        "SPM-100237"
+      ],
+      "categories": []
+    }
+  ]
+}
