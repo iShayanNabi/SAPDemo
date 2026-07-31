@@ -175,6 +175,61 @@ def spend_scenario_manifest() -> dict:
 
 
 @pytest.fixture(scope="session")
+def invoice_validator_config():
+    """The default invoice validator configuration."""
+    from app.modules.invoice_validator.thresholds import get_invoice_validator_config
+
+    return get_invoice_validator_config()
+
+
+def _invoice_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_invoice_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def invoice_sample_csv_path() -> Path:
+    """Path of the generated invoices CSV."""
+    return _invoice_sample("sample_invoices.csv")
+
+
+@pytest.fixture(scope="session")
+def invoice_sample_xlsx_path() -> Path:
+    """Path of the generated invoices XLSX."""
+    return _invoice_sample("sample_invoices.xlsx")
+
+
+@pytest.fixture(scope="session")
+def invoice_po_sample_csv_path() -> Path:
+    """Path of the generated purchase orders CSV."""
+    return _invoice_sample("sample_invoice_purchase_orders.csv")
+
+
+@pytest.fixture(scope="session")
+def goods_receipt_sample_csv_path() -> Path:
+    """Path of the generated goods receipts CSV."""
+    return _invoice_sample("sample_goods_receipts.csv")
+
+
+@pytest.fixture(scope="session")
+def invoice_scenario_manifest() -> dict:
+    """The documented invoice anchors and reference date."""
+    import json
+
+    return json.loads(_invoice_sample("invoice_scenario_manifest.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def invoice_baseline() -> dict:
+    """The recorded engine output for the sample datasets."""
+    import json
+
+    return json.loads(_invoice_sample("expected_invoice_baseline.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"

@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.models.session import engine
 from app.schemas.common import ApiResponse, HealthStatus
-from app.api.v1 import po_risk, spend, supplier_reco
+from app.api.v1 import invoice_validator, po_risk, spend, supplier_reco
 
 logger = get_logger(__name__)
 
@@ -49,3 +49,4 @@ api_router.include_router(po_risk.router)
 api_router.include_router(spend.router)
 api_router.include_router(supplier_reco.suppliers_router)
 api_router.include_router(supplier_reco.recommendations_router)
+api_router.include_router(invoice_validator.router)

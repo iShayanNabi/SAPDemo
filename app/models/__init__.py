@@ -1,6 +1,7 @@
 """ORM models. Importing this package registers every table on the metadata."""
 
 from app.models.base import Base, TimestampMixin
+from app.models.invoice_validator import InvoiceException, InvoiceValidation
 from app.models.po_risk import PoAnalysis, PoFinding, PoRecord, UploadedFile
 from app.models.spend import SpendAnalysis, SpendOpportunity, SpendTransaction
 from app.models.supplier_reco import (
@@ -24,4 +25,6 @@ __all__ = [
     "Supplier",
     "SupplierRecommendation",
     "SupplierRecommendationEntry",
+    "InvoiceValidation",
+    "InvoiceException",
 ]

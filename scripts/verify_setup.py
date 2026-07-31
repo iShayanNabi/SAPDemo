@@ -123,6 +123,24 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/supplier_reco/config/supplier_reco_rules.json")
 
+    try:
+        from app.modules.invoice_validator.rules import RULE_IDS as INVOICE_RULE_IDS
+        from app.modules.invoice_validator.thresholds import get_invoice_validator_config
+
+        invoice_config = get_invoice_validator_config()
+        enabled_rules = sum(1 for rule in invoice_config.rules.values() if rule.enabled)
+        print(
+            f"{PASS} invoice validator configuration v{invoice_config.config_version}: "
+            f"{enabled_rules}/{len(invoice_config.rules)} rules enabled"
+        )
+        undefined_invoice = set(INVOICE_RULE_IDS) - set(invoice_config.rules)
+        if undefined_invoice:
+            print(f"{FAIL} invoice rules without configuration: {sorted(undefined_invoice)}")
+            problems.append("Fix app/modules/invoice_validator/config/invoice_validator_rules.json")
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/invoice_validator/config/invoice_validator_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -148,6 +166,7 @@ def main() -> int:
         ("PO risk", "sample_purchase_orders.csv", "scripts/generate_sample_data.py"),
         ("spend", "sample_spend_transactions.csv", "scripts/generate_spend_sample_data.py"),
         ("suppliers", "sample_suppliers.csv", "scripts/generate_supplier_sample_data.py"),
+        ("invoices", "sample_invoices.csv", "scripts/generate_invoice_sample_data.py"),
     ):
         sample = settings.sample_dir / filename
         if sample.is_file():

@@ -1,0 +1,199 @@
+{
+  "config_version": "1.0.0",
+  "description": "Deterministic configuration for the Invoice Validator. Every tolerance, tax rate, freight cap, status list and rule threshold lives here - editing a value changes the next validation with no code change. Tolerances can additionally be overridden per validation run through the API.",
+  "base_currency": "EUR",
+  "currency_rates": {
+    "EUR": 1.0,
+    "USD": 0.92,
+    "GBP": 1.17,
+    "CHF": 1.05,
+    "SEK": 0.088,
+    "PLN": 0.23,
+    "JPY": 0.0062
+  },
+  "tolerances": {
+    "price": {
+      "pct": 2.0,
+      "abs": 1.0
+    },
+    "quantity": {
+      "pct": 0.0,
+      "abs": 0.0
+    },
+    "tax": {
+      "pct": 1.0,
+      "abs": 0.5
+    },
+    "freight": {
+      "pct": 5.0,
+      "abs": 5.0
+    }
+  },
+  "expected_tax_rate": 0.19,
+  "freight_policy": {
+    "max_pct": 10.0,
+    "flat_cap": 250.0
+  },
+  "duplicate": {
+    "amount_tolerance_abs": 0.5,
+    "date_window_days": 0
+  },
+  "closed_po_status_values": [
+    "closed", "complete", "completed", "delivery complete", "delivery completed",
+    "final", "final invoice", "finally invoiced", "locked", "blocked for invoice", "x"
+  ],
+  "future_date_grace_days": 0,
+  "severity_value_escalation": {
+    "enabled": true,
+    "high_value_base": 25000.0,
+    "critical_value_base": 100000.0
+  },
+  "reporting": {
+    "max_matches_stored": 5000,
+    "validation_disclaimer": "Invoice exceptions are calculated deterministically by comparing the uploaded invoices against the uploaded purchase orders and goods receipts, using the documented tolerances and rules in the configuration. Figures are indicative and describe the uploaded files only. This application is not connected to a live SAP system and no result has been validated in a live SAP environment. Any AI generated text summarises the exceptions and never determines them."
+  },
+  "rules": {
+    "IV-R001": {
+      "name": "Duplicate invoices",
+      "category": "Duplication",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "Compare the invoices in MIR4 before payment; block and reverse the redundant document to avoid a double payment.",
+      "params": {
+        "min_total_value_base": 100.0
+      }
+    },
+    "IV-R002": {
+      "name": "Duplicate invoice number for a supplier",
+      "category": "Duplication",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.95,
+      "recommended_action": "Confirm whether the supplier reused an invoice number; if so, request a corrected invoice before posting."
+    },
+    "IV-R003": {
+      "name": "Missing purchase order",
+      "category": "Matching",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "Obtain the purchase order reference from the requisitioner before posting; do not pay an unreferenced invoice."
+    },
+    "IV-R004": {
+      "name": "Missing goods receipt",
+      "category": "Matching",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.85,
+      "recommended_action": "Confirm the goods were received and post the goods receipt before releasing the invoice for payment (GR-based invoice verification)."
+    },
+    "IV-R005": {
+      "name": "Price mismatch versus purchase order",
+      "category": "Amounts",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "Compare the invoiced unit price with the purchase order and info record; request a credit or corrected invoice for the difference."
+    },
+    "IV-R006": {
+      "name": "Quantity mismatch versus receipt",
+      "category": "Amounts",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.85,
+      "recommended_action": "Reconcile the invoiced quantity against the received quantity (or ordered quantity when no receipt exists) before posting."
+    },
+    "IV-R007": {
+      "name": "Tax mismatch",
+      "category": "Amounts",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.85,
+      "recommended_action": "Recalculate the tax at the expected rate on the net amount; query the supplier if the invoiced tax is materially different."
+    },
+    "IV-R008": {
+      "name": "Currency mismatch versus purchase order",
+      "category": "Consistency",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.95,
+      "recommended_action": "Confirm the correct document currency; a currency difference changes the payable amount and must be corrected before posting."
+    },
+    "IV-R009": {
+      "name": "Supplier mismatch versus purchase order",
+      "category": "Consistency",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.95,
+      "recommended_action": "Verify the invoicing party against the purchase order supplier; a mismatch can indicate misdirected billing or fraud."
+    },
+    "IV-R010": {
+      "name": "Freight mismatch",
+      "category": "Amounts",
+      "enabled": true,
+      "base_severity": "low",
+      "confidence": 0.8,
+      "recommended_action": "Check the freight charge against the agreed delivery terms; disproportionate freight should be queried before payment.",
+      "params": {
+        "min_freight_base": 1.0
+      }
+    },
+    "IV-R011": {
+      "name": "Payment-term mismatch versus purchase order",
+      "category": "Consistency",
+      "enabled": true,
+      "base_severity": "low",
+      "confidence": 0.85,
+      "recommended_action": "Align the payment terms with the purchase order; shorter terms than agreed accelerate cash out unnecessarily."
+    },
+    "IV-R012": {
+      "name": "Three-way-match exception",
+      "category": "Matching",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "The invoiced quantity exceeds the accepted goods-receipt quantity; do not pay for goods that were not received and accepted."
+    },
+    "IV-R013": {
+      "name": "Overbilling versus purchase order",
+      "category": "Amounts",
+      "enabled": true,
+      "base_severity": "critical",
+      "confidence": 0.9,
+      "recommended_action": "Cumulative invoicing exceeds the ordered quantity/value for this line; block payment and reconcile the full billing history before release."
+    },
+    "IV-R014": {
+      "name": "Invoice dated before the purchase order",
+      "category": "Dates",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.9,
+      "recommended_action": "An invoice cannot predate its purchase order; confirm the correct purchase order reference and invoice date."
+    },
+    "IV-R015": {
+      "name": "Invoice dated before the goods receipt",
+      "category": "Dates",
+      "enabled": true,
+      "base_severity": "medium",
+      "confidence": 0.85,
+      "recommended_action": "The invoice predates delivery of the goods; verify the invoice date and that the goods were actually received."
+    },
+    "IV-R016": {
+      "name": "Future invoice date",
+      "category": "Dates",
+      "enabled": true,
+      "base_severity": "low",
+      "confidence": 0.85,
+      "recommended_action": "The invoice date is in the future relative to the validation date; confirm the date before posting."
+    },
+    "IV-R017": {
+      "name": "Invoicing against a closed purchase order",
+      "category": "Matching",
+      "enabled": true,
+      "base_severity": "high",
+      "confidence": 0.9,
+      "recommended_action": "The purchase order line is flagged closed / delivery complete; investigate why a further invoice was received before posting."
+    }
+  }
+}

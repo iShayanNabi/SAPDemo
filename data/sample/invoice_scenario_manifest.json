@@ -1,0 +1,181 @@
+{
+  "generated_with_seed": 20260731,
+  "data_origin": "demo_data",
+  "as_of_date": "2026-06-30",
+  "invoice_count": 420,
+  "purchase_order_line_count": 418,
+  "goods_receipt_count": 417,
+  "note": "Fictional invoice, purchase order and goods receipt datasets. Most invoices match their PO and goods receipt cleanly and raise no exception; the anchor invoices below are placed deliberately, one per rule, so every documented exception is testable against the fixed reference date 2026-06-30.",
+  "scenarios": [
+    {
+      "scenario_id": "IV-S01",
+      "rule_id": "IV-R001",
+      "name": "Duplicate invoices",
+      "invoice_numbers": [
+        "INV-ANOM-01B"
+      ],
+      "description": "Two invoices from the same supplier for 1,210.00 EUR on the same date, against different purchase orders.",
+      "expects": "The second invoice is flagged as a duplicate (double-payment risk)."
+    },
+    {
+      "scenario_id": "IV-S02",
+      "rule_id": "IV-R002",
+      "name": "Duplicate invoice number for a supplier",
+      "invoice_numbers": [
+        "INV-ANOM-02"
+      ],
+      "description": "Invoice number INV-ANOM-02 is used on two different invoices from the same supplier.",
+      "expects": "The second use of the invoice number is flagged."
+    },
+    {
+      "scenario_id": "IV-S03",
+      "rule_id": "IV-R003",
+      "name": "Missing purchase order",
+      "invoice_numbers": [
+        "INV-ANOM-03"
+      ],
+      "description": "Invoice references purchase order 4599999999, which is absent from the PO file.",
+      "expects": "Flagged as a missing purchase order."
+    },
+    {
+      "scenario_id": "IV-S04",
+      "rule_id": "IV-R004",
+      "name": "Missing goods receipt",
+      "invoice_numbers": [
+        "INV-ANOM-04"
+      ],
+      "description": "Invoice matches a purchase order but no goods receipt exists for the line.",
+      "expects": "Flagged as a missing goods receipt."
+    },
+    {
+      "scenario_id": "IV-S05",
+      "rule_id": "IV-R005",
+      "name": "Price mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-05"
+      ],
+      "description": "Invoiced unit price 130 against a purchase-order price of 100.",
+      "expects": "Flagged as a price mismatch beyond the price tolerance."
+    },
+    {
+      "scenario_id": "IV-S06",
+      "rule_id": "IV-R006",
+      "name": "Quantity mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-06"
+      ],
+      "description": "Invoiced quantity 8 against a received quantity of 10.",
+      "expects": "Flagged as a quantity mismatch versus the receipt."
+    },
+    {
+      "scenario_id": "IV-S07",
+      "rule_id": "IV-R007",
+      "name": "Tax mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-07"
+      ],
+      "description": "Tax charged is 250 where 19% of the 1,000 net amount is 190.",
+      "expects": "Flagged as a tax mismatch."
+    },
+    {
+      "scenario_id": "IV-S08",
+      "rule_id": "IV-R008",
+      "name": "Currency mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-08"
+      ],
+      "description": "Invoice is in USD while the purchase order is in EUR.",
+      "expects": "Flagged as a currency mismatch."
+    },
+    {
+      "scenario_id": "IV-S09",
+      "rule_id": "IV-R009",
+      "name": "Supplier mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-09"
+      ],
+      "description": "The invoicing supplier differs from the supplier on the purchase order.",
+      "expects": "Flagged as a supplier mismatch."
+    },
+    {
+      "scenario_id": "IV-S10",
+      "rule_id": "IV-R010",
+      "name": "Freight mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-10"
+      ],
+      "description": "Freight of 900 on a 1,000 net invoice, above the freight policy ceiling.",
+      "expects": "Flagged as a freight mismatch."
+    },
+    {
+      "scenario_id": "IV-S11",
+      "rule_id": "IV-R011",
+      "name": "Payment-term mismatch",
+      "invoice_numbers": [
+        "INV-ANOM-11"
+      ],
+      "description": "Invoice states NT60 while the purchase order agreed NT30.",
+      "expects": "Flagged as a payment-term mismatch."
+    },
+    {
+      "scenario_id": "IV-S12",
+      "rule_id": "IV-R012",
+      "name": "Three-way-match exception",
+      "invoice_numbers": [
+        "INV-ANOM-12"
+      ],
+      "description": "Invoiced 10 units but only 7 were accepted at goods receipt (3 rejected).",
+      "expects": "Flagged as a three-way-match exception (billed above accepted quantity)."
+    },
+    {
+      "scenario_id": "IV-S13",
+      "rule_id": "IV-R013",
+      "name": "Overbilling",
+      "invoice_numbers": [
+        "INV-ANOM-13B"
+      ],
+      "description": "Two invoices of 10 units are booked against a purchase-order line ordered for 10.",
+      "expects": "The second invoice pushes cumulative invoicing above the ordered quantity and is flagged."
+    },
+    {
+      "scenario_id": "IV-S14",
+      "rule_id": "IV-R014",
+      "name": "Invoice before purchase order",
+      "invoice_numbers": [
+        "INV-ANOM-14"
+      ],
+      "description": "Invoice dated 2026-03-20, before its purchase order was raised on 2026-04-01.",
+      "expects": "Flagged as an invoice dated before the purchase order."
+    },
+    {
+      "scenario_id": "IV-S15",
+      "rule_id": "IV-R015",
+      "name": "Invoice before goods receipt",
+      "invoice_numbers": [
+        "INV-ANOM-15"
+      ],
+      "description": "Invoice dated 2026-03-10, before the goods were received on 2026-03-25.",
+      "expects": "Flagged as an invoice dated before the goods receipt."
+    },
+    {
+      "scenario_id": "IV-S16",
+      "rule_id": "IV-R016",
+      "name": "Future invoice date",
+      "invoice_numbers": [
+        "INV-ANOM-16"
+      ],
+      "description": "Invoice dated 2026-09-15, after the validation reference date 2026-06-30.",
+      "expects": "Flagged as a future invoice date."
+    },
+    {
+      "scenario_id": "IV-S17",
+      "rule_id": "IV-R017",
+      "name": "Closed purchase-order invoicing",
+      "invoice_numbers": [
+        "INV-ANOM-17"
+      ],
+      "description": "Invoice booked against a purchase-order line flagged 'Closed'.",
+      "expects": "Flagged as invoicing against a closed purchase order."
+    }
+  ]
+}

@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 3 of 10 |
-| Tests | 456 passing (270 unit, 112 API, 74 integration) |
-| Python source | ~22,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 4 of 10 |
+| Tests | 506 passing (296 unit, 129 API, 81 integration) |
+| Python source | ~26,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -249,14 +249,93 @@ migrations/versions/a16bad79dd24_supplier_recommendation_schema.py
 
 ---
 
-## Modules 4-10 - not started
+## Module 4 - Invoice Validator - complete
+
+### Requirements
+
+| Requirement | Status |
+| --- | --- |
+| Separate uploads for invoices, purchase orders, goods receipts | Done - one `/invoices/upload` endpoint with a `dataset` field |
+| CSV, XLSX, JSON for each dataset | Done |
+| 16 invoice fields, 7 goods-receipt fields | Done - `field_definitions.py` |
+| Reuse the purchase-order model | Done - the 25 PO fields are inherited and extended with `po_status` |
+| 17 validation rules | Done - IV-R001 to IV-R017 |
+| Configurable tolerances (price, quantity, tax, freight) | Done - in config and overridable per run, proven by test |
+| Full exception structure | Done - 14 output fields including expected/actual/difference |
+| Four severity levels with value-band escalation | Done |
+| Deterministic validation, AI only summarises | Done - AI never decides an exception |
+| Five required API routes | Done, plus validations list, fields, rules, sample, sample/info, ai-status |
+| Streamlit page with all required elements | Done - three uploads, previews, mapping, tolerances, charts, exception table, three-way comparison, filters, export |
+| >=400 invoices, >=300 goods receipts, PO records | Done - 420 / 417 / 418 |
+| Controlled example of every rule | Done - 17 documented anchors, one per rule |
+| Tests for every rule, mapping, tolerance, endpoint, export | Done - 50 new tests |
+
+### Files created
+
+```text
+app/modules/invoice_validator/
+  field_definitions.py    invoice (16) + goods receipt (7) registries; reuses the PO registry
+  thresholds.py           Pydantic-validated configuration loader + tolerances
+  normalizer.py           three normalisers -> canonical records
+  matching.py             the join indexes and the MatchContext handed to every rule
+  engine.py               rule execution, isolation, aggregation, three-way-match rows
+  ai_narrative.py         optional narrative layer
+  service.py              orchestration and persistence over three uploads
+  config/invoice_validator_rules.json
+  rules/                  base.py + 5 modules holding the 17 rules
+
+app/api/v1/invoice_validator.py              one router, 11 routes
+app/models/invoice_validator.py              2 tables
+app/schemas/invoice_validator.py             request/response contract
+app/services/exports/invoice_validator_report_builder.py   5-sheet XLSX, CSV, JSON
+streamlit_app/pages/4_Invoice_Validator.py
+scripts/generate_invoice_sample_data.py
+tests/unit/test_invoice_rules.py, tests/api/test_invoice_validator_api.py
+tests/integration/test_invoice_sample_data.py
+migrations/versions/aa9af98480ef_invoice_validator_schema.py
+```
+
+### Files modified
+
+`app/api/v1/router.py`, `app/main.py`, `app/models/__init__.py`,
+`app/services/ai/prompts.py`, `app/services/ai/mock_provider.py`,
+`streamlit_app/Home.py`, `streamlit_app/components/api_client.py`, `scripts/verify_setup.py`,
+`tests/conftest.py`, `tests/factories.py`, and the documentation set.
+
+### Verification performed
+
+- Full suite: 506 passed. The 456 module 1-3 tests passed unchanged.
+- Live `uvicorn` run: three uploads, validate (17 exceptions over 420 invoices, 418 matched),
+  AI narrative (mock, accurate, labelled), get, filtered exceptions, all three exports, fields,
+  rules, sample download.
+- The sample run reproduces `expected_invoice_baseline.json` exactly through HTTP, only the 17
+  anchor invoices are flagged, and repeated runs are identical.
+- Alembic `upgrade head` -> `downgrade -1` -> `upgrade head` on a scratch database, and an
+  autogenerate diff confirmed the migration matches the models.
+
+### Design notes carried forward
+
+- **Joining three files, not one.** The invoice file is mandatory; the PO and GR files are optional,
+  and any rule that needs a missing dataset is reported as skipped (in `rule_executions`) rather than
+  silently producing nothing or flagging everything.
+- **Rule separation to avoid double-counting.** Quantity mismatch (IV-R006) compares billed vs
+  received; the three-way rule (IV-R012) compares billed vs *accepted* (received minus rejected);
+  overbilling (IV-R013) is the cumulative billed vs ordered. Value-based overbilling only applies
+  when a line has no ordered quantity, so a price mismatch does not also read as overbilling.
+- **Deterministic sample baseline.** The baseline is computed by reading the written CSVs back
+  through the real reader and normalisers (the same lesson as module 3), so it is exactly what the
+  API produces. The future-invoice-date rule uses a fixed reference date recorded in the manifest,
+  keeping the baseline reproducible.
+
+---
+
+## Modules 5-10 - not started
 
 No code exists for these yet. Nothing has been stubbed, and there are no placeholder pages or
 non-functional buttons.
 
 | # | Module | Deterministic part | AI part |
 | --- | --- | --- | --- |
-| 4 | Invoice Validator | Three-way match, tolerances | Explaining a mismatch |
 | 5 | Supplier Risk Copilot | Metric retrieval | Question answering over retrieved facts |
 | 6 | Contract Assistant | Document parsing | Clause extraction, summarisation |
 | 7 | Inventory Predictor | Statistical forecasting (statsmodels) | Explaining a forecast |
@@ -305,6 +384,19 @@ than module 1, because the shared layers already exist.
   catalogue by id but does not snapshot it.
 - Currency conversion uses fixed configured rates.
 
+**Module 4**
+
+- The tax rule assumes a single expected tax rate (configurable) for every line; it does not model
+  mixed-rate or zero-rated invoices per material or country.
+- The freight rule uses a policy ceiling, not a freight amount agreed on the purchase order (POs in
+  this lab do not carry a freight field).
+- Quantity mismatch compares an invoice against the *total* received quantity for a line; it does not
+  model per-delivery invoicing schedules, so heavily split deliveries would need a GR per invoice.
+- Matching joins on PO number + item only; it does not fuzzy-match on material or description when
+  the PO reference is absent or wrong.
+- Currency conversion uses fixed configured rates.
+- Validation is synchronous; very large invoice runs would need a job queue.
+
 **Project-wide**
 
 - No authentication or authorisation - the lab is local-only.
@@ -319,11 +411,11 @@ than module 1, because the shared layers already exist.
 
 ## Recommended next step
 
-**Module 4 - Invoice Validator.** Three-way matching reuses the purchase order contract a third
-time and adds a genuinely new capability: joining two uploaded files rather than analysing one.
-That is the next real test of the foundation, and it is the natural companion to modules 1 and 2 in
-a procurement story.
+**Module 5 - Supplier Risk Copilot.** With four procurement modules now sharing one database, the
+copilot is the natural next step: it retrieves supplier metrics deterministically and uses AI only
+to answer questions over the retrieved facts (retrieval-grounded question answering), which is a new
+shape for the lab - the AI reads structured facts rather than only summarising a finished analysis.
 
 Worth weighing against building the next module: the operational work listed under limitations -
-authentication, a job queue, and a PostgreSQL run. Three modules now share one database and one
+authentication, a job queue, and a PostgreSQL run. Four modules now share one database and one
 upload table, so the cost of adding authentication grows with each module rather than staying flat.

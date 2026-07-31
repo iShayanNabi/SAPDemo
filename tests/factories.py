@@ -377,3 +377,181 @@ def _supplier_cell(value: Any) -> Any:
     if isinstance(value, date):
         return value.isoformat()
     return value
+
+
+# ---------------------------------------------------------------------------
+# Invoice Validator factories
+# ---------------------------------------------------------------------------
+INVOICE_BASE_DATE = date(2026, 3, 20)
+INVOICE_TAX_RATE = 0.19
+
+
+def make_invoice(**overrides: Any):
+    """Build one :class:`NormalizedInvoice` on top of a clean default.
+
+    The default is a fully-matched EUR invoice (quantity 10 at 100), with the
+    base-currency amounts derived just like the normaliser does, so a test only
+    states the one field it exercises.
+    """
+    from app.modules.invoice_validator.normalizer import NormalizedInvoice
+    from app.modules.invoice_validator.thresholds import get_invoice_validator_config
+
+    config = get_invoice_validator_config()
+    quantity = overrides.pop("quantity", 10.0)
+    unit_price = overrides.pop("unit_price", 100.0)
+    currency = overrides.pop("currency", "EUR")
+    subtotal = overrides.pop("subtotal", round(quantity * unit_price, 2) if unit_price is not None else None)
+    tax = overrides.pop("tax", round(subtotal * INVOICE_TAX_RATE, 2) if subtotal is not None else None)
+    freight = overrides.pop("freight", 10.0)
+    total = overrides.pop(
+        "total_amount",
+        round((subtotal or 0) + (tax or 0) + (freight or 0), 2) if subtotal is not None else None,
+    )
+    rate = config.conversion_rate(currency)
+    data: dict[str, Any] = {
+        "row_number": overrides.pop("row_number", 2),
+        "invoice_number": overrides.pop("invoice_number", "INV-1"),
+        "supplier_id": overrides.pop("supplier_id", "0000700001"),
+        "supplier_name": overrides.pop("supplier_name", "Nordwind Industrie GmbH"),
+        "po_number": overrides.pop("po_number", "4500000001"),
+        "po_item": overrides.pop("po_item", "00010"),
+        "invoice_date": overrides.pop("invoice_date", INVOICE_BASE_DATE),
+        "posting_date": overrides.pop("posting_date", INVOICE_BASE_DATE + timedelta(days=1)),
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "subtotal": subtotal,
+        "tax": tax,
+        "freight": freight,
+        "currency": currency,
+        "total_amount": total,
+        "payment_terms": overrides.pop("payment_terms", "NT30"),
+        "gr_reference": overrides.pop("gr_reference", "5000000001"),
+        "unit_price_base": None if unit_price is None else round(unit_price * rate, 4),
+        "subtotal_base": None if subtotal is None else round(subtotal * rate, 2),
+        "tax_base": None if tax is None else round(tax * rate, 2),
+        "freight_base": None if freight is None else round(freight * rate, 2),
+        "total_amount_base": None if total is None else round(total * rate, 2),
+    }
+    data.update(overrides)
+    return NormalizedInvoice(**data)
+
+
+def make_po_line(**overrides: Any):
+    """Build one :class:`NormalizedPoLine` matching the default invoice."""
+    from app.modules.invoice_validator.normalizer import NormalizedPoLine
+    from app.modules.invoice_validator.thresholds import get_invoice_validator_config
+
+    config = get_invoice_validator_config()
+    quantity = overrides.pop("quantity", 10.0)
+    unit_price = overrides.pop("unit_price", 100.0)
+    currency = overrides.pop("currency", "EUR")
+    rate = config.conversion_rate(currency)
+    data: dict[str, Any] = {
+        "row_number": overrides.pop("row_number", 2),
+        "po_number": overrides.pop("po_number", "4500000001"),
+        "po_item": overrides.pop("po_item", "00010"),
+        "supplier_id": overrides.pop("supplier_id", "0000700001"),
+        "supplier_name": overrides.pop("supplier_name", "Nordwind Industrie GmbH"),
+        "material": overrides.pop("material", "MAT-100010"),
+        "material_description": overrides.pop("material_description", "Stainless bearing type A"),
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "currency": currency,
+        "payment_terms": overrides.pop("payment_terms", "NT30"),
+        "order_date": overrides.pop("order_date", INVOICE_BASE_DATE - timedelta(days=19)),
+        "po_status": overrides.pop("po_status", "Open"),
+        "unit_price_base": None if unit_price is None else round(unit_price * rate, 4),
+        "line_value_base": None
+        if unit_price is None or quantity is None
+        else round(unit_price * quantity * rate, 2),
+    }
+    data.update(overrides)
+    return NormalizedPoLine(**data)
+
+
+def make_goods_receipt(**overrides: Any):
+    """Build one :class:`NormalizedGoodsReceipt` matching the default invoice."""
+    from app.modules.invoice_validator.normalizer import NormalizedGoodsReceipt
+
+    received = overrides.pop("received_quantity", 10.0)
+    rejected = overrides.pop("rejected_quantity", 0.0)
+    accepted = overrides.pop(
+        "accepted_quantity",
+        round(received - rejected, 4) if received is not None else None,
+    )
+    data: dict[str, Any] = {
+        "row_number": overrides.pop("row_number", 2),
+        "gr_number": overrides.pop("gr_number", "5000000001"),
+        "po_number": overrides.pop("po_number", "4500000001"),
+        "po_item": overrides.pop("po_item", "00010"),
+        "receipt_date": overrides.pop("receipt_date", INVOICE_BASE_DATE - timedelta(days=9)),
+        "received_quantity": received,
+        "accepted_quantity": accepted,
+        "rejected_quantity": rejected,
+    }
+    data.update(overrides)
+    return NormalizedGoodsReceipt(**data)
+
+
+def run_invoice_validation(
+    invoices: list[Any],
+    po_lines: list[Any] | None = None,
+    goods_receipts: list[Any] | None = None,
+    *,
+    as_of_date: date | None = None,
+    config: Any = None,
+    enabled_rules: list[str] | None = None,
+):
+    """Run the invoice engine over the given records (defaults to a match date)."""
+    from app.modules.invoice_validator.engine import InvoiceValidationEngine
+    from app.modules.invoice_validator.thresholds import get_invoice_validator_config
+
+    config = config or get_invoice_validator_config()
+    return InvoiceValidationEngine(config).run(
+        invoices,
+        po_lines or [],
+        goods_receipts or [],
+        as_of_date=as_of_date or date(2026, 6, 30),
+        enabled_rules=enabled_rules,
+    )
+
+
+def invoice_rule_ids(result: Any) -> set[str]:
+    """The set of rule ids that fired in a validation result."""
+    return {exception.rule_id for exception in result.exceptions}
+
+
+# File builders for the invoice API tests --------------------------------
+INVOICE_TECHNICAL_HEADERS = {
+    "invoice_number": "BELNR", "supplier_id": "LIFNR", "supplier_name": "NAME1",
+    "po_number": "EBELN", "po_item": "EBELP", "invoice_date": "BLDAT", "posting_date": "BUDAT",
+    "quantity": "MENGE", "unit_price": "NETPR", "subtotal": "WRBTR", "tax": "MWSTS",
+    "freight": "FREIGHT", "currency": "WAERS", "total_amount": "RMWWR", "payment_terms": "ZTERM",
+    "gr_reference": "LFBNR",
+}
+
+
+def invoice_rows_to_csv(rows: list[dict[str, Any]], dataset: str, headers: dict[str, str] | None = None) -> bytes:
+    """Serialise canonical rows for one invoice dataset as CSV."""
+    from app.modules.invoice_validator.field_definitions import (
+        GOODS_RECEIPT_CANONICAL_FIELDS,
+        INVOICE_CANONICAL_FIELDS,
+    )
+
+    if dataset == "invoices":
+        fields = list(INVOICE_CANONICAL_FIELDS)
+    elif dataset == "goods_receipts":
+        fields = list(GOODS_RECEIPT_CANONICAL_FIELDS)
+    else:  # purchase_orders
+        fields = [
+            "po_number", "po_item", "supplier_id", "supplier_name", "material",
+            "quantity", "unit_price", "currency", "payment_terms", "order_date", "po_status",
+        ]
+    headers = headers or {}
+    field_names = [headers.get(name, name) for name in fields]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=field_names, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({headers.get(name, name): _as_text(row.get(name)) for name in fields})
+    return buffer.getvalue().encode("utf-8")
