@@ -40,6 +40,15 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   engine.py   assessment, trend, actions         │
 │                   copilot.py  deterministic Q&A with citations   │
 │                   normalizer.py, thresholds.py, ai_narrative.py  │
+│                                                                  │
+│                   app/modules/inventory/                         │
+│                   periods.py     frequency inference, grids      │
+│                   forecasting.py the 5 statistical models        │
+│                   accuracy.py    MAE/RMSE/MAPE/sMAPE/MASE        │
+│                   selection.py   backtesting, eligibility        │
+│                   projection.py  stock walk, reorder policy      │
+│                   engine.py      per-series orchestration        │
+│                   normalizer.py, thresholds.py, ai_narrative.py  │
 ├──────────────────────────────────────────────────────────────────┤
 │ Shared services   app/services/                                  │
 │                   tabular/ field registry, mapping, parsing      │
@@ -362,6 +371,10 @@ Four tables (`app/models/po_risk.py`):
 | `contract_clauses` | one row per clause type: present/absent, confidence, page, heading, excerpt, parsed values |
 | `contract_risks` | one row per rule finding, with its evidence and references |
 | `contract_obligations` | one duty sentence per row, quoted verbatim, with its party and page |
+| `inventory_datasets` | one row per uploaded inventory history: mapping, data-quality issues, series and period coverage |
+| `inventory_records` | normalised movement rows, so a dataset can be forecast repeatedly without the file |
+| `inventory_forecasts` | one row per run: horizon, confidence and service levels, model usage, portfolio summary, AI narrative |
+| `inventory_forecast_items` | one row per material/plant: model used, shortage and reorder dates, quantities, classification, accuracy, full engine payload |
 
 ``uploaded_files`` is shared by every module and carries a ``module`` column.
 

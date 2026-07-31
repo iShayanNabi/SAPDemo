@@ -21,7 +21,7 @@ are required.**
 | 4 | **Invoice Validator** | **Implemented** |
 | 5 | **Supplier Risk Copilot** | **Implemented** |
 | 6 | **Contract Assistant** | **Implemented** |
-| 7 | Inventory Predictor | Planned |
+| 7 | **Inventory Predictor** | **Implemented** |
 | 8 | SAP Test Case Generator | Planned |
 | 9 | SAP Blueprint Generator | Planned |
 | 10 | SAP Interview Coach | Planned |
@@ -473,6 +473,112 @@ risks and to have an API key printed. The test suite asserts that it is reported
 
 ---
 
+## Module 7 - Inventory Predictor
+
+Reads an inventory history, forecasts demand with explainable statistical models, projects the
+stock level forward day by day and produces a reorder plan. **No language model produces any
+number in this module** - the AI narrative is optional, separate and clearly labelled.
+
+**Workflow:** upload -> column mapping -> period-granularity detection -> gap detection -> demand
+profiling -> model backtesting and selection -> forecast with a confidence range -> daily stock
+projection -> shortage, reorder and stock-health analysis -> export.
+
+### The five forecasting methods
+
+Each encodes a different, statable belief about demand. The belief is what a planner agrees or
+disagrees with, and each is reproducible in a spreadsheet.
+
+| Method | What it assumes | Minimum history |
+| --- | --- | --- |
+| Simple moving average | A flat level; the last *w* periods are equally informative | 4 periods |
+| Weighted moving average | A flat level; recent periods say more | 4 periods |
+| Simple exponential smoothing | A level that drifts; older periods fade geometrically | 4 periods |
+| Holt linear trend | A level *and* a trend, both drifting | 6 periods |
+| Holt-Winters additive seasonal | A level, a trend and a repeating seasonal shape | 2 full seasons **and** a measurable season |
+
+Additive rather than multiplicative seasonality on purpose: a multiplicative season is undefined
+when a period's demand is zero, and inventory demand hits zero regularly.
+
+### How the model is chosen
+
+Automatically, per material, by **backtesting** - never by how well a model fits the history it was
+trained on, which would always crown the most flexible model.
+
+- The last periods are held back, each eligible method is refitted on the shortened history, and
+  the methods are scored on periods they never saw.
+- **Every candidate is scored on the same held-out periods.** Comparing two models measured on
+  different splits picks the easier split, not the better model.
+- A model with more smoothing constants must beat the best simpler model by a configured margin
+  before it wins. A short backtest is a noisy measurement, and the most flexible model wins those
+  coin flips more often than it deserves.
+- Holt-Winters is only offered when the position in the season explains enough of the variation
+  **after paying for every seasonal factor it fits**. Twelve monthly factors fitted to 30
+  observations explain about 12/30 of the variance by chance, so an unadjusted test calls pure
+  noise seasonal. Periods that were missing from the file are excluded from that measurement -
+  two missing Augusts look exactly like an August dip.
+- Trend and seasonal models are not offered at all for intermittent demand, where a run of zeros
+  makes both fit noise.
+
+The API returns every candidate, its parameters, its backtest score and - for the ones that were
+never tried - the sentence explaining why.
+
+### What you get per material
+
+| Output | Notes |
+| --- | --- |
+| Demand forecast | Per period, over the chosen horizon |
+| Confidence interval | `forecast ± z × σ × factor(h)`; flat for moving averages, widening for the smoothing family, per the standard formulae |
+| Future inventory level | Projected stock per period, plus a best/worst band from the demand interval |
+| Predicted shortage date | A **real date**, interpolated inside the period from the daily demand rate |
+| Recommended reorder date | The day the projected inventory *position* falls to the reorder point |
+| Recommended reorder quantity | Order-up-to level minus the projected position at that date |
+| Recommended safety stock | `z(service level) × σ × √(lead time / period length)`, next to the material-master figure |
+| Overstock risk | From days of cover, with the excess quantified |
+| Slow-moving classification | From annualised turnover and the share of zero-demand periods |
+| Dead-stock indicator | Consecutive zero-demand periods with stock still on hand |
+| Model used and its assumptions | Plus every candidate that lost |
+| Data-quality warnings | Per material, on top of the file-level issues |
+| Forecast accuracy | MAE, RMSE, MAPE, sMAPE, MASE |
+
+### Accuracy, and the MAPE trap
+
+MAPE divides by the actual value, so it is undefined the moment a period had zero demand.
+Computing it "over the non-zero periods only" is the usual workaround and it is dishonest: for an
+intermittent material it silently drops exactly the periods the forecast found hardest.
+
+**MAPE is therefore reported only when every period in the comparison window has non-zero demand.**
+Otherwise it is `null`, the reason is stated in the response, and sMAPE and MASE carry the answer.
+MASE below 1 means the model beat a naive same-as-last-period forecast - the one metric that says
+whether the modelling was worth doing.
+
+### Two positions, not one
+
+Stock on hand answers *have I run out?*. Inventory position - stock on hand plus what is already on
+order - answers *should I order more?*. Using stock on hand for the reorder trigger is the classic
+way to order twice for the same shortage.
+
+This is also why a material can show a shortage with no new order recommended: the quantity is
+already on order and simply expected too late. That case is flagged as **expedite the existing
+order**, with the reason, rather than raising a second one.
+
+### Missing data is reported, never invented
+
+- A material with too little history is returned with status `insufficient_data`, its history and
+  a warning saying how many periods it has and how many it needs - never dropped, and never
+  forecast from three points.
+- A file with no ending-inventory column still gets a demand forecast and its accuracy; the
+  projection reports itself unavailable with a reason, and no shortage date or reorder quantity is
+  invented.
+- Open purchase-order quantities with no usable expected date are reported but never placed on the
+  projection - there is no honest date to place them on.
+- Periods absent from the file are laid out on the grid, filled, and reported, so the periods
+  either side keep their real positions on the time axis.
+
+> **Estimates, not commitments.** Every figure is a statistical estimate from the uploaded history.
+> Actual demand will differ, and nothing here has been validated in a live SAP environment.
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -482,6 +588,7 @@ This separation is the core design decision of the project.
 | Detecting risk | ✅ | ❌ never |
 | Severity and confidence | ✅ | ❌ never |
 | Calculations, aggregation, ranking | ✅ | ❌ never |
+| Forecasting demand and projecting stock | ✅ | ❌ never |
 | Rewriting a finding in business language | | ✅ |
 | Executive summary | | ✅ |
 
@@ -567,6 +674,21 @@ in-memory strings.
   fixed reference date for the future-date check
 - `expected_invoice_baseline.json`, the exact per-rule exception totals the current engine produces
 
+`python scripts/generate_inventory_sample_data.py` produces the inventory history:
+
+- **450 rows** covering **16 material/plant/storage-location series** across 15 materials and 3
+  plants, over **30 monthly periods** (January 2024 to June 2026), in three formats
+- 30 periods rather than 24 on purpose: Holt-Winters needs two complete seasons before it is
+  offered at all, and the selector then holds back two folds of three periods to backtest on, so a
+  24-period file would let the seasonal model exist with nothing to test it against
+- **14 documented anchor materials** - seasonal, upward trend, stable, intermittent, a shortage, an
+  overstock, slow-moving, dead stock, missing periods, too little history, an open PO expected too
+  late, a demand-only extract with no stock column, periods that do not balance, and the same
+  material stocked in two plants - listed in
+  [`data/sample/INVENTORY_SCENARIO_MANIFEST.md`](data/sample/INVENTORY_SCENARIO_MANIFEST.md)
+- `expected_inventory_baseline.json`, the exact model, shortage date and classification the current
+  engine produces for every series
+
 ---
 
 ## Project layout
@@ -582,6 +704,9 @@ app/
   modules/spend/   field definitions, normaliser, metrics, analytics, filters, savings
   modules/supplier_reco/ field definitions, normaliser, eligibility, scoring, engine, service
   modules/invoice_validator/ field definitions, normalisers, matching, rules, engine, service
+  modules/supplier_risk/ field definitions, normaliser, scoring, engine, copilot, service
+  modules/contract_assistant/ segmentation, clauses, dates, obligations, risk rules, qa, engine
+  modules/inventory/ field definitions, periods, normaliser, forecasting, accuracy, selection, projection, engine, service
 streamlit_app/     temporary UI - calls the API over HTTP
 data/              sample/, uploads/, exports/
 tests/             unit/, api/, integration/
@@ -598,14 +723,14 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (902 tests, ~80s)
-pytest tests/unit         # 537 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, prompt-injection resistance, security, AI
-pytest tests/api          # 208 - endpoints against a temporary database
-pytest tests/integration  # 157 - full journeys over all six sample datasets
+pytest                    # everything (1,011 tests, ~115s)
+pytest tests/unit         # 600 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, security, AI
+pytest tests/api          # 242 - endpoints against a temporary database
+pytest tests/integration  # 169 - full journeys over all seven sample datasets
 ```
 
-The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk and contract
-manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract and
+inventory manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

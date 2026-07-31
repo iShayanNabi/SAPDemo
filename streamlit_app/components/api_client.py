@@ -479,6 +479,102 @@ class ApiClient:
             payload["supplier_id"] = supplier_id
         return self._request("POST", "/supplier-risk/chat", json=payload)
 
+    # -- Inventory Predictor ---------------------------------------------
+    def inventory_upload(
+        self, filename: str, content: bytes, content_type: str
+    ) -> dict[str, Any]:
+        """Upload an inventory history file and load it into a dataset."""
+        return self._request(
+            "POST", "/inventory/upload", files={"file": (filename, content, content_type)}
+        )
+
+    def inventory_datasets(self) -> dict[str, Any]:
+        """List the uploaded inventory datasets."""
+        return self._request("GET", "/inventory/datasets")
+
+    def inventory_fields(self) -> list[dict[str, Any]]:
+        """Fetch the inventory field catalogue."""
+        return self._request("GET", "/inventory/fields")
+
+    def inventory_methods(self) -> dict[str, Any]:
+        """Fetch the documented forecasting methods, selection rules and policies."""
+        return self._request("GET", "/inventory/methods")
+
+    def inventory_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional inventory demo dataset."""
+        return self._request("GET", "/inventory/sample/info")
+
+    def inventory_sample_file(self, file_format: str) -> bytes:
+        """Download the bundled demo inventory history."""
+        return self.download_bytes("/inventory/sample", {"format": file_format})
+
+    def inventory_forecast(
+        self,
+        *,
+        dataset_id: str | None = None,
+        horizon_periods: int | None = None,
+        confidence_level: float | None = None,
+        model: str = "auto",
+        as_of_date: str | None = None,
+        materials: list[str] | None = None,
+        plants: list[str] | None = None,
+        generate_ai_summary: bool = False,
+    ) -> dict[str, Any]:
+        """Run the predictor over a loaded dataset."""
+        payload: dict[str, Any] = {
+            "model": model,
+            "generate_ai_summary": generate_ai_summary,
+        }
+        if dataset_id:
+            payload["dataset_id"] = dataset_id
+        if horizon_periods:
+            payload["horizon_periods"] = horizon_periods
+        if confidence_level:
+            payload["confidence_level"] = confidence_level
+        if as_of_date:
+            payload["as_of_date"] = as_of_date
+        if materials:
+            payload["materials"] = materials
+        if plants:
+            payload["plants"] = plants
+        return self._request("POST", "/inventory/forecast", json=payload)
+
+    def inventory_forecasts(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List previous forecast runs, newest first."""
+        return self._request(
+            "GET", "/inventory/forecasts", params={"limit": limit, "offset": offset}
+        )
+
+    def inventory_forecast_run(self, forecast_id: str, item_limit: int = 200) -> dict[str, Any]:
+        """Fetch one forecast run with its materials."""
+        return self._request(
+            "GET", f"/inventory/forecasts/{forecast_id}", params={"item_limit": item_limit}
+        )
+
+    def inventory_items(self, forecast_id: str, **filters: Any) -> dict[str, Any]:
+        """List materials inside a forecast run, with optional filters."""
+        params = {key: value for key, value in filters.items() if value not in (None, "", [])}
+        return self._request("GET", f"/inventory/forecasts/{forecast_id}/items", params=params)
+
+    def inventory_item(
+        self,
+        forecast_id: str,
+        material: str,
+        plant: str,
+        storage_location: str | None = None,
+    ) -> dict[str, Any]:
+        """Fetch one material's complete forecast."""
+        params: dict[str, Any] = {"material": material, "plant": plant}
+        if storage_location:
+            params["storage_location"] = storage_location
+        return self._request("GET", f"/inventory/forecasts/{forecast_id}/item", params=params)
+
+    def inventory_export(self, forecast_id: str, export_format: str) -> bytes:
+        """Download a forecast report."""
+        return self.download_bytes(
+            f"/inventory/forecasts/{forecast_id}/export", {"format": export_format}
+        )
+
     # -- Contract Assistant ----------------------------------------------
     def contract_upload(
         self, filename: str, content: bytes, content_type: str

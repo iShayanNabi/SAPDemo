@@ -21,7 +21,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 4 | Invoice Validator | **Implemented** |
 | 5 | Supplier Risk Copilot | **Implemented** |
 | 6 | Contract Assistant | **Implemented** |
-| 7 | Inventory Predictor | Planned |
+| 7 | Inventory Predictor | **Implemented** |
 | 8 | SAP Test Case Generator | Planned |
 | 9 | SAP Blueprint Generator | Planned |
 | 10 | SAP Interview Coach | Planned |
@@ -63,7 +63,7 @@ app/
   api/v1/        core/        models/       schemas/
   services/      ai/  documents/  exports/  files/  tabular/
   modules/       po_risk/  spend/  supplier_reco/  invoice_validator/
-                 supplier_risk/  contract_assistant/
+                 supplier_risk/  contract_assistant/  inventory/
 streamlit_app/   pages/  components/
 data/            sample/  uploads/  exports/
 tests/           unit/  api/  integration/
@@ -249,13 +249,14 @@ python scripts/generate_supplier_sample_data.py
 python scripts/generate_invoice_sample_data.py
 python scripts/generate_supplier_risk_sample_data.py
 python scripts/generate_contract_sample_data.py
+python scripts/generate_inventory_sample_data.py
 
 # run
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 902 tests
+pytest                                  # 1011 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -284,6 +285,38 @@ Module 6's unit of output is not a value, it is a value plus a `SourceReference`
 section heading, short excerpt and a **deterministic** confidence built from the evidence that was
 actually seen (heading match, primary phrase, supporting phrases, a parsed value). Confidence is
 never guessed, and the formula is in the JSON config so it can be retuned without code.
+
+### A time series is not a list of rows
+
+Modules 1-5 consume rows that mean something on their own. Module 7's row only means anything
+next to the rows either side of it, and three things follow that no other module needed:
+
+- **The frequency is inferred, never assumed.** `2025-01-31`, `2025-02-28`, `2025-03-31` is
+  monthly data whose gaps are 28, 30 and 31 days, so `periods.py` matches the *median* gap to the
+  closest configured granularity by ratio.
+- **A missing period is not a zero.** Reading a file positionally when March is absent puts April
+  where March belongs and shifts every seasonal index by one. Every series is laid on a complete
+  period grid first, and the periods that had no row are recorded so they can be *reported*.
+- **A month is not 30 days.** The stock projection walks real calendar days, so a shortage lands
+  on the 14th rather than on "July", and February is 28 days when the interpolation runs.
+
+### A model that fits the history is not a model that works
+
+Two selection bugs in this module both produced a *better-scoring* and *worse* forecast, and both
+would have passed a green test suite:
+
+- **Candidates must be scored on the same held-out periods.** The first version shrank the fold
+  count per model, so Holt-Winters (which needs two whole seasons to train) was scored on three
+  held-out periods while a moving average was scored on six. Comparing those RMSEs picks the model
+  with the easier split, not the better model. The fold plan is now decided once per series, from
+  the most demanding eligible model.
+- **A flexible model wins short backtests it does not deserve.** Twelve seasonal factors fitted to
+  30 observations explain about 12/30 of the variance *by chance*, so a completely seasonless
+  series looked convincingly seasonal and Holt-Winters won on pure noise. Two guards, both worth
+  reusing: an **adjusted** R-squared gate (`selection.seasonal_strength`) that charges the seasonal
+  model for every factor it fits, and a complexity margin that only lets a model with more
+  parameters win when it beats the simpler one by a stated percentage. Filled gaps are excluded
+  from the seasonality measurement - two missing Augusts look exactly like an August dip.
 
 ### Regex flags are part of the contract
 
@@ -355,6 +388,17 @@ only appeared when the API was driven by hand:
   code and not the baseline: re-running the generator now reproduces the committed baseline byte
   for byte. **Never `round(sum(xs) / len(xs), 2)` on a published aggregate.** Intermediate
   arithmetic can stay in float; the boundary where a number becomes an answer cannot.
+
+- Module 7: the reorder point was calculated from the demand expected over the lead time **starting
+  from the as-of date**. For a seasonal material that is the wrong window: material 100001 peaks in
+  November, so its reorder point was built from July's quiet demand (235 units) instead of
+  November's (405). The engine recommended ordering on 1 November for a shortage it had itself
+  predicted on 15 November - with a 21-day lead time, an order that could not arrive in time. The
+  run was green in every test. Fix: the trigger walks forward and compares the projected inventory
+  position against the demand expected over the lead time **from each day**, and the static policy
+  figure is still reported next to it for comparison with the material master. **A recommendation
+  that contradicts the same engine's own prediction is worse than no recommendation** - and the
+  contradiction was only visible reading two fields side by side in a real response.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.
