@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { moduleBySlug, moduleSlugs, modules } from '@/content/modules';
 import { origins, originByKey } from '@/content/origins';
 import { DEMO_NOTICE, TRADEMARK_NOTICE, mailto, siteConfig } from '@/lib/site';
@@ -152,6 +152,83 @@ describe('site configuration', () => {
       expect(String(value)).not.toMatch(/sk-[A-Za-z0-9-]{16,}/);
       expect(String(value)).not.toMatch(/(password|secret|token)=/i);
     }
+  });
+});
+
+/**
+ * A blank build argument is not an absent one.
+ *
+ * `docker-compose.selfhosted.yml` writes `${PUBLIC_SITE_URL:-}` and the
+ * Dockerfile writes `ARG NEXT_PUBLIC_SITE_URL=""`, so a variable left unset in
+ * `.env.selfhosted` reaches the build as a defined empty string. `??` does not
+ * fall back on that, which broke all three values at once: the build threw
+ * `ERR_INVALID_URL`, every Launch Demo button rendered `href=""`, and the
+ * contact link lost its recipient.
+ *
+ * These assert against the *empty string* specifically. A test that only set
+ * the variables to `undefined` passed throughout the bug's entire lifetime,
+ * because `undefined` is the one input the old operator handled correctly.
+ */
+describe('site configuration built from a blank environment', () => {
+  const BLANK_CASES = ['', '   '] as const;
+
+  /**
+   * Returns the freshly-evaluated module, not just its config. `siteConfig` is
+   * built once at module scope, so the statically imported `mailto` at the top
+   * of this file closes over the *unstubbed* config - asserting on that one
+   * would pass no matter what these stubs say.
+   */
+  async function moduleWith(value: string) {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', value);
+    vi.stubEnv('NEXT_PUBLIC_DEMO_URL', value);
+    vi.stubEnv('NEXT_PUBLIC_CONTACT_EMAIL', value);
+    vi.stubEnv('NEXT_PUBLIC_REPOSITORY_URL', value);
+    return import('@/lib/site');
+  }
+
+  async function configWith(value: string) {
+    return (await moduleWith(value)).siteConfig;
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it.each(BLANK_CASES)('falls back to a usable site URL when it is %o', async (value) => {
+    const config = await configWith(value);
+    // `new URL('')` throws, and `app/layout.tsx` calls exactly that on this
+    // value - so a blank here fails the whole build, not just one page.
+    expect(() => new URL(config.url)).not.toThrow();
+  });
+
+  it.each(BLANK_CASES)('falls back to a usable demo URL when it is %o', async (value) => {
+    const config = await configWith(value);
+    // An empty href is not a broken link a browser reports; it silently
+    // reloads the page the visitor is already on.
+    expect(config.demoUrl).not.toBe('');
+    expect(() => new URL(config.demoUrl)).not.toThrow();
+  });
+
+  it.each(BLANK_CASES)('keeps a contact recipient when it is %o', async (value) => {
+    const site = await moduleWith(value);
+    expect(site.siteConfig.contactEmail).toContain('@');
+    // A recipientless `mailto:?subject=...` opens an empty compose window, so
+    // the failure reaches the visitor rather than the operator.
+    expect(site.mailto('Hello')).not.toMatch(/^mailto:\?/);
+  });
+
+  it.each(BLANK_CASES)('keeps the repository link when it is %o', async (value) => {
+    const config = await configWith(value);
+    expect(config.repositoryUrl).toContain('iShayanNabi/SAPDemo');
+  });
+
+  it('still honours a real value, and trims it', async () => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_DEMO_URL', '  https://demo.example.com  ');
+    const { siteConfig: config } = await import('@/lib/site');
+    expect(config.demoUrl).toBe('https://demo.example.com');
   });
 });
 

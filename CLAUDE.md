@@ -604,6 +604,31 @@ The debug overlay overrides those build arguments, and the documentation says th
 rebuilt when switching between configurations. Anything compiled in needs a rebuild step written
 down next to it.
 
+### A blank build argument is not an absent one
+
+Found reviewing this phase, and it is the same lesson one layer down. `lib/site.ts` read every
+public address as `process.env.NEXT_PUBLIC_X ?? '<placeholder>'`, and **`??` never fires here**.
+Nullish coalescing falls back on `undefined` and `null` only; the deployment path supplies neither.
+`docker-compose.selfhosted.yml` writes `${PUBLIC_SITE_URL:-}` and the Dockerfile writes
+`ARG NEXT_PUBLIC_SITE_URL=""`, so a variable merely left unset arrives as a *defined empty string*
+and every placeholder in the file was unreachable through the only path that needed it.
+
+Three different failures from one operator, which is why it is worth remembering:
+
+- `new URL('')` in `app/layout.tsx` **throws**, so `next build` died with `ERR_INVALID_URL` and a
+  message naming neither the variable nor the file - it said "Failed to collect page data for
+  `/contact`".
+- Every Launch Demo button rendered `href=""`, which reloads the page the visitor is already on.
+  This is the *previous* section's bug with no hostname to notice: nothing 404s, nothing logs.
+- The contact link became `mailto:?subject=...`, with no recipient.
+
+The fix is a `fromEnv` helper that treats blank - and whitespace-only - as absent. The test that
+catches it must stub the variables to `''`, not to `undefined`: a test using `undefined` passes
+against the broken code, because `undefined` is the one input `??` handled correctly. Both were
+verified by reverting the fix and watching the nine new assertions fail.
+
+**When a default has to survive Docker, test it against the empty string.**
+
 ### An assertion that fails on prose gets deleted rather than fixed
 
 Three tests written in this phase had to be loosened *in the right direction* after first drafts
@@ -725,7 +750,7 @@ only appeared when the API was driven by hand:
     data it describes, never from the branch that produced it.**
 
 
-- Phase 6 (publishing it): four bugs, none of which a green suite could see, and all four found by
+- Phase 6 (publishing it): five bugs, none of which a green suite could see, and all five found by
   starting the stack and using it.
 
   - `ai_prompt_version` was too narrow on two tables. Invisible on SQLite, fatal on PostgreSQL -
@@ -735,8 +760,11 @@ only appeared when the API was driven by hand:
     `internal: true` network.
   - the website's Launch Demo button pointed at the deployment hostname when served locally,
     because `NEXT_PUBLIC_*` is compiled in at build time.
+  - every `NEXT_PUBLIC_*` fallback in `lib/site.ts` was unreachable, because `??` does not fall
+    back on the empty string Docker actually supplies - see "A blank build argument is not an
+    absent one" above. Found in review, by building the website with the variables blank.
 
-  The pattern across all four: each one produced a *healthy, green, plausible* system that was
+  The pattern across all five: each one produced a *healthy, green, plausible* system that was
   wrong in one specific place, and each was found within seconds of a person actually using it.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
