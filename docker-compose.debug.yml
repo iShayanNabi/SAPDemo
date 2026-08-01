@@ -1,0 +1,85 @@
+# Local debugging overlay for the self-hosted stack.
+#
+#   docker compose -f docker-compose.selfhosted.yml -f docker-compose.debug.yml \
+#     --env-file .env.selfhosted up -d
+#
+# The self-hosted file publishes nothing, which is correct for the deployment
+# and unhelpful when you need to look at it. This overlay binds three services
+# to the loopback interface so a browser on the same Mac can reach them:
+#
+#     http://127.0.0.1:3000   website
+#     http://127.0.0.1:8501   demonstration UI
+#     http://127.0.0.1:8000   API and /docs
+#
+# Every binding is explicitly `127.0.0.1:`. That prefix is the whole point:
+# `- "3000:3000"` binds 0.0.0.0, which publishes the service to every machine on
+# the coffee-shop wifi. Docker also writes its own iptables rules on Linux
+# hosts, so a host firewall is not a reliable second line of defence here.
+#
+# **The database is deliberately absent from this file.** There is no debugging
+# reason to reach PostgreSQL from the host that is not better served by
+# `docker compose exec database psql`, and a published database port is the one
+# mistake in this stack that would be worth making only once.
+#
+# Never load this overlay on the published deployment.
+
+services:
+  website:
+    # The website's public URLs are compiled into its pages at build time, so a
+    # website image built for the deployment has a Launch Demo button pointing
+    # at the real (or placeholder) demo hostname. Opened on the Mac at
+    # 127.0.0.1:3000 that button goes nowhere - which is exactly what happened
+    # the first time this stack was opened in Safari.
+    #
+    # Overriding the build arguments here makes the debug stack internally
+    # consistent: the local website links to the local demonstration. Rebuild
+    # the image after switching between the two configurations, because the
+    # values are baked in rather than read at runtime:
+    #
+    #   docker compose -f docker-compose.selfhosted.yml -f docker-compose.debug.yml \
+    #     --env-file .env.selfhosted build website
+    build:
+      args:
+        NEXT_PUBLIC_SITE_URL: ${DEBUG_SITE_URL:-http://127.0.0.1:3000}
+        NEXT_PUBLIC_DEMO_URL: ${DEBUG_DEMO_URL:-http://127.0.0.1:8501}
+    ports:
+      - "127.0.0.1:${DEBUG_WEBSITE_PORT:-3000}:3000"
+
+  streamlit:
+    ports:
+      - "127.0.0.1:${DEBUG_STREAMLIT_PORT:-8501}:8501"
+
+  api:
+    # The API is private in the deployment and has no public hostname. Binding
+    # it to loopback here is for reading /docs and driving endpoints by hand
+    # during verification - which this project's own notes say is the only way
+    # several of its worst bugs were ever found.
+    #
+    # The `networks` line below is required, and the reason is worth stating
+    # because the failure is silent: in the deployed file the API sits only on
+    # `internal`, which is declared `internal: true`. Docker cannot publish a
+    # port from a container attached only to an isolated network - it accepts
+    # the `ports:` entry, reports the container as running and healthy, and
+    # simply never creates the mapping. The first run of this overlay produced
+    # exactly that: a compose config that listed 127.0.0.1:8000 and a curl that
+    # returned nothing at all.
+    #
+    # Adding `edge` here gives the API the external connectivity that publishing
+    # needs. It weakens the boundary, which is precisely why it lives in the
+    # debug overlay and not in the deployed file - and why a test asserts the
+    # deployed file still keeps the API on `internal` alone.
+    networks:
+      - internal
+      - edge
+    ports:
+      - "127.0.0.1:${DEBUG_API_PORT:-8000}:8000"
+    environment:
+      LOG_JSON: "false"
+
+  cloudflared:
+    # Without a real token cloudflared cannot authenticate and restarts in a
+    # loop, filling the log of a stack you are trying to read. Scaled to zero
+    # here: local debugging never needs the tunnel, because the ports above are
+    # how you reach the services.
+    deploy:
+      replicas: 0

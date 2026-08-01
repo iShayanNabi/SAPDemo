@@ -1,0 +1,329 @@
+# SAPDemo - self-hosted public deployment.
+#
+#   docker compose -f docker-compose.selfhosted.yml --env-file .env.selfhosted up -d
+#
+# Five services on two networks. The shape of it is the security model, so it
+# is worth reading before changing anything:
+#
+#   edge      cloudflared, website, streamlit
+#   internal  streamlit, api, database        (internal: true - no route out)
+#
+#   website ─────┐
+#                ├── edge ── cloudflared ──▶ outbound to the tunnel provider
+#   streamlit ───┘
+#       │
+#       └── internal ──▶ api ──▶ database
+#
+# Three consequences, each deliberate:
+#
+# * **Nothing is published.** No `ports:` entry appears in this file at all.
+#   The tunnel container dials *out*; nothing dials in, so no router port
+#   forwarding exists and no host port is listening. Use
+#   docker-compose.debug.yml to bind ports to 127.0.0.1 for local testing.
+# * **The website cannot reach the API or the database.** It is not on the
+#   internal network, because it never calls them - every page is compiled at
+#   build time. A service on a network it does not need is an attack path
+#   nobody chose.
+# * **The database has no route to the internet.** `internal: true` on that
+#   network is what makes that true rather than aspirational.
+#
+# Every image tag is pinned. `latest` is a different image on two different days,
+# which turns "it worked yesterday" into an unanswerable question.
+#
+# No `platform:` is hardcoded. Every image used here publishes linux/amd64 and
+# linux/arm64, so Docker picks the host's architecture and the same file works
+# on the target Intel Mac and on Apple Silicon. Pinning the platform would force
+# emulation on one of them for no benefit.
+
+name: sapdemo
+
+# ---------------------------------------------------------------------------
+# Shared fragments
+# ---------------------------------------------------------------------------
+x-logging: &default-logging
+  # Bounded logs. Without this a container that logs steadily fills the disk of
+  # a machine nobody is watching, and the first symptom is the whole stack
+  # stopping at 03:00 on a Sunday.
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-hardening: &default-hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  # -------------------------------------------------------------------------
+  # PostgreSQL - never published, never reachable from outside
+  # -------------------------------------------------------------------------
+  database:
+    image: postgres:17.7-bookworm
+    <<: *default-hardening
+    cap_add:
+      # PostgreSQL's entrypoint drops from root to the postgres user on first
+      # start, and initdb chowns the data directory. Those two need SETUID/
+      # SETGID and CHOWN respectively; with ALL dropped and nothing added, the
+      # container fails to initialise a fresh volume.
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      # Explicit rather than inherited: the default depends on the locale of the
+      # machine that first ran initdb, and a database that sorts differently
+      # from the one it was dumped on is a restore that silently reorders.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - sapdemo-postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\" -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 6
+    # A stop signal PostgreSQL understands, and time to use it. SIGTERM to
+    # postgres is a "fast shutdown"; being killed instead means the next start
+    # does crash recovery.
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging: *default-logging
+
+  # -------------------------------------------------------------------------
+  # FastAPI - private. No public hostname, no published port.
+  # -------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_POSTGRES: "true"
+    image: sapdemo-api:latest
+    command: ["lab-api"]
+    <<: *default-hardening
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_JSON: ${LOG_JSON:-true}
+      DEBUG: "false"
+
+      # Reaches the database by service name over the internal network.
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+
+      # Public demonstration mode. These are the switches documented in
+      # docs/PUBLIC_DEMO_DEPLOYMENT.md.
+      DEMO_MODE: ${DEMO_MODE:-true}
+      DEMO_ALLOW_UPLOADS: ${DEMO_ALLOW_UPLOADS:-false}
+      DEMO_USE_MOCK_AI: ${DEMO_USE_MOCK_AI:-true}
+      DEMO_SEED_ON_EMPTY: ${DEMO_SEED_ON_EMPTY:-true}
+      DEMO_RESET_ON_START: ${DEMO_RESET_ON_START:-false}
+
+      PUBLIC_SITE_NAME: ${PUBLIC_SITE_NAME:-SAPDemo}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-}
+      PUBLIC_DEMO_URL: ${PUBLIC_DEMO_URL:-}
+      PUBLIC_CONTACT_EMAIL: ${PUBLIC_CONTACT_EMAIL:-}
+
+      # Mock is forced by DEMO_MODE anyway; stated here so a reader does not
+      # have to know that to be sure no key is needed.
+      AI_PROVIDER: mock
+      AI_ENABLED: "true"
+
+      # Nothing calls the API cross-origin: the website never talks to it and
+      # Streamlit is server-side. An empty list is the honest configuration.
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+
+      RUN_MIGRATIONS: "true"
+    volumes:
+      # Exports and any runtime file the API writes. The database lives in
+      # PostgreSQL; this is not where the data is.
+      - sapdemo-api-data:/app/data
+    networks:
+      - internal
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      # Generous: the first start of a fresh volume runs migrations and then
+      # seeds ten modules, which takes a while on a quad-core i5. A start_period
+      # that is too short marks a healthy container unhealthy and restarts it
+      # mid-seed, forever.
+      start_period: 240s
+      retries: 5
+    stop_grace_period: 20s
+    restart: unless-stopped
+    logging: *default-logging
+
+  # -------------------------------------------------------------------------
+  # Streamlit - the interactive demonstration. Reached only through the tunnel.
+  # -------------------------------------------------------------------------
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_POSTGRES: "true"
+    image: sapdemo-api:latest
+    command: ["lab-streamlit"]
+    <<: *default-hardening
+    environment:
+      # Over the internal network, by service name, on a port nothing publishes.
+      API_BASE_URL: http://api:8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      DEMO_ALLOW_UPLOADS: ${DEMO_ALLOW_UPLOADS:-false}
+      PUBLIC_SITE_NAME: ${PUBLIC_SITE_NAME:-SAPDemo}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-}
+      PUBLIC_CONTACT_EMAIL: ${PUBLIC_CONTACT_EMAIL:-}
+      # The UI process must not touch the database directly, and does not. This
+      # points it at a file inside its own container so a misconfiguration
+      # cannot reach PostgreSQL by accident.
+      DATABASE_URL: sqlite:////app/data/unused-by-the-ui.db
+      # Streamlit runs behind a tunnel that terminates TLS elsewhere. XSRF
+      # protection depends on an origin check that a proxied request cannot
+      # satisfy here; CORS is off because nothing calls it cross-origin.
+      STREAMLIT_SERVER_ENABLE_CORS: "false"
+      STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION: "false"
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+      # Uploads are refused by the API. This makes the UI refuse them too, so a
+      # large POST never reaches the point of being rejected.
+      STREAMLIT_SERVER_MAX_UPLOAD_SIZE: "1"
+    volumes:
+      - sapdemo-ui-data:/app/data
+    networks:
+      - edge
+      - internal
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+    stop_grace_period: 15s
+    restart: unless-stopped
+    logging: *default-logging
+
+  # -------------------------------------------------------------------------
+  # Next.js website - public content, no API access
+  # -------------------------------------------------------------------------
+  website:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Compiled into the browser bundle. Only public addresses belong here.
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_DEMO_URL: ${PUBLIC_DEMO_URL:-}
+        NEXT_PUBLIC_CONTACT_EMAIL: ${PUBLIC_CONTACT_EMAIL:-}
+        NEXT_PUBLIC_REPOSITORY_URL: ${PUBLIC_REPOSITORY_URL:-https://github.com/iShayanNabi/SAPDemo}
+        NEXT_PUBLIC_LOCATION_LABEL: ${PUBLIC_LOCATION_LABEL:-}
+    image: sapdemo-website:latest
+    <<: *default-hardening
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    read_only: true
+    tmpfs:
+      # Next writes nothing at runtime except what Node needs scratch space for.
+      - /tmp:size=64m,mode=1777
+    # Deliberately on `edge` only. It has no route to the API or the database
+    # because it never calls them.
+    networks:
+      - edge
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    stop_grace_period: 10s
+    restart: unless-stopped
+    logging: *default-logging
+
+  # -------------------------------------------------------------------------
+  # Cloudflare Tunnel - the only thing that talks to the outside world
+  # -------------------------------------------------------------------------
+  #
+  # A remotely-managed tunnel: the routes live in the Cloudflare dashboard, not
+  # in this repository, so no hostname is baked into the image and no
+  # configuration file needs to be mounted. The token is the credential and it
+  # comes from the local environment file, which is git-ignored.
+  #
+  # The routes to configure in the dashboard (documented in
+  # docs/CLOUDFLARE_TUNNEL_SETUP.md):
+  #
+  #     [DOMAIN]           -> http://website:3000
+  #     www.[DOMAIN]       -> http://website:3000
+  #     demo.[DOMAIN]      -> http://streamlit:8501
+  #
+  # There is deliberately no api.[DOMAIN]. The API has no public hostname.
+  cloudflared:
+    image: cloudflare/cloudflared:2026.1.1
+    <<: *default-hardening
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      # Empty by default so the stack starts and is testable without a real
+      # token. cloudflared exits when it cannot authenticate, which - with
+      # `restart: unless-stopped` - shows up as a restarting container rather
+      # than a silent absence. scripts/verify_selfhosted.sh says so explicitly.
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+      TUNNEL_METRICS: 0.0.0.0:2000
+    networks:
+      # Only `edge`. A tunnel container on the internal network could be
+      # configured - or misconfigured - to publish the API or the database,
+      # which is the one thing this deployment must not allow.
+      - edge
+    depends_on:
+      website:
+        condition: service_healthy
+      streamlit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "cloudflared", "--version"]
+      interval: 60s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging: *default-logging
+
+networks:
+  edge:
+    name: sapdemo-edge
+    driver: bridge
+  internal:
+    name: sapdemo-internal
+    driver: bridge
+    # No route to the internet. The API and the database can talk to each other
+    # and to nothing else.
+    internal: true
+
+volumes:
+  sapdemo-postgres:
+    name: sapdemo-postgres
+  sapdemo-api-data:
+    name: sapdemo-api-data
+  sapdemo-ui-data:
+    name: sapdemo-ui-data

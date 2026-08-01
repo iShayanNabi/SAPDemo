@@ -32,12 +32,22 @@ RUN apt-get update \
 
 WORKDIR /build
 
+# PostgreSQL support is opt-in at build time. The lab's supported local path is
+# SQLite and that is what the tests run on, so psycopg is not in
+# requirements.txt - installing a database driver on every developer's machine
+# to serve one deployment is the wrong default. The self-hosted compose file
+# builds with INSTALL_POSTGRES=true.
+ARG INSTALL_POSTGRES=false
+
 # Dependencies are installed into their own prefix so stage 2 can copy exactly
 # the site-packages tree and nothing else.
-COPY requirements.txt ./
+COPY requirements.txt requirements-postgres.txt ./
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install -r requirements.txt
+    && /opt/venv/bin/pip install -r requirements.txt \
+    && if [ "${INSTALL_POSTGRES}" = "true" ]; then \
+           /opt/venv/bin/pip install -r requirements-postgres.txt; \
+       fi
 
 # ---------------------------------------------------------------------------
 # Stage 2 - runtime
@@ -68,7 +78,7 @@ COPY app ./app
 COPY streamlit_app ./streamlit_app
 COPY scripts ./scripts
 COPY migrations ./migrations
-COPY alembic.ini pyproject.toml README.md ./
+COPY alembic.ini pyproject.toml README.md requirements.txt requirements-postgres.txt ./
 COPY data/sample ./data/sample
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

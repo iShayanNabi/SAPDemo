@@ -1,8 +1,33 @@
-# Secrets
+# ---------------------------------------------------------------------------
+# Secrets and credentials
+# ---------------------------------------------------------------------------
+# Every .env is ignored, then the example files are re-included. Written this
+# way round on purpose: a new .env.<something> created in a hurry is ignored by
+# default, rather than committed because nobody added a line for it.
 .env
-*.key
+.env.*
+!.env.example
+!.env.selfhosted.example
+.env.selfhosted
 
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa*
+
+# Cloudflare tunnel credentials. A remotely-managed tunnel keeps its token in
+# .env.selfhosted (ignored above); a locally-managed one writes these.
+.cloudflared/
+cloudflared/
+*.tunnel.json
+cert.pem
+
+# ---------------------------------------------------------------------------
 # Python
+# ---------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
 .venv/
@@ -15,20 +40,71 @@ env/
 .coverage
 htmlcov/
 
+# ---------------------------------------------------------------------------
 # Local runtime data (regenerate with scripts/generate_sample_data.py)
+# ---------------------------------------------------------------------------
 data/*.db
+data/*.sqlite
+data/*.sqlite3
 data/uploads/*
 data/exports/*
 !data/uploads/.gitkeep
 !data/exports/.gitkeep
 
+# ---------------------------------------------------------------------------
+# Database dumps and backups
+# ---------------------------------------------------------------------------
+# A dump of the demonstration database is fictional data, but a dump of any
+# other one is not, and the two look identical in a directory listing.
+backups/
+*.dump
+*.sql.gz
+*.dump.sha256
+pgdata/
+postgres-data/
+
+# ---------------------------------------------------------------------------
+# Docker runtime state
+# ---------------------------------------------------------------------------
+docker-compose.override.yml
+.docker/
+
+# ---------------------------------------------------------------------------
+# Frontend
+# ---------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+frontend/.tsbuildinfo
+*.tsbuildinfo
+.vercel/
+
+# ---------------------------------------------------------------------------
+# Caches and logs
+# ---------------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-error.log*
+.cache/
+.turbo/
+
+# ---------------------------------------------------------------------------
 # Editors / OS
+# ---------------------------------------------------------------------------
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
 
+# ---------------------------------------------------------------------------
 # TypeScript example client (installed on demand, not committed)
+# ---------------------------------------------------------------------------
 examples/typescript-client/node_modules/
 examples/typescript-client/dist/
 examples/typescript-client/src/schema.ts
