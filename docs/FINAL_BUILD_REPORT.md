@@ -316,7 +316,57 @@ replicas — and both are named in the plans so the seam is not a surprise.
 | 14 | No secrets in source control | **Yes** — 370 tracked files scanned, `.env` git-ignored and excluded from the Docker build context |
 | 15 | A future website can use the API without moving business logic | **Yes** — the Streamlit UI already is that website: it imports no business logic and talks HTTP. `examples/typescript-client` performs the same journey and its `npm run demo` passes against a live server. |
 
-Two qualifications, stated rather than glossed:
+### How each one was verified
+
+Not from the test suite. A clean database, both processes started, and the API
+driven with `curl` — which is the step this project's own history says finds the
+bugs a green suite does not.
+
+```text
+alembic upgrade head            10 revisions, empty -> 33 tables
+scripts/reset_demo.py --yes     dropped, re-migrated, uploads and exports cleared
+scripts/seed_database.py        all ten modules, 0 failures
+uvicorn app.main:app            /api/v1/health -> ok, database connected, ai_provider mock
+streamlit run Home.py           /_stcore/health -> 200, / -> 200
+GET /                           module_count 10, every one "available"
+```
+
+Then, by hand:
+
+| Checked | Result |
+| --- | --- |
+| 13 export downloads across 8 modules, 6 formats | all `200`, all with a `Content-Disposition` filename, 17 KB – 683 KB |
+| Module 2: the drill-down against the figure it drills into | `3,227,036.93` over 120 transactions, both sides — the pair that once read 329,444,859 for 7 |
+| Module 2: contracted + non-contracted against the total | exact to the cent |
+| Module 8: approve, execute, then rewrite the script | approval cleared, verdict kept, `execution_is_stale: true`, counted separately in the summary |
+| Module 9: approve the summary, then rewrite the scope | `approved_by` kept, `approval_is_stale: true`, `stale_approved_count: 1` |
+| Module 9: save a version, change a section, compare | 1 modified, 29 unchanged, matched by key |
+| Module 10: the study plan against the dashboard it sits on | both quote `20.23`; the reason names the topic, not the branch |
+| Every no-argument method on the Streamlit API client | 48 of 48 returned; 78 need arguments and are covered by the e2e journeys |
+| The server log across 132 requests | nothing at WARNING or above |
+
+Two provider checks, because "configurable" has to mean more than "the setting exists":
+
+```text
+AI_PROVIDER=anthropic, no key          -> resolves to mock (and says so)
+AI_PROVIDER=anthropic, key set         -> resolves to anthropic; the key is not in repr()
+AI_ENABLED=false                       -> resolves to mock
+AI_PROVIDER=anthropic, invalid key     -> HTTP 200, status completed, 131 findings,
+                                          ai_narrative.available false,
+                                          "The AI provider rejected the request (HTTP 401)."
+```
+
+The last line is the guarantee that matters: a real provider returning a real 401
+cost the analysis nothing. The findings are all there and the failure is reported
+in its own field.
+
+One observation worth recording because it looks like a problem and is not: a
+regenerated `.xlsx` always shows as modified in `git status` even when the data
+is identical, because openpyxl stamps a creation time into `docProps/core.xml`.
+Re-running `generate_supplier_sample_data.py` reproduced the CSV, the JSON and
+the recorded baseline byte for byte; only that timestamp differed.
+
+### Two qualifications, stated rather than glossed
 
 **Criterion 10.** Modules 5 (Supplier Risk Copilot) and 10 (Interview Coach) have
 no export endpoint. That is a gap in the original modules, not something Phase 5
