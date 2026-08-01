@@ -1,0 +1,24 @@
+# Keep the build context small and keep local state out of the image.
+
+node_modules
+.next
+out
+coverage
+
+# Local environment files. NEXT_PUBLIC_* values are passed as build arguments by
+# the compose file; a .env copied into the build would silently win over them.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+*.log
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Tests are not needed to serve the site.
+tests
+vitest.config.mts
