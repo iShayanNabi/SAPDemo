@@ -9,9 +9,17 @@ Last updated: 2026-08-01
 | | |
 | --- | --- |
 | Modules complete | 10 of 10 |
-| Tests | 1,448 passing (799 unit, 408 API, 241 integration) |
-| Python source | ~64,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Phases complete | 5 of 5 (module build, then integration and hardening) |
+| Tests | 1,627 passing (800 unit, 409 API, 300 integration, 118 end-to-end) |
+| Endpoints | 133 across 11 tag groups |
+| Database | 33 tables, 10 Alembic revisions, SQLite and PostgreSQL |
+| Python source | ~70,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
+
+Phase 5 - integration, hardening, documentation and deployment preparation - is
+recorded in [`FINAL_BUILD_REPORT.md`](FINAL_BUILD_REPORT.md): the eleven defects it
+found and how each was found, the dependency upgrades, the acceptance evidence, the
+known limitations and the order to build the website in.
 
 ---
 
@@ -1075,17 +1083,35 @@ is contacted, and nothing a provider returns can reach it.
 
 ## Recommended next step
 
-Every module in the plan is now implemented. The work that is left is not another module:
+Every module is implemented and Phase 5 has integrated, hardened and documented
+them. What is left is not another module.
 
-- **Authentication and a per-user boundary.** Ten modules now share one database and module 10's
-  dashboard is the first feature whose *meaning* depends on knowing whose data it is. This has gone
-  from a nice-to-have to a correctness issue.
-- **Feed module 7 back into module 5.** The predictor produces a per-supplier picture of which
-  materials are heading for a shortage and which are dead on the shelf. Module 5's delivery and
-  operational risk categories score from stored counts. Joining them would make supply risk
-  materially sharper.
-- **Link module 9 to module 8.** A blueprint's SIT and UAT scenario sections and a generated test
-  suite describe the same tests at two levels of detail, and nothing joins them today.
-- **A session export for module 10**, so a candidate can keep the feedback outside the lab.
-- **The operational backlog** - a job queue and a PostgreSQL run - both of which every module now
-  shares.
+**First, and blocking everything else: authentication and a per-user boundary.**
+Ten modules share one database, and module 10's dashboard is the first feature
+whose *meaning* depends on knowing whose data it is. Phase 5 built the seams -
+`app/core/auth.py`, `GET /api/v1/auth-status`, `tenant_scope()` - and enforced
+nothing, deliberately. [`API_AUTHENTICATION_PLAN.md`](API_AUTHENTICATION_PLAN.md)
+has the model and the order; steps 1 and 3 (the ownership columns, then the
+filters with a cross-organisation test per module) are the ones that must not be
+reordered.
+
+**Then the website.** [`FINAL_BUILD_REPORT.md`](FINAL_BUILD_REPORT.md) §10 has the
+sequence: generate the client from `docs/openapi.json`, build the six shared
+components, then the modules in order of UI complexity rather than module number.
+`examples/typescript-client/` is the reference for every call.
+
+Still worth doing, and none of it blocking:
+
+- **Feed module 7 back into module 5.** The predictor produces a per-supplier
+  picture of which materials are heading for a shortage and which are dead on the
+  shelf. Module 5's delivery and operational risk categories score from stored
+  counts. Joining them would make supply risk materially sharper.
+- **Link module 9 to module 8.** A blueprint's SIT and UAT scenario sections and a
+  generated test suite describe the same tests at two levels of detail, and
+  nothing joins them today.
+- **Exports for modules 5 and 10** - the two modules with no report download, and
+  the one acceptance criterion Phase 5 could only pass partially.
+- **A job queue and a live PostgreSQL run.** The migrations render for PostgreSQL
+  and the timestamp handling is tested against it, but no suite has been run
+  against a live server. That is one command
+  (`docker compose --profile postgres up`) and worth closing before a deployment.
