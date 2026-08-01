@@ -19,7 +19,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from app.api.openapi import COMMON_ERROR_RESPONSES
+from app.api.openapi import COMMON_ERROR_RESPONSES, DOWNLOAD_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -30,6 +30,7 @@ from app.schemas.supplier_risk import (
     CalculateRiskRequest,
     ChatRequest,
     ChatResponse,
+    ExportFormat,
     RiskAssessmentDetailSchema,
     RiskAssessmentListResponse,
     RiskDatasetKind,
@@ -310,6 +311,45 @@ def get_supplier(
     """Return the full risk profile: category breakdown, trend, supporting
     records and recommended actions."""
     return ApiResponse.ok(service.get_supplier(db, supplier_id, assessment_id=assessment_id))
+
+
+@router.get(
+    "/assessments/{assessment_id}/export",
+    summary="Download a risk report",
+    responses=DOWNLOAD_RESPONSES,
+)
+def export_assessment(
+    db: DbSession,
+    assessment_id: str,
+    export_format: Annotated[ExportFormat, Query(alias="format")] = ExportFormat.XLSX,
+    supplier_id: Annotated[
+        str | None,
+        Query(
+            max_length=20,
+            description="Narrow the report to one supplier. Same sheets, one row.",
+        ),
+    ] = None,
+) -> Response:
+    """Download the assessment as XLSX, CSV or JSON.
+
+    The workbook carries the portfolio, every supplier's category scores with
+    the weight and contribution behind them, the evidence each score rests on,
+    the categories that could **not** be scored and why, the recommended actions
+    and the methodology. Every format carries the standing disclaimer, including
+    the one specific to this module: no external data source contributed to any
+    score, so a low score means a clean *internal* record.
+
+    Like every export in the lab this returns the file itself rather than the
+    JSON envelope, so a browser can stream it straight to a download.
+    """
+    content, filename, media_type = service.export_assessment(
+        db, assessment_id, export_format, supplier_id=supplier_id
+    )
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get(

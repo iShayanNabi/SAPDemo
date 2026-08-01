@@ -715,6 +715,50 @@ if profile:
 
 
 # ---------------------------------------------------------------------------
+# 4b. Export
+# ---------------------------------------------------------------------------
+st.header("4b. Export the assessment")
+st.caption(
+    "The workbook carries the portfolio, every supplier's category scores with the weight and "
+    "contribution behind them, the evidence each score rests on, the categories that could not "
+    "be scored, the recommended actions and the methodology. Every format carries the "
+    "disclaimer, including the one specific to this module: no external data source contributed "
+    "to any score."
+)
+
+scope_whole = f"Whole portfolio ({len(suppliers)} suppliers)"
+scope_one = f"Selected supplier only ({selected_supplier_id})" if selected_supplier_id else None
+export_scope = st.radio(
+    "Scope",
+    [scope for scope in (scope_whole, scope_one) if scope],
+    horizontal=True,
+    key="sr_export_scope",
+)
+export_supplier_id = selected_supplier_id if export_scope == scope_one else None
+
+export_columns = st.columns(3)
+for column, fmt, mime in (
+    (export_columns[0], "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    (export_columns[1], "csv", "text/csv"),
+    (export_columns[2], "json", "application/json"),
+):
+    with column:
+        try:
+            data = client.supplier_risk_export(assessment_id, fmt, supplier_id=export_supplier_id)
+        except ApiError as error:
+            st.caption(f"{fmt.upper()} export unavailable: {error.message}")
+            continue
+        suffix = f"_{export_supplier_id}" if export_supplier_id else ""
+        st.download_button(
+            f"Download {fmt.upper()}",
+            data=data,
+            file_name=f"supplier_risk_{assessment_id[:8]}{suffix}.{fmt}",
+            mime=mime,
+            key=f"sr_export_{fmt}",
+        )
+
+
+# ---------------------------------------------------------------------------
 # 5. Copilot chat
 # ---------------------------------------------------------------------------
 st.header("5. Copilot")

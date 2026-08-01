@@ -506,6 +506,67 @@ class TestSupplierRiskWorkflow:
             "a copilot that cannot answer must say why, not produce a confident guess"
         )
 
+        # Download the assessment in all three formats.
+        workbook_bytes = download(
+            client.get(
+                f"{V1}/supplier-risk/assessments/{assessment_id}/export",
+                params={"format": "xlsx"},
+            ),
+            expect_extension="xlsx",
+        )
+        workbook = load_workbook(io.BytesIO(workbook_bytes))
+        assert "Methodology" in workbook.sheetnames, (
+            "a risk report that does not say how it scored is not defensible"
+        )
+
+        download(
+            client.get(
+                f"{V1}/supplier-risk/assessments/{assessment_id}/export",
+                params={"format": "csv"},
+            ),
+            expect_extension="csv",
+        )
+        report = json.loads(
+            download(
+                client.get(
+                    f"{V1}/supplier-risk/assessments/{assessment_id}/export",
+                    params={"format": "json"},
+                ),
+                expect_extension="json",
+            )
+        )
+        assert report["assessment"]["assessment_id"] == assessment_id
+        assert len(report["suppliers"]) == len(assessment["suppliers"])
+        assert "NO EXTERNAL DATA SOURCE" in report["disclaimer"], (
+            "the report must say no credit bureau or ESG agency was consulted"
+        )
+        # The report and the detail response must agree about the same supplier.
+        exported = next(
+            item for item in report["profiles"] if item["supplier_id"] == profile["supplier_id"]
+        )
+        assert exported["overall_score"] == profile["overall_score"]
+        assert exported["unscored_categories"] == profile["unscored_categories"]
+
+        # One supplier can be exported on its own; the same route, filtered.
+        single = json.loads(
+            download(
+                client.get(
+                    f"{V1}/supplier-risk/assessments/{assessment_id}/export",
+                    params={"format": "json", "supplier_id": profile["supplier_id"]},
+                ),
+                expect_extension="json",
+            )
+        )
+        assert [item["supplier_id"] for item in single["profiles"]] == [profile["supplier_id"]]
+
+        # An unknown assessment is a clean 404, not a stack trace.
+        error = failure(
+            client.get(f"{V1}/supplier-risk/assessments/does-not-exist/export"),
+            expected_status=404,
+        )
+        assert error["code"] == "not_found"
+        assert "Traceback" not in error["message"]
+
 
 # ===========================================================================
 # Module 6 - Contract Assistant
@@ -970,3 +1031,47 @@ class TestInterviewCoachWorkflow:
                 assert item["average_score"] == pytest.approx(topic["average_score"]), (
                     "the plan quotes a different average from the dashboard it sits on"
                 )
+
+        # Download the transcript in all four formats.
+        workbook_bytes = download(
+            client.get(f"{V1}/interviews/{session_id}/export", params={"format": "xlsx"}),
+            expect_extension="xlsx",
+        )
+        workbook = load_workbook(io.BytesIO(workbook_bytes))
+        assert "Answers" in workbook.sheetnames
+        assert "Study Plan" in workbook.sheetnames
+
+        download(
+            client.get(f"{V1}/interviews/{session_id}/export", params={"format": "csv"}),
+            expect_extension="csv",
+        )
+        transcript = download(
+            client.get(f"{V1}/interviews/{session_id}/export", params={"format": "pdf"}),
+            expect_extension="pdf",
+        )
+        assert transcript.startswith(b"%PDF-"), "the PDF export is not a PDF"
+
+        report = json.loads(
+            download(
+                client.get(f"{V1}/interviews/{session_id}/export", params={"format": "json"}),
+                expect_extension="json",
+            )
+        )
+        assert report["session"]["session_id"] == session_id
+        assert len(report["answers"]) == 3
+        assert "PRACTICE FEEDBACK" in report["disclaimer"], (
+            "a report of somebody's answers must not read as a formal assessment"
+        )
+        # The file and the API must agree about the marks. A report is a second
+        # serialisation of the same verdict, and a second chance to disagree.
+        assert [item["score"]["overall_score"] for item in report["answers"]] == [
+            item["answer"]["score"]["overall_score"] for item in served
+        ]
+        assert report["summary"]["average_score"] == completed["summary"]["average_score"]
+
+        # An unknown session is a clean 404, not a stack trace.
+        error = failure(
+            client.get(f"{V1}/interviews/does-not-exist/export"), expected_status=404
+        )
+        assert error["code"] == "not_found"
+        assert "Traceback" not in error["message"]

@@ -66,6 +66,7 @@ from app.schemas.interview_coach import (
     AnswerScoreSchema,
     AnswerStatus,
     CompleteInterviewRequest,
+    ExportFormat,
     InterviewAnswerSchema,
     InterviewCatalogueSchema,
     InterviewMode,
@@ -84,6 +85,12 @@ from app.schemas.interview_coach import (
     SubmitAnswerRequest,
     SubmitAnswerResponse,
     TrackInfoSchema,
+)
+from app.services.exports.interview_report_builder import (
+    build_interview_csv_report,
+    build_interview_json_report,
+    build_interview_pdf_report,
+    build_interview_xlsx_report,
 )
 
 logger = get_logger(__name__)
@@ -461,6 +468,45 @@ def performance(
 # ---------------------------------------------------------------------------
 # Catalogue and question browsing
 # ---------------------------------------------------------------------------
+
+
+def export_session(
+    db: Session, session_id: str, export_format: ExportFormat
+) -> tuple[bytes, str, str]:
+    """Build a downloadable session report. Returns ``(content, filename, media_type)``.
+
+    Built from :func:`get_session`, so the file and the API response can never
+    disagree: the same schema, serialised twice.
+
+    The answer key travels with the *answers*, exactly as it does over the API -
+    an unanswered question is exported without its expected concepts or its
+    reference answer, because a downloaded report is not the place the
+    open-book rule stops applying.
+    """
+    session = get_session(db, session_id)
+    payload = {
+        "session": session.model_dump(
+            mode="json", exclude={"answers", "summary", "next_question"}
+        ),
+        "summary": session.summary.model_dump(mode="json"),
+        "answers": [answer.model_dump(mode="json") for answer in session.answers],
+        "notes": list(session.notes or []),
+        "uncovered_tracks": list(session.uncovered_tracks or []),
+        "methodology": get_catalogue().model_dump(mode="json"),
+    }
+
+    stem = f"interview_session_{session.session_id[:8]}"
+    if export_format is ExportFormat.JSON:
+        return build_interview_json_report(payload), f"{stem}.json", "application/json"
+    if export_format is ExportFormat.CSV:
+        return build_interview_csv_report(payload["answers"]), f"{stem}.csv", "text/csv"
+    if export_format is ExportFormat.PDF:
+        return build_interview_pdf_report(payload), f"{stem}.pdf", "application/pdf"
+    return (
+        build_interview_xlsx_report(payload),
+        f"{stem}.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 def get_catalogue() -> InterviewCatalogueSchema:

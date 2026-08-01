@@ -25,15 +25,17 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from app.api.openapi import COMMON_ERROR_RESPONSES
+from app.api.openapi import COMMON_ERROR_RESPONSES, DOWNLOAD_RESPONSES
 from app.core.logging import get_logger
 from app.models.session import get_db
 from app.modules.interview_coach import service
 from app.schemas.common import ApiResponse
 from app.schemas.interview_coach import (
     CompleteInterviewRequest,
+    ExportFormat,
     InterviewCatalogueSchema,
     InterviewMode,
     InterviewSessionSchema,
@@ -204,6 +206,40 @@ def list_sessions(
 def get_session(db: DbSession, session_id: str) -> ApiResponse[InterviewSessionSchema]:
     """Return the session with every question asked, answer given and score."""
     return ApiResponse.ok(service.get_session(db, session_id))
+
+
+@router.get(
+    "/{session_id}/export",
+    summary="Download the session report",
+    responses=DOWNLOAD_RESPONSES,
+)
+def export_session(
+    db: DbSession,
+    session_id: str,
+    export_format: Annotated[ExportFormat, Query(alias="format")] = ExportFormat.XLSX,
+) -> Response:
+    """Download the session as XLSX, CSV, JSON or PDF.
+
+    The report carries the session metadata, every question and the answer given
+    to it, the dimension scores with the reason for each, which concepts were
+    credited and *what credited them*, the strengths, missing concepts,
+    corrections and improved sample answer, the summary and the recommended
+    study topics.
+
+    Every mark in it comes from the rubric and is labelled ``rule_based``; the
+    coaching prose is labelled with the provider that wrote it. The standing
+    disclaimer is on every format: this is practice feedback, not an assessment,
+    and keyword matching has a ceiling.
+
+    Like every export in the lab this returns the file itself rather than the
+    JSON envelope, so a browser can stream it straight to a download.
+    """
+    content, filename, media_type = service.export_session(db, session_id, export_format)
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post(
