@@ -1,0 +1,970 @@
+{
+  "config_version": "1.0.0",
+  "description": "SAP Blueprint Generator configuration. Everything the generator decides deterministically - which sections exist, what they are called, in what order they appear, which project inputs each one needs, which items are computed from the request rather than drafted, and what a section looks like when no language model is available - is configured here rather than written in code. Editing this file changes the generated blueprint with no code change.",
+  "generation": {
+    "description": "Identifier scheme, size limits and the defaults every new section starts from.",
+    "id_prefix": "BP",
+    "section_id_template": "{prefix}-{code}",
+    "custom_section_id_template": "{prefix}-CUS-{number:03d}",
+    "item_id_template": "{prefix}-{code}-{number:03d}",
+    "id_number_start": 1,
+    "max_custom_sections": 20,
+    "max_items_per_section": 40,
+    "max_title_chars": 200,
+    "max_detail_chars": 3000,
+    "max_narrative_chars": 20000,
+    "min_narrative_chars": 40,
+    "max_items_per_ai_section": 12,
+    "default_owner": "Unassigned",
+    "default_status": "draft",
+    "placeholder_defaults": {
+      "modules": "the modules named in the project request",
+      "primary_module": "the lead SAP module",
+      "countries": "the countries named in the project request",
+      "locations": "the sites named in the project request",
+      "company_codes": "the company codes named in the project request",
+      "plants": "the plants named in the project request",
+      "purchasing_organizations": "the purchasing organisations named in the project request",
+      "systems": "the systems named in the project request",
+      "integrations": "the integrations named in the project request",
+      "data_sources": "the data sources named in the project request",
+      "user_groups": "the user groups named in the project request",
+      "objectives": "the business objectives named in the project request",
+      "primary_objective": "the lead business objective",
+      "timeline": "the timeline recorded for this project",
+      "constraints": "the constraints recorded for this project"
+    }
+  },
+  "readiness": {
+    "description": "How the completeness and approval percentages are computed. Both are deterministic counts over the sections that exist, rounded half away from zero. A section that is waiting for a project input counts as incomplete, because a heading with nothing under it is not a written section.",
+    "decimals": 1,
+    "count_needs_input_as_complete": false
+  },
+  "sections": {
+    "executive_summary": {
+      "title": "Executive summary",
+      "section_code": "EXEC",
+      "content_kind": "narrative",
+      "description": "One page a sponsor can read: what the project changes, why, and what it depends on.",
+      "guidance": "Write four to six sentences for an executive sponsor. Name the company, the SAP product and the lead modules, say what the future-state process changes, and close on the timeline and the single largest risk. Do not invent figures, dates or savings.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["business_objectives", "scope", "future_state_process", "risks"],
+      "allow_ai_items": false,
+      "min_items": 0,
+      "max_items": 0,
+      "item_code": "EXEC",
+      "template_narrative": "{company} ({industry}) plans to implement {sap_product} covering {modules}. The blueprint below records the business objectives the project is measured against, the current process, the future-state process and the configuration, integration, security and testing work that follows from them. The organisational structure in scope is {company_codes}. The indicative timeline is {timeline}. This is a proposed blueprint drafted from the project request; every section requires review by qualified SAP professionals before it is used to configure a system.",
+      "template_items": []
+    },
+    "business_objectives": {
+      "title": "Business objectives",
+      "section_code": "OBJ",
+      "content_kind": "list",
+      "description": "What the business expects the implementation to achieve, in the sponsor's own words.",
+      "guidance": "Restate each objective supplied in the project request so that it is measurable: what changes, for whom, and how anyone would know it happened. Do not add objectives the request did not state and do not attach numeric targets nobody supplied.",
+      "required_inputs": ["business_objectives"],
+      "derives_from": [
+        {
+          "field": "business_objectives",
+          "category": "Objective",
+          "detail_template": "Recorded as a business objective for {company}. Agree the measure, the baseline and the owner before design sign-off."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 30,
+      "item_code": "OBJ",
+      "template_narrative": "The objectives below are the ones recorded in the project request for {company}. They are the yardstick the rest of this blueprint is measured against: a requirement that supports none of them belongs in the out-of-scope section.",
+      "template_items": []
+    },
+    "scope": {
+      "title": "Scope",
+      "section_code": "SCOPE",
+      "content_kind": "list",
+      "description": "The processes, modules and organisational units the project delivers.",
+      "guidance": "Describe the delivered scope process by process. Each item names one process or capability, the module that carries it and the organisational units it applies to. Stay inside the modules the request names.",
+      "required_inputs": ["modules"],
+      "derives_from": [
+        {
+          "field": "modules",
+          "category": "Module in scope",
+          "detail_template": "{value} is in scope for {company}. The processes it carries are delivered for {company_codes}."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 30,
+      "item_code": "SCP",
+      "template_narrative": "The implementation covers {modules} for {company_codes} across {countries}. The future-state process described later in this blueprint is delivered within that boundary; anything outside it is listed under out-of-scope items.",
+      "template_items": []
+    },
+    "out_of_scope": {
+      "title": "Out-of-scope items",
+      "section_code": "OOS",
+      "content_kind": "list",
+      "description": "What this project deliberately does not deliver, so nobody assumes it.",
+      "guidance": "List work a reader might reasonably expect from the scope but which this project does not deliver: adjacent modules, legacy systems that stay, countries in a later wave, reporting rebuilt later. Say for each one where it is expected to be handled instead. Never list something the scope section already delivers.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["scope"],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 25,
+      "item_code": "OOS",
+      "template_narrative": "The items below are outside this project. They are recorded so that a reader of the scope section does not assume them, and so that the programme can decide where each one is handled instead.",
+      "template_items": [
+        {
+          "title": "SAP modules not named in the project request",
+          "detail": "Only {modules} are in scope. Any other module remains on its current platform and process until a later phase agrees otherwise.",
+          "category": "Application scope"
+        },
+        {
+          "title": "Organisational units not named in the project request",
+          "detail": "Only {company_codes} are in scope. Additional company codes, plants or purchasing organisations require a change request and a separate design.",
+          "category": "Organisational scope"
+        },
+        {
+          "title": "Interfaces not named in the project request",
+          "detail": "Only {integrations} are delivered. Any other interface continues to run as it does today.",
+          "category": "Integration scope"
+        }
+      ]
+    },
+    "assumptions": {
+      "title": "Assumptions",
+      "section_code": "ASM",
+      "content_kind": "list",
+      "description": "What the blueprint takes as given. An assumption that fails becomes a risk.",
+      "guidance": "State each assumption as something that can be confirmed or denied by a named party, and say what happens to the plan if it turns out to be false. Restate the assumptions the request supplied before adding any of your own.",
+      "required_inputs": [],
+      "derives_from": [
+        {
+          "field": "assumptions",
+          "category": "Stated assumption",
+          "detail_template": "Recorded as an assumption in the project request. Confirm it with the responsible party; if it does not hold, raise it as a risk against the plan."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 25,
+      "item_code": "ASM",
+      "template_narrative": "The blueprint below is written on the assumptions listed here. Each one needs an owner and a confirmation date, because an assumption that is not confirmed before build is a risk that has not been written down.",
+      "template_items": [
+        {
+          "title": "The organisational structure in the project request is final",
+          "detail": "{company_codes} are taken as the organisational units in scope. A change after configuration starts has a cost in configuration, master data and authorisation rework.",
+          "category": "Organisation"
+        },
+        {
+          "title": "Source data for migration is available and owned",
+          "detail": "Extracts from {data_sources} can be provided in the agreed format, and a business owner is named for each object who can approve its quality.",
+          "category": "Data"
+        },
+        {
+          "title": "Business users are released for design, test and training",
+          "detail": "{user_groups} are available for the workshops, the user acceptance test and the training sessions the timeline assumes.",
+          "category": "Resourcing"
+        }
+      ]
+    },
+    "current_state_process": {
+      "title": "Current-state process",
+      "section_code": "CURR",
+      "content_kind": "narrative",
+      "description": "How the process runs today, as the business described it.",
+      "guidance": "Describe the current process as the request states it: the steps, who performs them, which systems hold the data and where the manual effort sits. Do not judge the current process and do not add steps the request did not describe.",
+      "required_inputs": ["current_process"],
+      "derives_from": [],
+      "depends_on": [],
+      "allow_ai_items": true,
+      "min_items": 0,
+      "max_items": 20,
+      "item_code": "CUR",
+      "template_narrative": "The current process at {company} is recorded as follows.\n\n{current_process}\n\nThe systems involved today are {systems}. This description is the business's own; it has not been verified against a running system.",
+      "template_items": []
+    },
+    "future_state_process": {
+      "title": "Future-state process",
+      "section_code": "FUT",
+      "content_kind": "narrative",
+      "description": "How the process should run in the new system.",
+      "guidance": "Describe the target process as the request states it, in {sap_product} terms where the request supports it. Make the difference from the current state explicit. Do not name a transaction code, table or Fiori app unless the request named it.",
+      "required_inputs": ["desired_process"],
+      "derives_from": [],
+      "depends_on": ["current_state_process"],
+      "allow_ai_items": true,
+      "min_items": 0,
+      "max_items": 20,
+      "item_code": "FUT",
+      "template_narrative": "The target process for {company} in {sap_product} is recorded as follows.\n\n{desired_process}\n\nIt is delivered within {modules} for {company_codes}. The step-by-step breakdown follows in the process steps section.",
+      "template_items": []
+    },
+    "process_steps": {
+      "title": "Process steps",
+      "section_code": "STEP",
+      "content_kind": "table",
+      "description": "The future-state process broken into numbered steps with an actor and a system.",
+      "guidance": "Break the future-state process into ordered steps. Each step names the actor performing it, the system it happens in and the document or outcome it produces. One action per step. Do not invent a transaction code; write 'the transaction used for <activity>' instead.",
+      "required_inputs": ["desired_process"],
+      "derives_from": [],
+      "depends_on": ["future_state_process"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 30,
+      "item_code": "STP",
+      "template_narrative": "The steps below break the future-state process into the sequence a user will follow. Each carries the role that performs it and the system it happens in, which is what the SIT and UAT scenarios later in this blueprint are written against.",
+      "template_items": [
+        {
+          "title": "Trigger the process",
+          "detail": "The business event described in the future-state process reaches {primary_module} and the request is created.",
+          "category": "Step 1",
+          "reference": "{primary_module}",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "Check and enrich the request",
+          "detail": "The responsible role checks the request against the business rules recorded for this process and completes the data the follow-on documents need.",
+          "category": "Step 2",
+          "reference": "{primary_module}",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "Approve the request",
+          "detail": "The approval defined for this process is applied and the outcome is recorded on the document.",
+          "category": "Step 3",
+          "reference": "{primary_module}",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "Execute and post the follow-on documents",
+          "detail": "The follow-on documents the design calls for are created and posted in {sap_product}.",
+          "category": "Step 4",
+          "reference": "{primary_module}",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "Close and report",
+          "detail": "The process closes, and the outcome is available to the reporting listed in the reporting requirements section.",
+          "category": "Step 5",
+          "reference": "{primary_module}",
+          "owner": "{primary_user_group}"
+        }
+      ]
+    },
+    "sap_products_modules": {
+      "title": "SAP products and modules",
+      "section_code": "MOD",
+      "content_kind": "table",
+      "description": "The SAP product and the modules the project delivers, taken from the request.",
+      "guidance": "Write a short paragraph explaining how the named product and modules fit together for this process. Do not add a module the request did not name and do not claim a licence, a release or a deployment option that was not stated.",
+      "required_inputs": ["modules"],
+      "derives_from": [
+        {
+          "field": "modules",
+          "category": "SAP module",
+          "detail_template": "{value} is delivered as part of {sap_product} for {company_codes}. Confirm the release, the activated business functions and the licence position before build."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 30,
+      "item_code": "MOD",
+      "template_narrative": "The project delivers {sap_product}. The modules below are the ones named in the project request; each one carries part of the future-state process. Nothing in this list has been checked against a licence agreement or a running system.",
+      "template_items": []
+    },
+    "best_practice_alignment": {
+      "title": "SAP Best Practice alignment",
+      "section_code": "BP",
+      "content_kind": "list",
+      "description": "Where the design follows a standard process and where it deliberately departs from one.",
+      "guidance": "For each part of the future-state process, say whether the design is expected to follow the standard delivered process or to depart from it, and why. Describe a standard process by what it does; never quote a scope-item code or a solution-process identifier unless the request supplied one - a wrong code sends a consultant to the wrong content.",
+      "required_inputs": ["modules"],
+      "derives_from": [],
+      "depends_on": ["sap_products_modules", "future_state_process"],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 20,
+      "item_code": "BPA",
+      "template_narrative": "The design intent is to stay on the standard delivered process wherever it meets the business objectives, and to record every deliberate departure with the reason for it. The alignment below is a proposal: it must be confirmed against the SAP Best Practice content for the release actually installed, which this application has not read.",
+      "template_items": [
+        {
+          "title": "Follow the standard process where it meets the objective",
+          "detail": "For {modules}, the design starts from the standard delivered process. Each departure is recorded below with the objective it serves.",
+          "category": "Alignment"
+        },
+        {
+          "title": "Record every departure as a decision",
+          "detail": "A departure from the standard process carries a build cost and an upgrade cost. Each one needs a named approver and a recorded reason before build starts.",
+          "category": "Departure"
+        }
+      ]
+    },
+    "organizational_structure": {
+      "title": "Organizational structure",
+      "section_code": "ORG",
+      "content_kind": "table",
+      "description": "The enterprise structure in scope, taken directly from the project request.",
+      "guidance": "Write a short paragraph on how the units below relate to one another for this process. Never add a company code, plant or purchasing organisation that the request did not name - an invented organisational unit is the fastest way to make a blueprint unusable.",
+      "required_inputs": ["company_codes"],
+      "derives_from": [
+        {
+          "field": "countries",
+          "category": "Country",
+          "detail_template": "{value} is in scope. Confirm the country-specific legal, tax and statutory reporting requirements that apply to it."
+        },
+        {
+          "field": "company_codes",
+          "category": "Company code",
+          "detail_template": "Company code {value} is in scope. Confirm its chart of accounts, currency, fiscal year variant and country assignment."
+        },
+        {
+          "field": "plants",
+          "category": "Plant",
+          "detail_template": "Plant {value} is in scope. Confirm its company code assignment, valuation area and the storage locations it needs."
+        },
+        {
+          "field": "purchasing_organizations",
+          "category": "Purchasing organization",
+          "detail_template": "Purchasing organisation {value} is in scope. Confirm its company code and plant assignments and its purchasing groups."
+        },
+        {
+          "field": "locations",
+          "category": "Location",
+          "detail_template": "{value} is a site in scope. Confirm which company code and plant it reports into."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 40,
+      "item_code": "ORG",
+      "template_narrative": "The enterprise structure below is taken from the project request for {company}. Every entry is a unit the business named; nothing has been added. The assignments between them still have to be confirmed by the finance and logistics workstreams before configuration starts.",
+      "template_items": []
+    },
+    "master_data": {
+      "title": "Master data",
+      "section_code": "MD",
+      "content_kind": "table",
+      "description": "The master data objects the process depends on, with the owner of each.",
+      "guidance": "List the master data objects the future-state process needs. For each one give the business owner, the fields that matter for this process, and how it is maintained after go-live. Do not name a table or a field technical name unless the request supplied it.",
+      "required_inputs": ["modules"],
+      "derives_from": [],
+      "depends_on": ["scope", "future_state_process"],
+      "allow_ai_items": true,
+      "min_items": 2,
+      "max_items": 25,
+      "item_code": "MDA",
+      "template_narrative": "The process depends on the master data objects below. Each needs a business owner, an agreed set of mandatory fields and a maintenance process after go-live, because master data that nobody owns degrades faster than any configuration.",
+      "template_items": [
+        {
+          "title": "Business partner data",
+          "detail": "The counterparties the process transacts with, including the roles, the addresses and the terms the process reads. Owner: the master data team named by {company}.",
+          "category": "Master data object",
+          "owner": "Master data owner"
+        },
+        {
+          "title": "Material or service master data",
+          "detail": "The items the process moves or buys, including the views {modules} require for the organisational units in scope.",
+          "category": "Master data object",
+          "owner": "Master data owner"
+        },
+        {
+          "title": "Organisational and pricing conditions",
+          "detail": "The condition records, account assignments and determination data the future-state process relies on to post correctly.",
+          "category": "Master data object",
+          "owner": "Master data owner"
+        }
+      ]
+    },
+    "configuration_requirements": {
+      "title": "Configuration requirements",
+      "section_code": "CFG",
+      "content_kind": "table",
+      "description": "The settings the process needs, described by what they must achieve.",
+      "guidance": "State each configuration requirement by the behaviour it produces, not by an IMG path or a table name - the path differs between releases and a wrong one wastes a consultant's day. Say which module owns it and which process step depends on it.",
+      "required_inputs": ["modules"],
+      "derives_from": [],
+      "depends_on": ["sap_products_modules", "future_state_process", "organizational_structure"],
+      "allow_ai_items": true,
+      "min_items": 2,
+      "max_items": 30,
+      "item_code": "CFG",
+      "template_narrative": "The configuration requirements below describe the behaviour the system must produce, not the screens a consultant will visit. None of them has been configured or validated in a live SAP system by this application: they are the input to a configuration workshop, not its output.",
+      "template_items": [
+        {
+          "title": "Enterprise structure and assignments",
+          "detail": "Create and assign the organisational units listed in the organizational structure section so the process posts to the correct company code and valuation area.",
+          "category": "Enterprise structure",
+          "reference": "{primary_module}"
+        },
+        {
+          "title": "Document types and number ranges",
+          "detail": "Define the document types the future-state process creates, with number ranges the business can recognise and reconcile.",
+          "category": "Documents",
+          "reference": "{primary_module}"
+        },
+        {
+          "title": "Approval and release behaviour",
+          "detail": "Configure the approval the process requires so that a document above the agreed threshold cannot proceed without the recorded approval.",
+          "category": "Process control",
+          "reference": "{primary_module}"
+        }
+      ]
+    },
+    "functional_requirements": {
+      "title": "Functional requirements",
+      "section_code": "FR",
+      "content_kind": "table",
+      "description": "What the solution must do, each one testable.",
+      "guidance": "Write each requirement so that a tester could write a pass/fail test from it: a trigger, an actor, a behaviour and an observable outcome. Reference the process step it belongs to. One requirement per item.",
+      "required_inputs": ["desired_process"],
+      "derives_from": [],
+      "depends_on": ["future_state_process", "process_steps"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 30,
+      "item_code": "FR",
+      "template_narrative": "Each requirement below is written so that a test case can be derived from it directly. A requirement that cannot be tested is a statement of intent, and belongs in the objectives section instead.",
+      "template_items": [
+        {
+          "title": "The process can be started by the responsible role",
+          "detail": "{primary_user_group} can create the request described in the future-state process in {sap_product} without leaving the system.",
+          "category": "Functional",
+          "rating": "must"
+        },
+        {
+          "title": "Business rules are enforced by the system",
+          "detail": "The rules recorded for this process are enforced by configuration rather than by convention, and a document that breaks one cannot be posted.",
+          "category": "Functional",
+          "rating": "must"
+        },
+        {
+          "title": "The outcome is visible to the business",
+          "detail": "The result of the process is available to the reporting listed in the reporting requirements section on the day it is posted.",
+          "category": "Functional",
+          "rating": "should"
+        }
+      ]
+    },
+    "nonfunctional_requirements": {
+      "title": "Nonfunctional requirements",
+      "section_code": "NFR",
+      "content_kind": "table",
+      "description": "Performance, availability, retention, usability and compliance expectations.",
+      "guidance": "Cover performance, volume, availability, data retention, auditability, accessibility and language. State each as a target somebody could measure. Do not state a number the request did not supply; write 'to be agreed' and say who agrees it.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["future_state_process"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 25,
+      "item_code": "NFR",
+      "template_narrative": "The expectations below are the ones a design has to satisfy without any of them appearing in a process step. Where no figure was supplied in the project request, the target is recorded as one to be agreed rather than guessed at here.",
+      "template_items": [
+        {
+          "title": "Transaction response time",
+          "detail": "The interactive steps of the process respond within a target to be agreed with {company}. No figure was supplied in the project request.",
+          "category": "Performance",
+          "rating": "to be agreed"
+        },
+        {
+          "title": "Volume and peak load",
+          "detail": "The expected daily and peak document volumes for {company_codes} are to be confirmed by the business before sizing is fixed.",
+          "category": "Capacity",
+          "rating": "to be agreed"
+        },
+        {
+          "title": "Auditability and retention",
+          "detail": "Every posting the process creates is traceable to the user and the document that caused it, and is retained for the statutory period applying in {countries}.",
+          "category": "Compliance",
+          "rating": "must"
+        }
+      ]
+    },
+    "integrations": {
+      "title": "Integrations",
+      "section_code": "INT",
+      "content_kind": "table",
+      "description": "The integrations the project delivers, taken directly from the project request.",
+      "guidance": "Write a short paragraph on how the named integrations fit the process and where a failure in one would be noticed. Never add an integration the request did not name, and never state a middleware product, protocol or IDoc type that was not supplied.",
+      "required_inputs": ["integrations"],
+      "derives_from": [
+        {
+          "field": "integrations",
+          "category": "Integration",
+          "detail_template": "{value} is in scope for this project. Confirm the direction, the trigger, the data volume, the error handling and the business owner on both sides."
+        }
+      ],
+      "depends_on": [],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 40,
+      "item_code": "INT",
+      "template_narrative": "The integrations below are the ones named in the project request for {company}, connecting {sap_product} with {systems}. Nothing has been added: an interface that nobody asked for is an interface nobody will maintain. Each entry still needs a technical design of its own.",
+      "template_items": []
+    },
+    "interfaces_apis": {
+      "title": "Interfaces and APIs",
+      "section_code": "IFC",
+      "content_kind": "table",
+      "description": "One interface specification stub per named integration.",
+      "guidance": "For each interface, describe what has to be specified before build: direction, trigger, frequency, payload, error handling and the reconciliation the business will run. Do not choose the technology or name an API unless the project request named it.",
+      "required_inputs": ["integrations"],
+      "derives_from": [
+        {
+          "field": "integrations",
+          "category": "Interface",
+          "detail_template": "Interface specification required for {value}. Record the direction, the trigger and frequency, the payload and field mapping, the error handling and reprocessing route, and the reconciliation the business will run against it."
+        }
+      ],
+      "depends_on": ["integrations"],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 40,
+      "item_code": "IFC",
+      "template_narrative": "Each integration named in the project request needs an interface specification of its own before build. The stubs below list what every one of them has to answer. The technology, the protocol and the middleware are deliberately left open: they are an architecture decision, not something this document can settle.",
+      "template_items": []
+    },
+    "data_migration": {
+      "title": "Data migration",
+      "section_code": "MIG",
+      "content_kind": "table",
+      "description": "The data objects to migrate, their sources and the approach for each.",
+      "guidance": "For each source named in the request, describe the objects it holds, the extraction and cleansing that has to happen, who signs off the load and how the load is reconciled. Do not invent record counts or a cutover date.",
+      "required_inputs": ["data_sources"],
+      "derives_from": [
+        {
+          "field": "data_sources",
+          "category": "Source system",
+          "detail_template": "Data is migrated from {value}. Confirm the objects it holds, the extract format, the cleansing rules, the load sequence, the business owner who signs off the load, and the reconciliation that proves it landed correctly."
+        }
+      ],
+      "depends_on": ["master_data"],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 30,
+      "item_code": "MIG",
+      "template_narrative": "Migration runs from the sources named in the project request. Every object needs a business owner, a cleansing decision made before extraction rather than after, and a reconciliation that a finance or logistics lead is willing to sign. No record counts appear here because none were supplied.",
+      "template_items": []
+    },
+    "security_roles": {
+      "title": "Security roles",
+      "section_code": "SEC",
+      "content_kind": "table",
+      "description": "One role stub per user group named in the project request.",
+      "guidance": "For each user group, describe the activities its role must allow, the organisational units it is restricted to and the segregation-of-duties conflicts to check. Never quote an authorisation object, a standard role name or a transaction code that the request did not supply.",
+      "required_inputs": ["user_groups"],
+      "derives_from": [
+        {
+          "field": "user_groups",
+          "category": "User group",
+          "detail_template": "A role is required for {value}. Record the activities it must allow, the organisational restriction it carries (company code, plant or purchasing organisation), the segregation-of-duties conflicts to test, and the approver for the role."
+        }
+      ],
+      "depends_on": ["organizational_structure", "process_steps"],
+      "allow_ai_items": false,
+      "min_items": 1,
+      "max_items": 40,
+      "item_code": "SEC",
+      "template_narrative": "One role is designed per user group named in the project request, restricted to the organisational units listed in the organizational structure section. The role names, the authorisation objects and the segregation-of-duties matrix are produced by the security workstream; this section records what each role has to be able to do, not how it is built.",
+      "template_items": []
+    },
+    "controls": {
+      "title": "Controls",
+      "section_code": "CTL",
+      "content_kind": "list",
+      "description": "The business controls the process has to enforce, and where each one sits.",
+      "guidance": "List the controls the process must enforce: approvals, tolerances, segregation of duties, reconciliations and audit evidence. For each, say which process step carries it, whether it is preventive or detective, and what evidence an auditor would ask for.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["process_steps", "security_roles"],
+      "allow_ai_items": true,
+      "min_items": 2,
+      "max_items": 25,
+      "item_code": "CTL",
+      "template_narrative": "The controls below are the ones the process itself has to enforce. A control that depends on somebody remembering to check something is a control that will fail an audit; each one below therefore names the step that carries it and the evidence it leaves behind.",
+      "template_items": [
+        {
+          "title": "Approval before commitment",
+          "detail": "A document that commits {company} cannot proceed without the approval recorded for this process. Preventive control, evidenced by the approval recorded on the document.",
+          "category": "Preventive"
+        },
+        {
+          "title": "Segregation of duties",
+          "detail": "The role that creates a document does not approve it. Preventive control, evidenced by the role assignments listed in the security roles section.",
+          "category": "Preventive"
+        },
+        {
+          "title": "Periodic reconciliation",
+          "detail": "The postings the process creates are reconciled on an agreed cycle against the source that triggered them. Detective control, evidenced by the reconciliation report.",
+          "category": "Detective"
+        }
+      ]
+    },
+    "reporting_requirements": {
+      "title": "Reporting requirements",
+      "section_code": "RPT",
+      "content_kind": "list",
+      "description": "What the business needs to see, how often and at what grain.",
+      "guidance": "For each report, name the audience, the question it answers, the grain, the refresh frequency and the source of the figures. Tie each one back to a business objective. Do not name a standard report, a CDS view or an analytical app unless the request supplied it.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["business_objectives", "future_state_process"],
+      "allow_ai_items": true,
+      "min_items": 2,
+      "max_items": 25,
+      "item_code": "RPT",
+      "template_narrative": "The reporting below is what the business needs in order to know whether the objectives in this blueprint were met. Each entry names an audience and a frequency, because a report with neither is a report nobody opens.",
+      "template_items": [
+        {
+          "title": "Operational process monitoring",
+          "detail": "A daily view of documents in flight, ageing and exceptions, for the team running the process.",
+          "category": "Operational"
+        },
+        {
+          "title": "Management performance reporting",
+          "detail": "A periodic view against the business objectives recorded in this blueprint, for the sponsor at {company}.",
+          "category": "Management"
+        },
+        {
+          "title": "Compliance and audit reporting",
+          "detail": "Evidence that the controls listed in this blueprint operated, at the frequency the auditor requires for {countries}.",
+          "category": "Compliance"
+        }
+      ]
+    },
+    "test_strategy": {
+      "title": "Test strategy",
+      "section_code": "TST",
+      "content_kind": "list",
+      "description": "How the solution will be tested, by whom, and what 'done' means.",
+      "guidance": "Describe the test levels, who owns each, the entry and exit criteria, the environment and the defect process. Be explicit about what would stop a go-live decision.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["functional_requirements", "process_steps"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 20,
+      "item_code": "TST",
+      "template_narrative": "The test approach below covers unit, string, system integration, user acceptance and regression testing. Every level names its owner and its exit criteria: a test phase that ends because the calendar says so, rather than because its exit criteria are met, gives a go-live decision nothing to stand on.",
+      "template_items": [
+        {
+          "title": "Unit and string testing",
+          "detail": "Each configured setting and each interface is tested by the consultant who built it, before it enters the integration test. Exit criterion: every configured object demonstrated once.",
+          "category": "Test level",
+          "owner": "Implementation team"
+        },
+        {
+          "title": "System integration testing",
+          "detail": "The end-to-end process is tested across {modules} and the named integrations, using migrated data. Exit criterion: every process step and every interface passes, with no open high-severity defect.",
+          "category": "Test level",
+          "owner": "Implementation team"
+        },
+        {
+          "title": "User acceptance testing",
+          "detail": "{user_groups} run the process in their own words against the business objectives. Exit criterion: business sign-off per scenario.",
+          "category": "Test level",
+          "owner": "Business"
+        },
+        {
+          "title": "Regression testing",
+          "detail": "The processes that are already live and touch the same configuration are re-run before each transport into production.",
+          "category": "Test level",
+          "owner": "Implementation team"
+        }
+      ]
+    },
+    "sit_scenarios": {
+      "title": "SIT scenarios",
+      "section_code": "SIT",
+      "content_kind": "table",
+      "description": "End-to-end scenarios proving the configured process and its interfaces.",
+      "guidance": "Each scenario covers one end-to-end path through the process steps, crossing at least one system boundary where the project has an integration. Name the trigger, the path and the outcome to be checked. These are scenarios, not step-by-step scripts.",
+      "required_inputs": ["desired_process"],
+      "derives_from": [],
+      "depends_on": ["process_steps", "integrations", "test_strategy"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 25,
+      "item_code": "SIT",
+      "template_narrative": "The scenarios below prove the configured process runs end to end and that each named integration carries its data. They are written for the implementation team; the business-facing scenarios are in the UAT section.",
+      "template_items": [
+        {
+          "title": "End-to-end happy path",
+          "detail": "Run the future-state process from trigger to close in {sap_product}, checking every follow-on document and posting the design calls for.",
+          "category": "SIT scenario",
+          "rating": "high"
+        },
+        {
+          "title": "Integration path",
+          "detail": "Run the process so that each integration named in this blueprint is triggered, and check the data that arrives on the far side.",
+          "category": "SIT scenario",
+          "rating": "high"
+        },
+        {
+          "title": "Exception and error handling",
+          "detail": "Force the errors the business rules are meant to catch and confirm the process stops with a message a user can act on.",
+          "category": "SIT scenario",
+          "rating": "medium"
+        }
+      ]
+    },
+    "uat_scenarios": {
+      "title": "UAT scenarios",
+      "section_code": "UAT",
+      "content_kind": "table",
+      "description": "Business-owned scenarios written in the language of the user group that runs them.",
+      "guidance": "Write each scenario as the business would describe its own day: a real situation, the outcome the user expects and the decision they make from it. Name the user group that owns it. No system jargon.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["process_steps", "test_strategy"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 25,
+      "item_code": "UAT",
+      "template_narrative": "The scenarios below belong to the business. They are written in the language of the people who will run the process, and each one is signed off by the user group that owns it rather than by the implementation team.",
+      "template_items": [
+        {
+          "title": "A normal working day",
+          "detail": "{primary_user_group} runs the process for a typical case from start to finish and confirms the outcome matches what the business expects today.",
+          "category": "UAT scenario",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "A case that needs an approval",
+          "detail": "A case that crosses the approval threshold is raised, approved by the right person, and completed.",
+          "category": "UAT scenario",
+          "owner": "{primary_user_group}"
+        },
+        {
+          "title": "A case that has to be corrected",
+          "detail": "A mistake is made and corrected using only the tools the business will have after go-live.",
+          "category": "UAT scenario",
+          "owner": "{primary_user_group}"
+        }
+      ]
+    },
+    "training": {
+      "title": "Training",
+      "section_code": "TRN",
+      "content_kind": "table",
+      "description": "What each user group has to be able to do, and how they will learn it.",
+      "guidance": "For each audience, state what they must be able to do unaided after training, the format, the timing relative to go-live and the materials needed. Training that ends more than a few weeks before go-live has to be repeated - say so where it applies.",
+      "required_inputs": [],
+      "derives_from": [
+        {
+          "field": "user_groups",
+          "category": "Audience",
+          "detail_template": "Training is required for {value}. Record what this group must be able to do unaided after go-live, the format, the timing relative to cutover and the materials to be produced."
+        }
+      ],
+      "depends_on": ["process_steps", "security_roles"],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 25,
+      "item_code": "TRN",
+      "template_narrative": "Training is planned per audience rather than per module, because a user cares about the job they do rather than the system that carries it. Each entry states what the audience must be able to do unaided after go-live.",
+      "template_items": [
+        {
+          "title": "Process training for the business",
+          "detail": "Every user group named in the project request is trained on the future-state process before cutover, using migrated data in a training client.",
+          "category": "Audience"
+        }
+      ]
+    },
+    "cutover_activities": {
+      "title": "Cutover activities",
+      "section_code": "CUT",
+      "content_kind": "table",
+      "description": "The ordered task list that takes the business from the old process to the new one.",
+      "guidance": "List the cutover tasks in order, each with an owner and a dependency. Cover the freeze on the legacy process, the final extracts, the loads, the reconciliation, the go/no-go decision and the fallback. Do not invent dates.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["data_migration", "security_roles", "test_strategy"],
+      "allow_ai_items": true,
+      "min_items": 4,
+      "max_items": 30,
+      "item_code": "CUT",
+      "template_narrative": "The activities below run in order over the cutover window. No dates appear: the sequence and the dependencies are what this blueprint can state, and the calendar is set by the programme plan once the timeline recorded as {timeline} is confirmed.",
+      "template_items": [
+        {
+          "title": "Freeze the legacy process",
+          "detail": "Stop new transactions in the current systems and complete the ones in flight so the final extract is a clean cut.",
+          "category": "Cutover task",
+          "rating": "sequence 1"
+        },
+        {
+          "title": "Take and load the final data extracts",
+          "detail": "Extract from the sources named in the data migration section, load into {sap_product} and record the counts loaded.",
+          "category": "Cutover task",
+          "rating": "sequence 2"
+        },
+        {
+          "title": "Reconcile and sign off the loaded data",
+          "detail": "The business owner named for each object reconciles the loaded data and signs it off. No sign-off, no go-live.",
+          "category": "Cutover task",
+          "rating": "sequence 3"
+        },
+        {
+          "title": "Assign roles and open the system",
+          "detail": "Assign the roles listed in the security roles section to the named users and open the system to the business.",
+          "category": "Cutover task",
+          "rating": "sequence 4"
+        },
+        {
+          "title": "Hold the go/no-go decision",
+          "detail": "The agreed criteria are reviewed and the decision is recorded, together with the fallback if the answer is no.",
+          "category": "Cutover task",
+          "rating": "sequence 5"
+        }
+      ]
+    },
+    "hypercare": {
+      "title": "Hypercare",
+      "section_code": "HYP",
+      "content_kind": "list",
+      "description": "How the solution is supported immediately after go-live, and how support ends.",
+      "guidance": "State the hypercare duration, the support model, the response expectations, the escalation route, the daily rhythm and the exit criteria that hand the solution to run-and-maintain.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["cutover_activities"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 20,
+      "item_code": "HYP",
+      "template_narrative": "Hypercare covers the period immediately after go-live, when the process is live but the people running it are new to it. It ends on stated criteria rather than on a date, and the exit hands the solution to the run-and-maintain team.",
+      "template_items": [
+        {
+          "title": "On-site or on-call support per user group",
+          "detail": "Each user group named in the project request has a named contact during hypercare who knows the process, not just the system.",
+          "category": "Support model"
+        },
+        {
+          "title": "Daily issue triage",
+          "detail": "Issues are triaged daily with the business, classified, and either fixed, worked around or accepted with a date.",
+          "category": "Rhythm"
+        },
+        {
+          "title": "Exit criteria",
+          "detail": "Hypercare ends when the process has run a full business cycle with no open high-severity issue and the run-and-maintain team has accepted the handover.",
+          "category": "Exit"
+        }
+      ]
+    },
+    "risks": {
+      "title": "Risks",
+      "section_code": "RSK",
+      "content_kind": "table",
+      "description": "What could stop the project delivering, with a mitigation and an owner.",
+      "guidance": "State each risk as a cause, an event and a consequence, then give the mitigation and the owner. Include the risks that follow from the constraints in the project request. Rate each one low, medium or high and be honest about the high ones.",
+      "required_inputs": [],
+      "derives_from": [
+        {
+          "field": "constraints",
+          "category": "Constraint",
+          "detail_template": "Recorded as a project constraint: {value}. It is carried here as a risk because a constraint that is not actively managed becomes one. Record the mitigation and the owner.",
+          "rating": "medium"
+        }
+      ],
+      "depends_on": ["scope", "assumptions", "data_migration"],
+      "allow_ai_items": true,
+      "min_items": 3,
+      "max_items": 30,
+      "item_code": "RSK",
+      "template_narrative": "The risks below follow from the scope, the assumptions and the constraints recorded in this blueprint. Each needs an owner and a review date; a risk register that is written once and never revisited is a document, not a control.",
+      "template_items": [
+        {
+          "title": "Data quality in the source systems",
+          "detail": "Cause: legacy data has never been cleansed for this purpose. Event: loads fail or land incorrect values. Consequence: cutover slips or the business goes live on data it does not trust. Mitigation: profile the sources early and agree cleansing rules before extraction.",
+          "category": "Data",
+          "rating": "high"
+        },
+        {
+          "title": "Business availability for design, test and training",
+          "detail": "Cause: the people who know the process also run it. Event: workshops, UAT and training slip. Consequence: the design records the wrong process. Mitigation: name and release the people in advance and record it as a commitment.",
+          "category": "Resourcing",
+          "rating": "high"
+        },
+        {
+          "title": "Scope growth after design sign-off",
+          "detail": "Cause: requirements surface late. Event: changes arrive after configuration starts. Consequence: rework in configuration, security and testing. Mitigation: hold the scope section of this blueprint as the baseline and route additions through a change decision.",
+          "category": "Scope",
+          "rating": "medium"
+        }
+      ]
+    },
+    "dependencies": {
+      "title": "Dependencies",
+      "section_code": "DEP",
+      "content_kind": "list",
+      "description": "What this project needs from somebody else in order to deliver.",
+      "guidance": "List what the project depends on from outside its own team: other projects, system availability, third-party readiness, licences, infrastructure and decisions. For each, say who owns it and when it is needed.",
+      "required_inputs": [],
+      "derives_from": [
+        {
+          "field": "systems_involved",
+          "category": "System dependency",
+          "detail_template": "The project depends on {value} being available and supported for the duration. Confirm the owner, the change freeze windows and the environments the project can use."
+        }
+      ],
+      "depends_on": ["integrations", "cutover_activities"],
+      "allow_ai_items": true,
+      "min_items": 1,
+      "max_items": 25,
+      "item_code": "DEP",
+      "template_narrative": "The dependencies below sit outside this project's control. Each needs a named owner on the other side and a date by which it is needed, because a dependency without both is an assumption in disguise.",
+      "template_items": [
+        {
+          "title": "Environment availability",
+          "detail": "Development, test and training environments for {sap_product} are available on the dates the timeline recorded as {timeline} assumes.",
+          "category": "Infrastructure"
+        }
+      ]
+    },
+    "open_decisions": {
+      "title": "Open decisions",
+      "section_code": "DEC",
+      "content_kind": "table",
+      "description": "The decisions still to be made, with an owner and a date they are needed by.",
+      "guidance": "List the decisions this blueprint could not settle. For each, state the question, the options, who decides, and what is blocked until it is decided. A decision with no owner and no deadline is not tracked, so give both.",
+      "required_inputs": [],
+      "derives_from": [],
+      "depends_on": ["scope", "configuration_requirements", "integrations"],
+      "allow_ai_items": true,
+      "min_items": 2,
+      "max_items": 25,
+      "item_code": "DEC",
+      "template_narrative": "The decisions below are open. Each one names what is blocked until it is made, so the programme can see which decision is on the critical path rather than discovering it later.",
+      "template_items": [
+        {
+          "title": "Standard process or deliberate departure",
+          "detail": "Where the future-state process differs from the standard delivered process, decide whether to change the process or to build the difference. Blocks: configuration requirements and the build estimate.",
+          "category": "Design decision",
+          "owner": "Design authority"
+        },
+        {
+          "title": "Interface technology and ownership",
+          "detail": "Decide the integration technology for each interface named in this blueprint and who operates it. Blocks: the interface specifications and the integration test plan.",
+          "category": "Architecture decision",
+          "owner": "Solution architect"
+        },
+        {
+          "title": "Cutover approach",
+          "detail": "Decide between a single cutover and a phased approach for the organisational units in scope. Blocks: the cutover plan and the data migration sequence.",
+          "category": "Programme decision",
+          "owner": "Programme manager"
+        }
+      ]
+    }
+  },
+  "reporting": {
+    "disclaimer": "This is a PROPOSED SAP implementation blueprint drafted from the project request entered in this application. It requires review by qualified SAP professionals before any part of it is used to configure, build or plan a system. No configuration, organisational structure, integration, role or migration approach described here has been validated against a live SAP system, and this application is not connected to one. Any effort, duration or benefit mentioned is an indication, never a commitment.",
+    "ai_note": "Section wording marked ai_generated or mock_ai was drafted by a language model from the project request. The section list, the section order, the organisational structure, the module list, the integration register, the interface list, the migration sources and the security role list are computed by deterministic code from what the project request supplied, and a language model can neither add to them nor remove from them.",
+    "review_note": "A section whose required project inputs are missing is marked 'needs input' and left unwritten rather than filled with plausible content. A section that summarises other sections is marked stale when one of those sections changes after it was written."
+  }
+}

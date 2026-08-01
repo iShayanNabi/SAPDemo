@@ -117,6 +117,7 @@ manifests and the recorded baselines the integration tests assert against:
 | `scripts/generate_contract_sample_data.py` | `sample_contract_*.{txt,pdf,docx}` - six fictional contracts (module 6) |
 | `scripts/generate_inventory_sample_data.py` | `sample_inventory_history.*` (module 7) |
 | `scripts/generate_test_case_sample_data.py` | `sample_test_case_processes.json` - four fictional SAP process definitions (module 8) |
+| `scripts/generate_blueprint_sample_data.py` | `sample_blueprint_projects.json` - four fictional SAP project requests (module 9) |
 
 You only need to run one of them if you have deleted or edited the files in `data/sample/`, or if
 you are changing a generator itself. Every generator is seeded, so re-running it reproduces the same

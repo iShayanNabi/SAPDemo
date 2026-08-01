@@ -775,3 +775,148 @@ class ApiClient:
         return self.download_bytes(
             f"/test-cases/suites/{suite_id}/export", {"format": export_format}
         )
+
+    # -- SAP Blueprint Generator (module 9) -------------------------------
+    def blueprint_generate(
+        self,
+        project: dict[str, Any],
+        *,
+        blueprint_name: str | None = None,
+        sections: list[str] | None = None,
+        owner: str | None = None,
+        use_ai: bool = True,
+    ) -> dict[str, Any]:
+        """Generate a complete SAP implementation blueprint."""
+        payload: dict[str, Any] = {
+            "project": project,
+            "sections": sections or [],
+            "use_ai": use_ai,
+        }
+        if blueprint_name:
+            payload["blueprint_name"] = blueprint_name
+        if owner:
+            payload["owner"] = owner
+        return self._request("POST", "/blueprints/generate", json=payload)
+
+    def blueprint(self, blueprint_id: str) -> dict[str, Any]:
+        """Fetch one blueprint with its sections."""
+        return self._request("GET", f"/blueprints/{blueprint_id}")
+
+    def blueprints(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List generated blueprints."""
+        return self._request(
+            "GET", "/blueprints", params={"limit": limit, "offset": offset}
+        )
+
+    def blueprint_update(self, blueprint_id: str, changes: dict[str, Any]) -> dict[str, Any]:
+        """Edit the blueprint's own fields, or replace its project request."""
+        return self._request("PUT", f"/blueprints/{blueprint_id}", json=changes)
+
+    def blueprint_section(self, blueprint_id: str, section_id: str) -> dict[str, Any]:
+        """Fetch one section."""
+        return self._request("GET", f"/blueprints/{blueprint_id}/sections/{section_id}")
+
+    def blueprint_section_update(
+        self, blueprint_id: str, section_id: str, changes: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Apply a partial edit to one section."""
+        return self._request(
+            "PUT", f"/blueprints/{blueprint_id}/sections/{section_id}", json=changes
+        )
+
+    def blueprint_section_regenerate(
+        self,
+        blueprint_id: str,
+        section_id: str,
+        *,
+        instruction: str | None = None,
+        use_ai: bool = True,
+    ) -> dict[str, Any]:
+        """Redraft one section."""
+        payload: dict[str, Any] = {"use_ai": use_ai}
+        if instruction:
+            payload["instruction"] = instruction
+        return self._request(
+            "POST",
+            f"/blueprints/{blueprint_id}/sections/{section_id}/regenerate",
+            json=payload,
+        )
+
+    def blueprint_section_approve(
+        self,
+        blueprint_id: str,
+        section_id: str,
+        approved_by: str,
+        *,
+        approved: bool = True,
+        comments: str | None = None,
+    ) -> dict[str, Any]:
+        """Approve or un-approve one section."""
+        payload: dict[str, Any] = {"approved_by": approved_by, "approved": approved}
+        if comments:
+            payload["comments"] = comments
+        return self._request(
+            "POST", f"/blueprints/{blueprint_id}/sections/{section_id}/approve", json=payload
+        )
+
+    def blueprint_section_add(
+        self, blueprint_id: str, section: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Add one custom section."""
+        return self._request("POST", f"/blueprints/{blueprint_id}/sections", json=section)
+
+    def blueprint_section_delete(self, blueprint_id: str, section_id: str) -> dict[str, Any]:
+        """Delete one custom section."""
+        return self._request(
+            "DELETE", f"/blueprints/{blueprint_id}/sections/{section_id}"
+        )
+
+    def blueprint_version_create(
+        self, blueprint_id: str, *, label: str = "", created_by: str = "", note: str = ""
+    ) -> dict[str, Any]:
+        """Save the blueprint's current state as a version."""
+        return self._request(
+            "POST",
+            f"/blueprints/{blueprint_id}/versions",
+            json={"label": label, "created_by": created_by, "note": note},
+        )
+
+    def blueprint_versions(self, blueprint_id: str) -> dict[str, Any]:
+        """Fetch the version history."""
+        return self._request("GET", f"/blueprints/{blueprint_id}/versions")
+
+    def blueprint_version(self, blueprint_id: str, version_number: int) -> dict[str, Any]:
+        """Fetch one saved version, or the live document for version 0."""
+        return self._request("GET", f"/blueprints/{blueprint_id}/versions/{version_number}")
+
+    def blueprint_version_compare(
+        self, blueprint_id: str, from_version: int, to_version: int
+    ) -> dict[str, Any]:
+        """Compare two versions. Version 0 means the live document."""
+        return self._request(
+            "GET",
+            f"/blueprints/{blueprint_id}/versions/compare",
+            params={"from": from_version, "to": to_version},
+        )
+
+    def blueprint_catalog(self) -> dict[str, Any]:
+        """Fetch the sections, the project fields and the deterministic rules."""
+        return self._request("GET", "/blueprints/catalog")
+
+    def blueprint_ai_status(self) -> dict[str, Any]:
+        """Report which AI provider the generator would use."""
+        return self._request("GET", "/blueprints/ai-status")
+
+    def blueprint_sample_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional project definitions."""
+        return self._request("GET", "/blueprints/sample/info")
+
+    def blueprint_sample(self, name: str) -> dict[str, Any]:
+        """Load one bundled fictional project definition."""
+        return self._request("GET", "/blueprints/sample", params={"name": name})
+
+    def blueprint_export(self, blueprint_id: str, export_format: str) -> bytes:
+        """Download a blueprint as Markdown, JSON, DOCX or PDF."""
+        return self.download_bytes(
+            f"/blueprints/{blueprint_id}/export", {"format": export_format}
+        )

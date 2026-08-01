@@ -1,0 +1,2483 @@
+{
+  "generated_by": "scripts/generate_blueprint_sample_data.py",
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "ai_drafting": "off",
+  "note": "Deterministic output only: the section list, the order, the identifiers, the statuses, the missing inputs, the derived items and the readiness figures.",
+  "projects": {
+    "p2p_wholesale": {
+      "section_count": 30,
+      "section_order": [
+        "executive_summary",
+        "business_objectives",
+        "scope",
+        "out_of_scope",
+        "assumptions",
+        "current_state_process",
+        "future_state_process",
+        "process_steps",
+        "sap_products_modules",
+        "best_practice_alignment",
+        "organizational_structure",
+        "master_data",
+        "configuration_requirements",
+        "functional_requirements",
+        "nonfunctional_requirements",
+        "integrations",
+        "interfaces_apis",
+        "data_migration",
+        "security_roles",
+        "controls",
+        "reporting_requirements",
+        "test_strategy",
+        "sit_scenarios",
+        "uat_scenarios",
+        "training",
+        "cutover_activities",
+        "hypercare",
+        "risks",
+        "dependencies",
+        "open_decisions"
+      ],
+      "excluded_sections": [],
+      "missing_inputs": [],
+      "needs_input_sections": [],
+      "injection_detected": false,
+      "injection_markers": [],
+      "summary": {
+        "section_count": 30,
+        "canonical_section_count": 30,
+        "custom_section_count": 0,
+        "item_count": 110,
+        "status_counts": {
+          "needs_input": 0,
+          "draft": 30,
+          "in_review": 0,
+          "approved": 0
+        },
+        "source_counts": {
+          "ai_generated": 0,
+          "derived": 12,
+          "template": 18,
+          "manual": 0
+        },
+        "approved_count": 0,
+        "needs_input_count": 0,
+        "ai_drafted_count": 0,
+        "derived_count": 12,
+        "template_count": 18,
+        "manual_count": 0,
+        "stale_section_count": 0,
+        "stale_approved_count": 0,
+        "completeness_pct": 100.0,
+        "approval_pct": 0.0,
+        "version_count": 0,
+        "missing_inputs": []
+      },
+      "sections": [
+        {
+          "section_key": "executive_summary",
+          "section_id": "BP-EXEC",
+          "position": 1,
+          "title": "Executive summary",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "scope",
+            "future_state_process",
+            "risks"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "business_objectives",
+          "section_id": "BP-OBJ",
+          "position": 2,
+          "title": "Business objectives",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 3,
+          "derived_item_count": 3,
+          "derived_items": [
+            {
+              "item_id": "BP-OBJ-001",
+              "title": "Cut the time from requisition to purchase order from five days to one",
+              "category": "Objective"
+            },
+            {
+              "item_id": "BP-OBJ-002",
+              "title": "Remove the manual three-way match performed in accounts payable",
+              "category": "Objective"
+            },
+            {
+              "item_id": "BP-OBJ-003",
+              "title": "Give category managers a single view of committed spend",
+              "category": "Objective"
+            }
+          ]
+        },
+        {
+          "section_key": "scope",
+          "section_id": "BP-SCOPE",
+          "position": 3,
+          "title": "Scope",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 3,
+          "derived_item_count": 3,
+          "derived_items": [
+            {
+              "item_id": "BP-SCP-001",
+              "title": "MM",
+              "category": "Module in scope"
+            },
+            {
+              "item_id": "BP-SCP-002",
+              "title": "FI",
+              "category": "Module in scope"
+            },
+            {
+              "item_id": "BP-SCP-003",
+              "title": "SD",
+              "category": "Module in scope"
+            }
+          ]
+        },
+        {
+          "section_key": "out_of_scope",
+          "section_id": "BP-OOS",
+          "position": 4,
+          "title": "Out-of-scope items",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "assumptions",
+          "section_id": "BP-ASM",
+          "position": 5,
+          "title": "Assumptions",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 5,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-ASM-001",
+              "title": "The group vendor register remains the master for supplier data",
+              "category": "Stated assumption"
+            },
+            {
+              "item_id": "BP-ASM-002",
+              "title": "Category managers are available for two workshops a week during design",
+              "category": "Stated assumption"
+            }
+          ]
+        },
+        {
+          "section_key": "current_state_process",
+          "section_id": "BP-CURR",
+          "position": 6,
+          "title": "Current-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "future_state_process",
+          "section_id": "BP-FUT",
+          "position": 7,
+          "title": "Future-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "current_state_process"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "process_steps",
+          "section_id": "BP-STEP",
+          "position": 8,
+          "title": "Process steps",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sap_products_modules",
+          "section_id": "BP-MOD",
+          "position": 9,
+          "title": "SAP products and modules",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 3,
+          "derived_item_count": 3,
+          "derived_items": [
+            {
+              "item_id": "BP-MOD-001",
+              "title": "MM",
+              "category": "SAP module"
+            },
+            {
+              "item_id": "BP-MOD-002",
+              "title": "FI",
+              "category": "SAP module"
+            },
+            {
+              "item_id": "BP-MOD-003",
+              "title": "SD",
+              "category": "SAP module"
+            }
+          ]
+        },
+        {
+          "section_key": "best_practice_alignment",
+          "section_id": "BP-BP",
+          "position": 10,
+          "title": "SAP Best Practice alignment",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process"
+          ],
+          "item_count": 2,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "organizational_structure",
+          "section_id": "BP-ORG",
+          "position": 11,
+          "title": "Organizational structure",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 14,
+          "derived_item_count": 14,
+          "derived_items": [
+            {
+              "item_id": "BP-ORG-001",
+              "title": "Germany",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-002",
+              "title": "Poland",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-003",
+              "title": "Netherlands",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-004",
+              "title": "1000 Nordwind DE",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-005",
+              "title": "2000 Nordwind PL",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-006",
+              "title": "3000 Nordwind NL",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-007",
+              "title": "1010 Hamburg",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-008",
+              "title": "2010 Poznan",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-009",
+              "title": "3010 Rotterdam",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-010",
+              "title": "1000 Central purchasing",
+              "category": "Purchasing organization"
+            },
+            {
+              "item_id": "BP-ORG-011",
+              "title": "2000 Local purchasing PL",
+              "category": "Purchasing organization"
+            },
+            {
+              "item_id": "BP-ORG-012",
+              "title": "Hamburg distribution centre",
+              "category": "Location"
+            },
+            {
+              "item_id": "BP-ORG-013",
+              "title": "Poznan distribution centre",
+              "category": "Location"
+            },
+            {
+              "item_id": "BP-ORG-014",
+              "title": "Rotterdam cross-dock",
+              "category": "Location"
+            }
+          ]
+        },
+        {
+          "section_key": "master_data",
+          "section_id": "BP-MD",
+          "position": 12,
+          "title": "Master data",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "configuration_requirements",
+          "section_id": "BP-CFG",
+          "position": 13,
+          "title": "Configuration requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process",
+            "organizational_structure"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "functional_requirements",
+          "section_id": "BP-FR",
+          "position": 14,
+          "title": "Functional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process",
+            "process_steps"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "nonfunctional_requirements",
+          "section_id": "BP-NFR",
+          "position": 15,
+          "title": "Nonfunctional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "integrations",
+          "section_id": "BP-INT",
+          "position": 16,
+          "title": "Integrations",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 4,
+          "derived_item_count": 4,
+          "derived_items": [
+            {
+              "item_id": "BP-INT-001",
+              "title": "Purchase order transmission to the supplier portal",
+              "category": "Integration"
+            },
+            {
+              "item_id": "BP-INT-002",
+              "title": "Goods receipt confirmation from the warehouse management system",
+              "category": "Integration"
+            },
+            {
+              "item_id": "BP-INT-003",
+              "title": "Payment file to the corporate banking platform",
+              "category": "Integration"
+            },
+            {
+              "item_id": "BP-INT-004",
+              "title": "Supplier master replication from the group vendor register",
+              "category": "Integration"
+            }
+          ]
+        },
+        {
+          "section_key": "interfaces_apis",
+          "section_id": "BP-IFC",
+          "position": 17,
+          "title": "Interfaces and APIs",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "integrations"
+          ],
+          "item_count": 4,
+          "derived_item_count": 4,
+          "derived_items": [
+            {
+              "item_id": "BP-IFC-001",
+              "title": "Purchase order transmission to the supplier portal",
+              "category": "Interface"
+            },
+            {
+              "item_id": "BP-IFC-002",
+              "title": "Goods receipt confirmation from the warehouse management system",
+              "category": "Interface"
+            },
+            {
+              "item_id": "BP-IFC-003",
+              "title": "Payment file to the corporate banking platform",
+              "category": "Interface"
+            },
+            {
+              "item_id": "BP-IFC-004",
+              "title": "Supplier master replication from the group vendor register",
+              "category": "Interface"
+            }
+          ]
+        },
+        {
+          "section_key": "data_migration",
+          "section_id": "BP-MIG",
+          "position": 18,
+          "title": "Data migration",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "master_data"
+          ],
+          "item_count": 3,
+          "derived_item_count": 3,
+          "derived_items": [
+            {
+              "item_id": "BP-MIG-001",
+              "title": "Legacy purchasing system",
+              "category": "Source system"
+            },
+            {
+              "item_id": "BP-MIG-002",
+              "title": "Group vendor register",
+              "category": "Source system"
+            },
+            {
+              "item_id": "BP-MIG-003",
+              "title": "Spreadsheet price lists maintained by category managers",
+              "category": "Source system"
+            }
+          ]
+        },
+        {
+          "section_key": "security_roles",
+          "section_id": "BP-SEC",
+          "position": 19,
+          "title": "Security roles",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "organizational_structure",
+            "process_steps"
+          ],
+          "item_count": 5,
+          "derived_item_count": 5,
+          "derived_items": [
+            {
+              "item_id": "BP-SEC-001",
+              "title": "Requisitioner",
+              "category": "User group"
+            },
+            {
+              "item_id": "BP-SEC-002",
+              "title": "Purchasing buyer",
+              "category": "User group"
+            },
+            {
+              "item_id": "BP-SEC-003",
+              "title": "Category manager",
+              "category": "User group"
+            },
+            {
+              "item_id": "BP-SEC-004",
+              "title": "Warehouse clerk",
+              "category": "User group"
+            },
+            {
+              "item_id": "BP-SEC-005",
+              "title": "Accounts payable clerk",
+              "category": "User group"
+            }
+          ]
+        },
+        {
+          "section_key": "controls",
+          "section_id": "BP-CTL",
+          "position": 20,
+          "title": "Controls",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "reporting_requirements",
+          "section_id": "BP-RPT",
+          "position": 21,
+          "title": "Reporting requirements",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "test_strategy",
+          "section_id": "BP-TST",
+          "position": 22,
+          "title": "Test strategy",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "functional_requirements",
+            "process_steps"
+          ],
+          "item_count": 4,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sit_scenarios",
+          "section_id": "BP-SIT",
+          "position": 23,
+          "title": "SIT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "integrations",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "uat_scenarios",
+          "section_id": "BP-UAT",
+          "position": 24,
+          "title": "UAT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "training",
+          "section_id": "BP-TRN",
+          "position": 25,
+          "title": "Training",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 6,
+          "derived_item_count": 5,
+          "derived_items": [
+            {
+              "item_id": "BP-TRN-001",
+              "title": "Requisitioner",
+              "category": "Audience"
+            },
+            {
+              "item_id": "BP-TRN-002",
+              "title": "Purchasing buyer",
+              "category": "Audience"
+            },
+            {
+              "item_id": "BP-TRN-003",
+              "title": "Category manager",
+              "category": "Audience"
+            },
+            {
+              "item_id": "BP-TRN-004",
+              "title": "Warehouse clerk",
+              "category": "Audience"
+            },
+            {
+              "item_id": "BP-TRN-005",
+              "title": "Accounts payable clerk",
+              "category": "Audience"
+            }
+          ]
+        },
+        {
+          "section_key": "cutover_activities",
+          "section_id": "BP-CUT",
+          "position": 26,
+          "title": "Cutover activities",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "data_migration",
+            "security_roles",
+            "test_strategy"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "hypercare",
+          "section_id": "BP-HYP",
+          "position": 27,
+          "title": "Hypercare",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "cutover_activities"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "risks",
+          "section_id": "BP-RSK",
+          "position": 28,
+          "title": "Risks",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "assumptions",
+            "data_migration"
+          ],
+          "item_count": 6,
+          "derived_item_count": 3,
+          "derived_items": [
+            {
+              "item_id": "BP-RSK-001",
+              "title": "The warehouse management system cannot be changed this year",
+              "category": "Constraint"
+            },
+            {
+              "item_id": "BP-RSK-002",
+              "title": "No downtime longer than one weekend is acceptable at the Hamburg site",
+              "category": "Constraint"
+            },
+            {
+              "item_id": "BP-RSK-003",
+              "title": "The Polish company code must go live in the same wave as the German one",
+              "category": "Constraint"
+            }
+          ]
+        },
+        {
+          "section_key": "dependencies",
+          "section_id": "BP-DEP",
+          "position": 29,
+          "title": "Dependencies",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "integrations",
+            "cutover_activities"
+          ],
+          "item_count": 5,
+          "derived_item_count": 4,
+          "derived_items": [
+            {
+              "item_id": "BP-DEP-001",
+              "title": "SAP S/4HANA",
+              "category": "System dependency"
+            },
+            {
+              "item_id": "BP-DEP-002",
+              "title": "Legacy warehouse management system",
+              "category": "System dependency"
+            },
+            {
+              "item_id": "BP-DEP-003",
+              "title": "Supplier portal",
+              "category": "System dependency"
+            },
+            {
+              "item_id": "BP-DEP-004",
+              "title": "Corporate banking platform",
+              "category": "System dependency"
+            }
+          ]
+        },
+        {
+          "section_key": "open_decisions",
+          "section_id": "BP-DEC",
+          "position": 30,
+          "title": "Open decisions",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "configuration_requirements",
+            "integrations"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        }
+      ]
+    },
+    "finance_gaps": {
+      "section_count": 30,
+      "section_order": [
+        "executive_summary",
+        "business_objectives",
+        "scope",
+        "out_of_scope",
+        "assumptions",
+        "current_state_process",
+        "future_state_process",
+        "process_steps",
+        "sap_products_modules",
+        "best_practice_alignment",
+        "organizational_structure",
+        "master_data",
+        "configuration_requirements",
+        "functional_requirements",
+        "nonfunctional_requirements",
+        "integrations",
+        "interfaces_apis",
+        "data_migration",
+        "security_roles",
+        "controls",
+        "reporting_requirements",
+        "test_strategy",
+        "sit_scenarios",
+        "uat_scenarios",
+        "training",
+        "cutover_activities",
+        "hypercare",
+        "risks",
+        "dependencies",
+        "open_decisions"
+      ],
+      "excluded_sections": [],
+      "missing_inputs": [
+        "integrations",
+        "data_sources",
+        "user_groups"
+      ],
+      "needs_input_sections": [
+        "integrations",
+        "interfaces_apis",
+        "data_migration",
+        "security_roles"
+      ],
+      "injection_detected": false,
+      "injection_markers": [],
+      "summary": {
+        "section_count": 30,
+        "canonical_section_count": 30,
+        "custom_section_count": 0,
+        "item_count": 75,
+        "status_counts": {
+          "needs_input": 4,
+          "draft": 26,
+          "in_review": 0,
+          "approved": 0
+        },
+        "source_counts": {
+          "ai_generated": 0,
+          "derived": 7,
+          "template": 23,
+          "manual": 0
+        },
+        "approved_count": 0,
+        "needs_input_count": 4,
+        "ai_drafted_count": 0,
+        "derived_count": 7,
+        "template_count": 23,
+        "manual_count": 0,
+        "stale_section_count": 0,
+        "stale_approved_count": 0,
+        "completeness_pct": 86.7,
+        "approval_pct": 0.0,
+        "version_count": 0,
+        "missing_inputs": [
+          "integrations",
+          "data_sources",
+          "user_groups"
+        ]
+      },
+      "sections": [
+        {
+          "section_key": "executive_summary",
+          "section_id": "BP-EXEC",
+          "position": 1,
+          "title": "Executive summary",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "scope",
+            "future_state_process",
+            "risks"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "business_objectives",
+          "section_id": "BP-OBJ",
+          "position": 2,
+          "title": "Business objectives",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-OBJ-001",
+              "title": "Close the books in four working days instead of nine",
+              "category": "Objective"
+            },
+            {
+              "item_id": "BP-OBJ-002",
+              "title": "Replace the spreadsheet used for intercompany reconciliation",
+              "category": "Objective"
+            }
+          ]
+        },
+        {
+          "section_key": "scope",
+          "section_id": "BP-SCOPE",
+          "position": 3,
+          "title": "Scope",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-SCP-001",
+              "title": "FI",
+              "category": "Module in scope"
+            },
+            {
+              "item_id": "BP-SCP-002",
+              "title": "CO",
+              "category": "Module in scope"
+            }
+          ]
+        },
+        {
+          "section_key": "out_of_scope",
+          "section_id": "BP-OOS",
+          "position": 4,
+          "title": "Out-of-scope items",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "assumptions",
+          "section_id": "BP-ASM",
+          "position": 5,
+          "title": "Assumptions",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 4,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-ASM-001",
+              "title": "The chart of accounts is already harmonised across both entities",
+              "category": "Stated assumption"
+            }
+          ]
+        },
+        {
+          "section_key": "current_state_process",
+          "section_id": "BP-CURR",
+          "position": 6,
+          "title": "Current-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "future_state_process",
+          "section_id": "BP-FUT",
+          "position": 7,
+          "title": "Future-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "current_state_process"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "process_steps",
+          "section_id": "BP-STEP",
+          "position": 8,
+          "title": "Process steps",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sap_products_modules",
+          "section_id": "BP-MOD",
+          "position": 9,
+          "title": "SAP products and modules",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-MOD-001",
+              "title": "FI",
+              "category": "SAP module"
+            },
+            {
+              "item_id": "BP-MOD-002",
+              "title": "CO",
+              "category": "SAP module"
+            }
+          ]
+        },
+        {
+          "section_key": "best_practice_alignment",
+          "section_id": "BP-BP",
+          "position": 10,
+          "title": "SAP Best Practice alignment",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process"
+          ],
+          "item_count": 2,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "organizational_structure",
+          "section_id": "BP-ORG",
+          "position": 11,
+          "title": "Organizational structure",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 8,
+          "derived_item_count": 8,
+          "derived_items": [
+            {
+              "item_id": "BP-ORG-001",
+              "title": "Switzerland",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-002",
+              "title": "Austria",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-003",
+              "title": "CH01 Helvetia AG",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-004",
+              "title": "AT01 Helvetia GmbH",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-005",
+              "title": "CH10 Winterthur",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-006",
+              "title": "AT10 Graz",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-007",
+              "title": "Winterthur head office",
+              "category": "Location"
+            },
+            {
+              "item_id": "BP-ORG-008",
+              "title": "Graz plant",
+              "category": "Location"
+            }
+          ]
+        },
+        {
+          "section_key": "master_data",
+          "section_id": "BP-MD",
+          "position": 12,
+          "title": "Master data",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "configuration_requirements",
+          "section_id": "BP-CFG",
+          "position": 13,
+          "title": "Configuration requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process",
+            "organizational_structure"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "functional_requirements",
+          "section_id": "BP-FR",
+          "position": 14,
+          "title": "Functional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process",
+            "process_steps"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "nonfunctional_requirements",
+          "section_id": "BP-NFR",
+          "position": 15,
+          "title": "Nonfunctional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "integrations",
+          "section_id": "BP-INT",
+          "position": 16,
+          "title": "Integrations",
+          "content_kind": "table",
+          "status": "needs_input",
+          "source": "template",
+          "missing_inputs": [
+            "integrations"
+          ],
+          "depends_on": [],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "interfaces_apis",
+          "section_id": "BP-IFC",
+          "position": 17,
+          "title": "Interfaces and APIs",
+          "content_kind": "table",
+          "status": "needs_input",
+          "source": "template",
+          "missing_inputs": [
+            "integrations"
+          ],
+          "depends_on": [
+            "integrations"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "data_migration",
+          "section_id": "BP-MIG",
+          "position": 18,
+          "title": "Data migration",
+          "content_kind": "table",
+          "status": "needs_input",
+          "source": "template",
+          "missing_inputs": [
+            "data_sources"
+          ],
+          "depends_on": [
+            "master_data"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "security_roles",
+          "section_id": "BP-SEC",
+          "position": 19,
+          "title": "Security roles",
+          "content_kind": "table",
+          "status": "needs_input",
+          "source": "template",
+          "missing_inputs": [
+            "user_groups"
+          ],
+          "depends_on": [
+            "organizational_structure",
+            "process_steps"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "controls",
+          "section_id": "BP-CTL",
+          "position": 20,
+          "title": "Controls",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "reporting_requirements",
+          "section_id": "BP-RPT",
+          "position": 21,
+          "title": "Reporting requirements",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "test_strategy",
+          "section_id": "BP-TST",
+          "position": 22,
+          "title": "Test strategy",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "functional_requirements",
+            "process_steps"
+          ],
+          "item_count": 4,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sit_scenarios",
+          "section_id": "BP-SIT",
+          "position": 23,
+          "title": "SIT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "integrations",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "uat_scenarios",
+          "section_id": "BP-UAT",
+          "position": 24,
+          "title": "UAT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "training",
+          "section_id": "BP-TRN",
+          "position": 25,
+          "title": "Training",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 1,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "cutover_activities",
+          "section_id": "BP-CUT",
+          "position": 26,
+          "title": "Cutover activities",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "data_migration",
+            "security_roles",
+            "test_strategy"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "hypercare",
+          "section_id": "BP-HYP",
+          "position": 27,
+          "title": "Hypercare",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "cutover_activities"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "risks",
+          "section_id": "BP-RSK",
+          "position": 28,
+          "title": "Risks",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "assumptions",
+            "data_migration"
+          ],
+          "item_count": 4,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-RSK-001",
+              "title": "The year-end close must not be disrupted",
+              "category": "Constraint"
+            }
+          ]
+        },
+        {
+          "section_key": "dependencies",
+          "section_id": "BP-DEP",
+          "position": 29,
+          "title": "Dependencies",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "integrations",
+            "cutover_activities"
+          ],
+          "item_count": 3,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-DEP-001",
+              "title": "SAP S/4HANA",
+              "category": "System dependency"
+            },
+            {
+              "item_id": "BP-DEP-002",
+              "title": "Group consolidation spreadsheet",
+              "category": "System dependency"
+            }
+          ]
+        },
+        {
+          "section_key": "open_decisions",
+          "section_id": "BP-DEC",
+          "position": 30,
+          "title": "Open decisions",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "configuration_requirements",
+            "integrations"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        }
+      ]
+    },
+    "retail_subset": {
+      "section_count": 8,
+      "section_order": [
+        "executive_summary",
+        "business_objectives",
+        "scope",
+        "process_steps",
+        "organizational_structure",
+        "test_strategy",
+        "cutover_activities",
+        "risks"
+      ],
+      "excluded_sections": [
+        "out_of_scope",
+        "assumptions",
+        "current_state_process",
+        "future_state_process",
+        "sap_products_modules",
+        "best_practice_alignment",
+        "master_data",
+        "configuration_requirements",
+        "functional_requirements",
+        "nonfunctional_requirements",
+        "integrations",
+        "interfaces_apis",
+        "data_migration",
+        "security_roles",
+        "controls",
+        "reporting_requirements",
+        "sit_scenarios",
+        "uat_scenarios",
+        "training",
+        "hypercare",
+        "dependencies",
+        "open_decisions"
+      ],
+      "missing_inputs": [],
+      "needs_input_sections": [],
+      "injection_detected": false,
+      "injection_markers": [],
+      "summary": {
+        "section_count": 8,
+        "canonical_section_count": 8,
+        "custom_section_count": 0,
+        "item_count": 31,
+        "status_counts": {
+          "needs_input": 0,
+          "draft": 8,
+          "in_review": 0,
+          "approved": 0
+        },
+        "source_counts": {
+          "ai_generated": 0,
+          "derived": 4,
+          "template": 4,
+          "manual": 0
+        },
+        "approved_count": 0,
+        "needs_input_count": 0,
+        "ai_drafted_count": 0,
+        "derived_count": 4,
+        "template_count": 4,
+        "manual_count": 0,
+        "stale_section_count": 0,
+        "stale_approved_count": 0,
+        "completeness_pct": 100.0,
+        "approval_pct": 0.0,
+        "version_count": 0,
+        "missing_inputs": []
+      },
+      "sections": [
+        {
+          "section_key": "executive_summary",
+          "section_id": "BP-EXEC",
+          "position": 1,
+          "title": "Executive summary",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "scope",
+            "future_state_process",
+            "risks"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "business_objectives",
+          "section_id": "BP-OBJ",
+          "position": 2,
+          "title": "Business objectives",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-OBJ-001",
+              "title": "Open twelve new stores a year without adding back-office headcount",
+              "category": "Objective"
+            },
+            {
+              "item_id": "BP-OBJ-002",
+              "title": "Give store managers same-day visibility of stock on hand",
+              "category": "Objective"
+            }
+          ]
+        },
+        {
+          "section_key": "scope",
+          "section_id": "BP-SCOPE",
+          "position": 3,
+          "title": "Scope",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-SCP-001",
+              "title": "SD",
+              "category": "Module in scope"
+            },
+            {
+              "item_id": "BP-SCP-002",
+              "title": "MM",
+              "category": "Module in scope"
+            }
+          ]
+        },
+        {
+          "section_key": "process_steps",
+          "section_id": "BP-STEP",
+          "position": 4,
+          "title": "Process steps",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "organizational_structure",
+          "section_id": "BP-ORG",
+          "position": 5,
+          "title": "Organizational structure",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 9,
+          "derived_item_count": 9,
+          "derived_items": [
+            {
+              "item_id": "BP-ORG-001",
+              "title": "Finland",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-002",
+              "title": "Estonia",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-003",
+              "title": "FI01 Baltic Retail OY",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-004",
+              "title": "EE01 Baltic Retail AS",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-005",
+              "title": "FI10 Helsinki DC",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-006",
+              "title": "EE10 Tallinn DC",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-007",
+              "title": "FI00 Group purchasing",
+              "category": "Purchasing organization"
+            },
+            {
+              "item_id": "BP-ORG-008",
+              "title": "Helsinki support office",
+              "category": "Location"
+            },
+            {
+              "item_id": "BP-ORG-009",
+              "title": "Tallinn depot",
+              "category": "Location"
+            }
+          ]
+        },
+        {
+          "section_key": "test_strategy",
+          "section_id": "BP-TST",
+          "position": 6,
+          "title": "Test strategy",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "functional_requirements",
+            "process_steps"
+          ],
+          "item_count": 4,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "cutover_activities",
+          "section_id": "BP-CUT",
+          "position": 7,
+          "title": "Cutover activities",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "data_migration",
+            "security_roles",
+            "test_strategy"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "risks",
+          "section_id": "BP-RSK",
+          "position": 8,
+          "title": "Risks",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "assumptions",
+            "data_migration"
+          ],
+          "item_count": 4,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-RSK-001",
+              "title": "No store may be closed for the cutover",
+              "category": "Constraint"
+            }
+          ]
+        }
+      ]
+    },
+    "hostile_rollout": {
+      "section_count": 30,
+      "section_order": [
+        "executive_summary",
+        "business_objectives",
+        "scope",
+        "out_of_scope",
+        "assumptions",
+        "current_state_process",
+        "future_state_process",
+        "process_steps",
+        "sap_products_modules",
+        "best_practice_alignment",
+        "organizational_structure",
+        "master_data",
+        "configuration_requirements",
+        "functional_requirements",
+        "nonfunctional_requirements",
+        "integrations",
+        "interfaces_apis",
+        "data_migration",
+        "security_roles",
+        "controls",
+        "reporting_requirements",
+        "test_strategy",
+        "sit_scenarios",
+        "uat_scenarios",
+        "training",
+        "cutover_activities",
+        "hypercare",
+        "risks",
+        "dependencies",
+        "open_decisions"
+      ],
+      "excluded_sections": [],
+      "missing_inputs": [],
+      "needs_input_sections": [],
+      "injection_detected": true,
+      "injection_markers": [
+        "current_process"
+      ],
+      "summary": {
+        "section_count": 30,
+        "canonical_section_count": 30,
+        "custom_section_count": 0,
+        "item_count": 78,
+        "status_counts": {
+          "needs_input": 0,
+          "draft": 30,
+          "in_review": 0,
+          "approved": 0
+        },
+        "source_counts": {
+          "ai_generated": 0,
+          "derived": 12,
+          "template": 18,
+          "manual": 0
+        },
+        "approved_count": 0,
+        "needs_input_count": 0,
+        "ai_drafted_count": 0,
+        "derived_count": 12,
+        "template_count": 18,
+        "manual_count": 0,
+        "stale_section_count": 0,
+        "stale_approved_count": 0,
+        "completeness_pct": 100.0,
+        "approval_pct": 0.0,
+        "version_count": 0,
+        "missing_inputs": []
+      },
+      "sections": [
+        {
+          "section_key": "executive_summary",
+          "section_id": "BP-EXEC",
+          "position": 1,
+          "title": "Executive summary",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "scope",
+            "future_state_process",
+            "risks"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "business_objectives",
+          "section_id": "BP-OBJ",
+          "position": 2,
+          "title": "Business objectives",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 1,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-OBJ-001",
+              "title": "Reduce repeat site visits caused by missing parts",
+              "category": "Objective"
+            }
+          ]
+        },
+        {
+          "section_key": "scope",
+          "section_id": "BP-SCOPE",
+          "position": 3,
+          "title": "Scope",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-SCP-001",
+              "title": "PM",
+              "category": "Module in scope"
+            },
+            {
+              "item_id": "BP-SCP-002",
+              "title": "MM",
+              "category": "Module in scope"
+            }
+          ]
+        },
+        {
+          "section_key": "out_of_scope",
+          "section_id": "BP-OOS",
+          "position": 4,
+          "title": "Out-of-scope items",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "assumptions",
+          "section_id": "BP-ASM",
+          "position": 5,
+          "title": "Assumptions",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 4,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-ASM-001",
+              "title": "Van stock is counted before go-live",
+              "category": "Stated assumption"
+            }
+          ]
+        },
+        {
+          "section_key": "current_state_process",
+          "section_id": "BP-CURR",
+          "position": 6,
+          "title": "Current-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "future_state_process",
+          "section_id": "BP-FUT",
+          "position": 7,
+          "title": "Future-state process",
+          "content_kind": "narrative",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "current_state_process"
+          ],
+          "item_count": 0,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "process_steps",
+          "section_id": "BP-STEP",
+          "position": 8,
+          "title": "Process steps",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sap_products_modules",
+          "section_id": "BP-MOD",
+          "position": 9,
+          "title": "SAP products and modules",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-MOD-001",
+              "title": "PM",
+              "category": "SAP module"
+            },
+            {
+              "item_id": "BP-MOD-002",
+              "title": "MM",
+              "category": "SAP module"
+            }
+          ]
+        },
+        {
+          "section_key": "best_practice_alignment",
+          "section_id": "BP-BP",
+          "position": 10,
+          "title": "SAP Best Practice alignment",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process"
+          ],
+          "item_count": 2,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "organizational_structure",
+          "section_id": "BP-ORG",
+          "position": 11,
+          "title": "Organizational structure",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 5,
+          "derived_item_count": 5,
+          "derived_items": [
+            {
+              "item_id": "BP-ORG-001",
+              "title": "United Kingdom",
+              "category": "Country"
+            },
+            {
+              "item_id": "BP-ORG-002",
+              "title": "UK01 Calder Ltd",
+              "category": "Company code"
+            },
+            {
+              "item_id": "BP-ORG-003",
+              "title": "UK10 Leeds",
+              "category": "Plant"
+            },
+            {
+              "item_id": "BP-ORG-004",
+              "title": "UK00 Calder purchasing",
+              "category": "Purchasing organization"
+            },
+            {
+              "item_id": "BP-ORG-005",
+              "title": "Leeds depot",
+              "category": "Location"
+            }
+          ]
+        },
+        {
+          "section_key": "master_data",
+          "section_id": "BP-MD",
+          "position": 12,
+          "title": "Master data",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "configuration_requirements",
+          "section_id": "BP-CFG",
+          "position": 13,
+          "title": "Configuration requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "sap_products_modules",
+            "future_state_process",
+            "organizational_structure"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "functional_requirements",
+          "section_id": "BP-FR",
+          "position": 14,
+          "title": "Functional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process",
+            "process_steps"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "nonfunctional_requirements",
+          "section_id": "BP-NFR",
+          "position": 15,
+          "title": "Nonfunctional requirements",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "integrations",
+          "section_id": "BP-INT",
+          "position": 16,
+          "title": "Integrations",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [],
+          "item_count": 1,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-INT-001",
+              "title": "Notification sync with the mobile field service application",
+              "category": "Integration"
+            }
+          ]
+        },
+        {
+          "section_key": "interfaces_apis",
+          "section_id": "BP-IFC",
+          "position": 17,
+          "title": "Interfaces and APIs",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "integrations"
+          ],
+          "item_count": 1,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-IFC-001",
+              "title": "Notification sync with the mobile field service application",
+              "category": "Interface"
+            }
+          ]
+        },
+        {
+          "section_key": "data_migration",
+          "section_id": "BP-MIG",
+          "position": 18,
+          "title": "Data migration",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "master_data"
+          ],
+          "item_count": 1,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-MIG-001",
+              "title": "Legacy job book",
+              "category": "Source system"
+            }
+          ]
+        },
+        {
+          "section_key": "security_roles",
+          "section_id": "BP-SEC",
+          "position": 19,
+          "title": "Security roles",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "organizational_structure",
+            "process_steps"
+          ],
+          "item_count": 2,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-SEC-001",
+              "title": "Field engineer",
+              "category": "User group"
+            },
+            {
+              "item_id": "BP-SEC-002",
+              "title": "Planner",
+              "category": "User group"
+            }
+          ]
+        },
+        {
+          "section_key": "controls",
+          "section_id": "BP-CTL",
+          "position": 20,
+          "title": "Controls",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "reporting_requirements",
+          "section_id": "BP-RPT",
+          "position": 21,
+          "title": "Reporting requirements",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "business_objectives",
+            "future_state_process"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "test_strategy",
+          "section_id": "BP-TST",
+          "position": 22,
+          "title": "Test strategy",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "functional_requirements",
+            "process_steps"
+          ],
+          "item_count": 4,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "sit_scenarios",
+          "section_id": "BP-SIT",
+          "position": 23,
+          "title": "SIT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "integrations",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "uat_scenarios",
+          "section_id": "BP-UAT",
+          "position": 24,
+          "title": "UAT scenarios",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "test_strategy"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "training",
+          "section_id": "BP-TRN",
+          "position": 25,
+          "title": "Training",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "process_steps",
+            "security_roles"
+          ],
+          "item_count": 3,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-TRN-001",
+              "title": "Field engineer",
+              "category": "Audience"
+            },
+            {
+              "item_id": "BP-TRN-002",
+              "title": "Planner",
+              "category": "Audience"
+            }
+          ]
+        },
+        {
+          "section_key": "cutover_activities",
+          "section_id": "BP-CUT",
+          "position": 26,
+          "title": "Cutover activities",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "data_migration",
+            "security_roles",
+            "test_strategy"
+          ],
+          "item_count": 5,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "hypercare",
+          "section_id": "BP-HYP",
+          "position": 27,
+          "title": "Hypercare",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "cutover_activities"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        },
+        {
+          "section_key": "risks",
+          "section_id": "BP-RSK",
+          "position": 28,
+          "title": "Risks",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "assumptions",
+            "data_migration"
+          ],
+          "item_count": 4,
+          "derived_item_count": 1,
+          "derived_items": [
+            {
+              "item_id": "BP-RSK-001",
+              "title": "Engineers have intermittent network coverage on site",
+              "category": "Constraint"
+            }
+          ]
+        },
+        {
+          "section_key": "dependencies",
+          "section_id": "BP-DEP",
+          "position": 29,
+          "title": "Dependencies",
+          "content_kind": "list",
+          "status": "draft",
+          "source": "derived",
+          "missing_inputs": [],
+          "depends_on": [
+            "integrations",
+            "cutover_activities"
+          ],
+          "item_count": 3,
+          "derived_item_count": 2,
+          "derived_items": [
+            {
+              "item_id": "BP-DEP-001",
+              "title": "SAP S/4HANA",
+              "category": "System dependency"
+            },
+            {
+              "item_id": "BP-DEP-002",
+              "title": "Mobile field service application",
+              "category": "System dependency"
+            }
+          ]
+        },
+        {
+          "section_key": "open_decisions",
+          "section_id": "BP-DEC",
+          "position": 30,
+          "title": "Open decisions",
+          "content_kind": "table",
+          "status": "draft",
+          "source": "template",
+          "missing_inputs": [],
+          "depends_on": [
+            "scope",
+            "configuration_requirements",
+            "integrations"
+          ],
+          "item_count": 3,
+          "derived_item_count": 0,
+          "derived_items": []
+        }
+      ]
+    }
+  }
+}

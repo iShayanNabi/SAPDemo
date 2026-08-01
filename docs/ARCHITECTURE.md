@@ -47,6 +47,14 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   ai_generator.py structured drafting            │
 │                   engine.py      generate, summarise, coverage   │
 │                                                                  │
+│                   app/modules/blueprint_generator/                │
+│                   planning.py    sections, derived items, gaps   │
+│                   rendering.py   templates, printed-text filter  │
+│                   builder.py     templates and draft repair      │
+│                   ai_generator.py batched structured drafting    │
+│                   engine.py      generate, staleness, readiness  │
+│                   versioning.py  snapshots and comparison        │
+│                                                                  │
 │                   app/modules/inventory/                         │
 │                   periods.py     frequency inference, grids      │
 │                   forecasting.py the 5 statistical models        │

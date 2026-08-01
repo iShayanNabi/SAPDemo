@@ -1,6 +1,7 @@
 """ORM models. Importing this package registers every table on the metadata."""
 
 from app.models.base import Base, TimestampMixin
+from app.models.blueprint import Blueprint, BlueprintSection, BlueprintVersion
 from app.models.contract_assistant import (
     Contract,
     ContractClause,
@@ -62,4 +63,7 @@ __all__ = [
     "InventoryForecastItem",
     "TestSuite",
     "TestCase",
+    "Blueprint",
+    "BlueprintSection",
+    "BlueprintVersion",
 ]

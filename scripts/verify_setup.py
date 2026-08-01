@@ -201,6 +201,30 @@ def main() -> int:
         print(f"{FAIL} {exc}")
         problems.append("Fix app/modules/test_case_generator/config/test_case_rules.json")
 
+    try:
+        from app.modules.blueprint_generator.thresholds import get_blueprint_config
+        from app.schemas.blueprint import SECTION_ORDER
+
+        blueprint_config = get_blueprint_config()
+        missing_sections = [
+            item.value for item in SECTION_ORDER if item.value not in blueprint_config.sections
+        ]
+        if missing_sections:
+            print(f"{FAIL} blueprint sections without a configuration: {missing_sections}")
+            problems.append("Fix app/modules/blueprint_generator/config/blueprint_rules.json")
+        else:
+            derived = sum(
+                1 for spec in blueprint_config.sections.values() if spec.is_derived
+            )
+            print(
+                f"{PASS} blueprint generator configuration "
+                f"v{blueprint_config.config_version}: {len(blueprint_config.sections)} sections, "
+                f"{derived} computed from the project request"
+            )
+    except Exception as exc:  # noqa: BLE001
+        print(f"{FAIL} {exc}")
+        problems.append("Fix app/modules/blueprint_generator/config/blueprint_rules.json")
+
     # 5. Database
     print("\nDatabase")
     try:
@@ -268,6 +292,17 @@ def main() -> int:
     else:
         print(f"{WARN} test case processes: not generated yet")
         warnings.append("Run: python scripts/generate_test_case_sample_data.py")
+
+    # The blueprint generator ships project requests, not rows.
+    projects = settings.sample_dir / "sample_blueprint_projects.json"
+    if projects.is_file():
+        import json as _json
+
+        count = len(_json.loads(projects.read_text(encoding="utf-8")).get("projects", []))
+        print(f"{PASS} blueprint projects: {count} demo project requests available")
+    else:
+        print(f"{WARN} blueprint projects: not generated yet")
+        warnings.append("Run: python scripts/generate_blueprint_sample_data.py")
 
     # 8. Document extraction capability
     print("\nDocument extraction")

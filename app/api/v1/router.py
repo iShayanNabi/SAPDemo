@@ -14,6 +14,7 @@ from app.core.logging import get_logger
 from app.models.session import engine
 from app.schemas.common import ApiResponse, HealthStatus
 from app.api.v1 import (
+    blueprints,
     contracts,
     inventory,
     invoice_validator,
@@ -63,3 +64,4 @@ api_router.include_router(supplier_risk.router)
 api_router.include_router(contracts.router)
 api_router.include_router(inventory.router)
 api_router.include_router(test_cases.router)
+api_router.include_router(blueprints.router)

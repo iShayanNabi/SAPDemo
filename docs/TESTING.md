@@ -1,6 +1,6 @@
 # Testing
 
-**1,165 tests, about 80 seconds, no network and no API key.**
+**1,320 tests, about 115 seconds, no network and no API key.**
 
 ```bash
 pytest                              # everything
@@ -53,6 +53,11 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_test_case_generation.py` | Template build, mock drafting, structured-output validation, field-by-field repair, and every recovery path from a bad or missing draft |
 | `tests/api/test_test_case_api.py` | Test case endpoints: generate, read, edit, add, duplicate, delete, regenerate, approve, execute, all four export formats |
 | `tests/integration/test_test_case_sample_data.py` | All 7 documented test-case scenarios, the recorded deterministic baseline, repeat-run determinism |
+| `tests/unit/test_blueprint_planning.py` | The section skeleton, canonical ordering, derived items, missing-input detection, custom-section numbering, configuration-driven behaviour |
+| `tests/unit/test_blueprint_generation.py` | Template build, "needs input" build, mock drafting, batched drafting recovery, structured-output validation, field-by-field repair, the discard of items drafted for a derived section, injection filtering of printed text |
+| `tests/unit/test_blueprint_versioning.py` | Snapshot immutability, section matching by key, item matching by title, capped narrative diffs |
+| `tests/api/test_blueprint_api.py` | Blueprint endpoints: generate, read, edit, section edit/regenerate/approve/add/delete, versions, comparison, all four export formats, and the approved-but-stale pair |
+| `tests/integration/test_blueprint_sample_data.py` | All 6 documented blueprint scenarios, the recorded deterministic baseline, the demo projects driven through the real API |
 
 ### Isolation
 

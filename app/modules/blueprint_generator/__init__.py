@@ -1,0 +1,1 @@
+"""SAP Blueprint Generator module."""
