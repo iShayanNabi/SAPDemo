@@ -920,3 +920,102 @@ class ApiClient:
         return self.download_bytes(
             f"/blueprints/{blueprint_id}/export", {"format": export_format}
         )
+
+    # -- SAP Interview Coach (module 10) -----------------------------------
+    def interview_start(
+        self,
+        tracks: list[str],
+        *,
+        mode: str = "practice",
+        difficulties: list[str] | None = None,
+        question_count: int | None = None,
+        topics: list[str] | None = None,
+        candidate_name: str | None = None,
+        session_name: str | None = None,
+        seed: int | None = None,
+    ) -> dict[str, Any]:
+        """Start an interview session and get the first question."""
+        payload: dict[str, Any] = {"tracks": tracks, "mode": mode}
+        if difficulties:
+            payload["difficulties"] = difficulties
+        if question_count:
+            payload["question_count"] = question_count
+        if topics:
+            payload["topics"] = topics
+        if candidate_name:
+            payload["candidate_name"] = candidate_name
+        if session_name:
+            payload["session_name"] = session_name
+        if seed is not None:
+            payload["seed"] = seed
+        return self._request("POST", "/interviews/start", json=payload)
+
+    def interview_session(self, session_id: str) -> dict[str, Any]:
+        """Fetch one session with its answers, scores and summary."""
+        return self._request("GET", f"/interviews/{session_id}")
+
+    def interview_sessions(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        """List interview sessions, newest first."""
+        return self._request(
+            "GET", "/interviews/sessions", params={"limit": limit, "offset": offset}
+        )
+
+    def interview_answer(
+        self,
+        session_id: str,
+        answer_text: str,
+        *,
+        question_id: str | None = None,
+        seconds_spent: int | None = None,
+        use_ai: bool = True,
+    ) -> dict[str, Any]:
+        """Submit an answer and get the score and feedback back."""
+        payload: dict[str, Any] = {"answer_text": answer_text, "use_ai": use_ai}
+        if question_id:
+            payload["question_id"] = question_id
+        if seconds_spent is not None:
+            payload["seconds_spent"] = seconds_spent
+        return self._request("POST", f"/interviews/{session_id}/answer", json=payload)
+
+    def interview_complete(
+        self, session_id: str, *, abandoned: bool = False, notes: str | None = None
+    ) -> dict[str, Any]:
+        """Close a session and get its final summary."""
+        payload: dict[str, Any] = {"abandoned": abandoned}
+        if notes:
+            payload["notes"] = notes
+        return self._request("POST", f"/interviews/{session_id}/complete", json=payload)
+
+    def interview_performance(
+        self,
+        *,
+        tracks: list[str] | None = None,
+        mode: str | None = None,
+        session_limit: int | None = None,
+    ) -> dict[str, Any]:
+        """Fetch the performance dashboard."""
+        params: dict[str, Any] = {}
+        if tracks:
+            params["track"] = tracks
+        if mode:
+            params["mode"] = mode
+        if session_limit:
+            params["session_limit"] = session_limit
+        return self._request("GET", "/interviews/performance", params=params)
+
+    def interview_catalog(self) -> dict[str, Any]:
+        """Fetch the tracks, modes, bands and the published marking rules."""
+        return self._request("GET", "/interviews/catalog")
+
+    def interview_questions(self, **filters: Any) -> dict[str, Any]:
+        """Browse the question bank. Answer keys are never returned."""
+        params = {key: value for key, value in filters.items() if value not in (None, "", [])}
+        return self._request("GET", "/interviews/questions", params=params)
+
+    def interview_bank_info(self) -> dict[str, Any]:
+        """Describe the bundled fictional question bank."""
+        return self._request("GET", "/interviews/bank/info")
+
+    def interview_ai_status(self) -> dict[str, Any]:
+        """Report which AI provider the coach would use for feedback prose."""
+        return self._request("GET", "/interviews/ai-status")

@@ -9,6 +9,7 @@ from app.models.contract_assistant import (
     ContractPage,
     ContractRisk,
 )
+from app.models.interview_coach import InterviewAnswer, InterviewSession
 from app.models.inventory import (
     InventoryDatasetRow,
     InventoryForecast,
@@ -66,4 +67,6 @@ __all__ = [
     "Blueprint",
     "BlueprintSection",
     "BlueprintVersion",
+    "InterviewSession",
+    "InterviewAnswer",
 ]

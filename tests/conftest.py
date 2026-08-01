@@ -482,6 +482,47 @@ def blueprint_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def interview_config():
+    """The default Interview Coach configuration."""
+    from app.modules.interview_coach.thresholds import get_interview_config
+
+    return get_interview_config()
+
+
+def _interview_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_interview_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def interview_bank():
+    """The bundled fictional interview question bank, loaded and indexed."""
+    from app.modules.interview_coach.question_bank import load_question_bank
+
+    return load_question_bank(_interview_sample("sample_interview_questions.json"))
+
+
+@pytest.fixture(scope="session")
+def interview_manifest() -> dict:
+    """The documented interview coach scenarios."""
+    import json
+
+    path = _interview_sample("interview_scenario_manifest.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def interview_baseline() -> dict:
+    """The recorded deterministic scores for the documented anchors."""
+    import json
+
+    path = _interview_sample("expected_interview_baseline.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"

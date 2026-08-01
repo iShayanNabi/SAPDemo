@@ -65,6 +65,8 @@ class MockAIProvider(AIProvider):
             text = json.dumps(
                 _blueprint_generation(payload, regenerated=True), ensure_ascii=False
             )
+        elif task == "interview_feedback":
+            text = json.dumps(_interview_feedback(payload), ensure_ascii=False)
         else:
             text = json.dumps(
                 {
@@ -120,6 +122,8 @@ def _infer_task(prompt: str) -> str:
         return "blueprint_section"
     if "blueprint section" in lowered or "implementation blueprint" in lowered:
         return "blueprint_generation"
+    if "interview answer" in lowered or "interview feedback" in lowered:
+        return "interview_feedback"
     if "redraft the single sap test case" in lowered:
         return "test_case_regeneration"
     if "test case" in lowered or "test_case" in lowered:
@@ -1398,4 +1402,98 @@ def _mock_blueprint_section(
         "section_key": section_key,
         "narrative": " ".join(sentences),
         "items": items,
+    }
+
+
+# ---------------------------------------------------------------------------
+# SAP Interview Coach
+# ---------------------------------------------------------------------------
+
+
+def _interview_feedback(payload: dict[str, Any]) -> dict[str, Any]:
+    """Write coaching prose around a score the rubric has already decided.
+
+    The mock is held to exactly the constraint the real providers are held to by
+    the prompt: it may describe the verdict, never revisit it. Every sentence
+    below is built from the ``rubric_result`` block the caller passed in, so the
+    mock cannot congratulate a candidate on a concept the rubric marked missing
+    - it has no other source of concepts to draw on.
+
+    No number is emitted. The scores are printed next to this text by the API,
+    and a mock that restated them would be the one place in the lab where a
+    figure had two authors.
+    """
+    question: dict[str, Any] = payload.get("question", {}) or {}
+    result: dict[str, Any] = payload.get("rubric_result", {}) or {}
+
+    topic = str(question.get("topic") or "this topic")
+    reference = str(question.get("reference_answer") or "").strip()
+    covered = [str(item) for item in (result.get("covered_concepts") or []) if str(item).strip()]
+    missing = [str(item) for item in (result.get("missing_concepts") or []) if str(item).strip()]
+    incorrect = [
+        str(item.get("correction") or item.get("label") or "")
+        for item in (result.get("incorrect_statements") or [])
+        if isinstance(item, dict)
+    ]
+    incorrect = [item for item in incorrect if item.strip()]
+    passed = bool(result.get("passed"))
+    non_answer = bool(result.get("non_answer"))
+
+    # -- coaching note ---------------------------------------------------
+    if non_answer:
+        note = (
+            "You did not answer this one. In a real interview, say what you do know and mark "
+            "the rest as something you would check - an interviewer can work with a partial "
+            f"answer about {topic} and cannot work with silence."
+        )
+    else:
+        opening = (
+            f"You covered the core of {topic}: {', '.join(covered[:3])}."
+            if covered
+            else f"None of the points the marking scheme looks for on {topic} came through."
+        )
+        middle = (
+            f" The gap is {', '.join(missing[:3])} - name each of those explicitly next time."
+            if missing
+            else " Nothing the marking scheme looks for was missing."
+        )
+        closing = (
+            " Say the correction listed below out loud before you answer this one again."
+            if incorrect
+            else (
+                " Keep this structure and add a concrete example from a project."
+                if passed
+                else " Work through the sample answer below, then answer it again from memory."
+            )
+        )
+        note = opening + middle + closing
+
+    # -- improved sample answer -------------------------------------------
+    parts: list[str] = []
+    if reference:
+        parts.append(reference)
+    if missing:
+        parts.append(
+            "Make sure the answer also says: " + "; ".join(missing) + "."
+        )
+    if incorrect:
+        parts.append("Correct the following: " + " ".join(incorrect))
+    parts.append(
+        "This feedback was written locally by the mock AI provider from the marking result. "
+        "No language model was called, the scores were calculated by the rubric, and nothing "
+        "here is an SAP qualification."
+    )
+
+    topics = [
+        str(item)
+        for item in (question.get("study_topics") or [])
+        if str(item).strip()
+    ]
+    if not topics:
+        topics = [topic]
+
+    return {
+        "coaching_note": note,
+        "improved_sample_answer": "\n\n".join(parts),
+        "topics_to_study": topics[:5] if (missing or incorrect or non_answer) else [],
     }

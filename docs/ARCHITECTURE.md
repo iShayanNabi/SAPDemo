@@ -55,6 +55,14 @@ Each layer may only call the one below it. Nothing calls upward.
 │                   engine.py      generate, staleness, readiness  │
 │                   versioning.py  snapshots and comparison        │
 │                                                                  │
+│                   app/modules/interview_coach/                    │
+│                   question_bank.py bank contract, fingerprints   │
+│                   selection.py   seeded question selection       │
+│                   scoring.py     the rubric: every score         │
+│                   builder.py     feedback and draft repair       │
+│                   ai_feedback.py prose around a finished score   │
+│                   performance.py summaries and the dashboard     │
+│                                                                  │
 │                   app/modules/inventory/                         │
 │                   periods.py     frequency inference, grids      │
 │                   forecasting.py the 5 statistical models        │

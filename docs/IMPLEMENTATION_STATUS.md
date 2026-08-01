@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 
 ---
 
@@ -8,9 +8,9 @@ Last updated: 2026-07-31
 
 | | |
 | --- | --- |
-| Modules complete | 9 of 10 |
-| Tests | 1,320 passing (742 unit, 371 API, 207 integration) |
-| Python source | ~57,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
+| Modules complete | 10 of 10 |
+| Tests | 1,448 passing (799 unit, 408 API, 241 integration) |
+| Python source | ~64,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
 
 ---
@@ -992,38 +992,100 @@ on the blueprint fixed it.
 
 ---
 
-## Module 10 - not started
+## Module 10 - SAP Interview Coach - complete
 
-No code exists for this yet. Nothing has been stubbed, and there are no placeholder pages or
-non-functional buttons.
+Practise SAP interview questions and get a structured, explainable score. Modules 8 and 9 were the
+two where the AI output *is* the deliverable. Module 10 pushes the line back: the deliverable is a
+**score about a person**, so the rubric marks the answer and a provider is only ever asked for the
+coaching prose around a verdict it is forbidden to revisit.
 
-| # | Module | Deterministic part | AI part |
-| --- | --- | --- | --- |
-| 10 | SAP Interview Coach | Question bank, scoring rubric | Feedback on an answer |
+### What was built
 
-It will reuse the foundation rather than duplicate it. Estimated effort is smaller than module 1,
-because the shared layers already exist - and the skeleton-first structure modules 8 and 9 share
-applies again: the question bank, the competency the question tests and the rubric it is scored
-against are deterministic; only the feedback on an answer is drafted.
+| Piece | Location | What it does |
+| --- | --- | --- |
+| Schemas | `app/schemas/interview_coach.py` | Nine tracks, six modes, four difficulties, five score dimensions, the session/answer/dashboard contracts |
+| Configuration | `app/modules/interview_coach/config/interview_rules.json` | Dimension weights, band thresholds, clarity bands, negation cues, non-answer phrases, per-mode settings, weak/strong thresholds, study actions |
+| Typed config | `app/modules/interview_coach/thresholds.py` | Pydantic validation at load, weight resolution, band lookup, clarity overrides per mode |
+| Question bank | `app/modules/interview_coach/question_bank.py` | Loads, validates as a *contract*, indexes, and fingerprints every rubric |
+| Selection | `app/modules/interview_coach/selection.py` | Seeded, reproducible question selection with track allocation and difficulty spreading |
+| Scoring | `app/modules/interview_coach/scoring.py` | Concept matching, negation vetoes, incorrect statements, clarity, every dimension |
+| Feedback | `app/modules/interview_coach/builder.py` | The deterministic feedback, and field-by-field repair of a drafted one |
+| AI layer | `app/modules/interview_coach/ai_feedback.py` | Provider call, Pydantic validation, every failure converted to a reported result |
+| Engine | `app/modules/interview_coach/engine.py` | Score, then optionally draft, then repair - in that order |
+| Performance | `app/modules/interview_coach/performance.py` | Session summaries and the cross-session dashboard |
+| Service | `app/modules/interview_coach/service.py` | Persistence, session lifecycle, dashboard assembly |
+| Models | `app/models/interview_coach.py` | `interview_sessions`, `interview_answers` |
+| Migration | `migrations/versions/a7d5f31c9e28_interview_coach_schema.py` | Upgrade and downgrade verified on a fresh database |
+| API | `app/api/v1/interviews.py` | The five specified routes plus catalogue, question browsing, session list and AI status |
+| UI | `streamlit_app/pages/10_SAP_Interview_Coach.py` | Set-up, interview screen with timer, feedback, session summary, dashboard, marking rules |
+| Sample data | `scripts/generate_interview_sample_data.py` | 104 fictional questions, the manifest and the baseline |
+
+### The line between code and a model
+
+| Decided by deterministic Python | Written by a model |
+| --- | --- |
+| Which questions a session asks, in what order, at what difficulty | The coaching note |
+| Whether each expected concept was covered, and which keyword covered it | The improved sample answer |
+| Every dimension score, the overall score, the band and the pass verdict | The study topics, when it supplies usable ones |
+| Every known-wrong statement detected and what it costs | |
+| The clarity measurement | |
+| The strengths, the missing concepts, the corrections and the follow-up question | |
+| The session summary, the dashboard and the study plan | |
+
+The scores are byte-for-byte identical with a real model, with the mock and with `use_ai=false`.
+That is structural rather than a matter of prompt wording: the score is finished before a provider
+is contacted, and nothing a provider returns can reach it.
+
+### Two bugs found by driving the API, both invisible to a green suite
+
+- **The next question was the question just answered.** `SessionLocal` is built with
+  `autoflush=False` for the whole project, so the query for the next pending row still saw the row
+  just answered as pending. Every count in the response was right - `remaining_questions`,
+  `answered_count`, the summary - and only the question itself was wrong, which is exactly the
+  shape of bug a test asserting on counts cannot see. Fixed with an explicit `db.flush()` before
+  the query, and a test that asserts the served question *changes*.
+- **The study plan recommended topics the candidate scored 98 on, and said they were below the
+  threshold.** The fallback path took the lowest-scoring topics with no threshold at all, so once
+  every topic was strong it started recommending strong ones - and printed "average 98.5, below the
+  60.0 point threshold for a weak area" next to the number that disproved it. Every field was
+  individually correct; the *pair* was a lie. Fixed by making the threshold a hard filter and
+  deriving each reason from the topic's real state.
+
+### Known limitations of module 10
+
+- **Marking is keyword based.** A correct answer phrased in words the bank does not list scores
+  lower than it deserves. The module is honest about it - the matched keyword is shown for every
+  concept and the caveat is printed on the page - but it is a real ceiling, and semantic matching
+  would need an embedding model this lab deliberately does not require.
+- **The negation heuristic is a heuristic.** A cue within four words in the same clause vetoes a
+  hit. It catches "the goods receipt does not update stock" and will occasionally misjudge an
+  unusual construction in either direction.
+- **There is no spoken practice.** Answers are typed, so pace, filler and hesitation in speech - a
+  large part of a real interview - are not assessed at all.
+- **One rubric per question, and no partial credit inside a concept.** A concept is covered or it
+  is not; there is no "mentioned it but got it half right".
+- **The bank is fictional and English-only**, and it is not mapped to any SAP certification
+  syllabus. Nothing here is a qualification.
+- **No export.** A session summary can be read through the API and the UI but not downloaded as a
+  document, unlike modules 1-9.
+- **The dashboard is per-installation, not per-candidate.** There is no authentication, so every
+  session in the database aggregates into one dashboard.
 
 ---
 
 ## Recommended next step
 
-**Module 10 - SAP Interview Coach.** It is the last module in the plan and the skeleton-first
-structure now used by modules 8 and 9 transfers directly: the question bank, the competency each
-question tests, the rubric and the score are deterministic; only the feedback on an answer is
-drafted. It is also the module where the "assert the relationship, not each field" rule will matter
-again - a score and the feedback that explains it are a pair.
+Every module in the plan is now implemented. The work that is left is not another module:
 
-Two smaller pieces of work are worth weighing against it:
-
-- **Feed module 7 back into module 5.** The predictor now produces a per-supplier picture of which
+- **Authentication and a per-user boundary.** Ten modules now share one database and module 10's
+  dashboard is the first feature whose *meaning* depends on knowing whose data it is. This has gone
+  from a nice-to-have to a correctness issue.
+- **Feed module 7 back into module 5.** The predictor produces a per-supplier picture of which
   materials are heading for a shortage and which are dead on the shelf. Module 5's delivery and
   operational risk categories score from stored counts. Joining them would make supply risk
   materially sharper.
 - **Link module 9 to module 8.** A blueprint's SIT and UAT scenario sections and a generated test
   suite describe the same tests at two levels of detail, and nothing joins them today.
-- **The operational backlog** listed under limitations - authentication, a job queue and a
-  PostgreSQL run. Nine modules now share one database, so the cost of adding authentication grows
-  with every module rather than staying flat.
+- **A session export for module 10**, so a candidate can keep the feedback outside the lab.
+- **The operational backlog** - a job queue and a PostgreSQL run - both of which every module now
+  shares.
