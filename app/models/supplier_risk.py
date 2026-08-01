@@ -130,7 +130,7 @@ class SupplierRiskAssessment(Base, TimestampMixin):
     # Optional AI narrative
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
     ai_output_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    ai_prompt_version: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    ai_prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
     ai_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     ai_key_findings: Mapped[list[str]] = mapped_column(JSON, default=list)
     ai_recommended_actions: Mapped[list[str]] = mapped_column(JSON, default=list)
