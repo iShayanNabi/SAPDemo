@@ -20,6 +20,14 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    remember,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     SEVERITY_COLORS,
     SEVERITY_ORDER,
@@ -50,6 +58,16 @@ for key in ("upload", "analysis", "mapping_overrides"):
 # 1. Explanation
 # ---------------------------------------------------------------------------
 st.title("Purchase Order Risk Checker")
+demo_banner(client)
+explain_module(
+    "po_risk",
+    [
+        "Load the bundled fictional purchase order export.",
+        "Review the column mapping the reader inferred and correct anything wrong.",
+        "Run the analysis and read the findings by severity.",
+        "Download the report.",
+    ],
+)
 st.write(
     "Upload an SAP-style purchase order extract. The application validates the file, maps your "
     "columns onto a canonical model, runs 20 transparent risk rules and produces a findings "
@@ -123,24 +141,39 @@ with sample_column:
         st.warning("No sample file yet. Generate it with:")
         st.code("python scripts/generate_sample_data.py", language="bash")
 
+    st.divider()
+    st.caption("Run the module on the bundled fictional dataset without uploading anything.")
+    loaded = load_demo_button("po_risk")
+    if loaded:
+        # The demo route returns this module's own upload response, so the
+        # preview and mapping below render from exactly the same payload an
+        # upload produces. No second code path.
+        st.session_state["upload"] = loaded["uploads"]["purchase_orders"]
+        st.session_state["analysis"] = None
+        st.session_state["mapping_overrides"] = {}
+        st.success("Demonstration data loaded. Demo data - fictional, not from SAP.")
+
 with upload_column:
-    st.subheader("Upload your file")
-    uploaded = st.file_uploader(
-        "CSV, XLSX or JSON (max 25 MB)", type=["csv", "xlsx", "json"], key="po_file"
-    )
-    if uploaded is not None and st.button("Validate and preview", type="primary"):
-        with st.spinner("Validating file and detecting columns..."):
-            try:
-                extension = Path(uploaded.name).suffix.lower()
-                st.session_state["upload"] = client.upload(
-                    uploaded.name, uploaded.getvalue(), MEDIA_TYPES.get(extension, "text/csv")
-                )
-                st.session_state["analysis"] = None
-                st.session_state["mapping_overrides"] = {}
-                st.success("File accepted.")
-            except ApiError as error:
-                st.session_state["upload"] = None
-                show_error(error.message, error.details)
+    if not uploads_enabled(client):
+        upload_disabled_notice("file")
+    else:
+        st.subheader("Upload your file")
+        uploaded = st.file_uploader(
+            "CSV, XLSX or JSON (max 25 MB)", type=["csv", "xlsx", "json"], key="po_file"
+        )
+        if uploaded is not None and st.button("Validate and preview", type="primary"):
+            with st.spinner("Validating file and detecting columns..."):
+                try:
+                    extension = Path(uploaded.name).suffix.lower()
+                    st.session_state["upload"] = client.upload(
+                        uploaded.name, uploaded.getvalue(), MEDIA_TYPES.get(extension, "text/csv")
+                    )
+                    st.session_state["analysis"] = None
+                    st.session_state["mapping_overrides"] = {}
+                    st.success("File accepted.")
+                except ApiError as error:
+                    st.session_state["upload"] = None
+                    show_error(error.message, error.details)
 
 upload = st.session_state.get("upload")
 
@@ -243,6 +276,7 @@ if upload:
             )
             progress.progress(90, text="Building the summary...")
             st.session_state["analysis"] = result
+            remember("po_analysis", result["analysis_id"])
             progress.progress(100, text="Done.")
         except ApiError as error:
             progress.empty()

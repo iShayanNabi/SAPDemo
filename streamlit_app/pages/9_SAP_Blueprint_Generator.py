@@ -26,6 +26,10 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+)
 from streamlit_app.components.ui import origin_badge, show_error  # noqa: E402
 
 st.set_page_config(page_title="SAP Blueprint Generator", page_icon="📐", layout="wide")
@@ -70,6 +74,8 @@ PAGE_DISCLAIMER = (
 )
 
 st.title("SAP Blueprint Generator")
+demo_banner(client)
+explain_module("blueprint_generator")
 st.write(
     "Describe an SAP implementation project and get a thirty-section blueprint you can edit, "
     "approve, version and export. The section list, the organisational structure, the module "

@@ -28,6 +28,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    filter_to_mine,
+    remember,
+    session_scope_caption,
+)
 from streamlit_app.components.ui import disclaimer, origin_badge, show_error  # noqa: E402
 
 st.set_page_config(page_title="SAP Interview Coach", page_icon="🎤", layout="wide")
@@ -55,6 +62,8 @@ DIMENSION_LABELS = {
 }
 
 st.title("SAP Interview Coach")
+demo_banner(client)
+explain_module("interview_coach")
 st.write(
     "Practise SAP interview questions and get a structured, explainable score. The rubric "
     "does the marking: which expected concepts your answer covered, which keyword matched "
@@ -160,11 +169,13 @@ with st.sidebar:
     st.header("Previous sessions")
     try:
         listing = client.interview_sessions(limit=15)
-        if listing["sessions"]:
+        sessions = filter_to_mine(listing["sessions"], "interview_session", "session_id")
+        session_scope_caption("sessions")
+        if sessions:
             labels = {
                 f"{item['name'][:34]} - {item['status']}"
                 f" ({item['answered_count']}/{item['question_count']})": item["session_id"]
-                for item in listing["sessions"]
+                for item in sessions
             }
             chosen = st.selectbox("Open a session", list(labels), key="ic_saved")
             if st.button("Load session", use_container_width=True):
@@ -172,7 +183,7 @@ with st.sidebar:
                 _reset_question_clock()
                 st.rerun()
         else:
-            st.caption("No sessions yet. Start one on the right.")
+            st.caption("No sessions from this browser session yet. Start one on the right.")
     except ApiError as error:
         show_error(error.message, error.details)
 
@@ -274,6 +285,7 @@ with setup_tab:
                     candidate_name=candidate_name or None,
                     seed=int(seed),
                 )
+                remember("interview_session", st.session_state["ic_session"]["session_id"])
                 _reset_question_clock()
                 st.success("Interview started. Open the **Interview** tab.")
             except ApiError as error:

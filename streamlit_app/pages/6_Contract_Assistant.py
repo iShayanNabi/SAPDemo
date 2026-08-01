@@ -27,6 +27,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     escape_html,
@@ -62,6 +69,8 @@ EXPORT_MIME = {
 }
 
 st.title("Contract Assistant")
+demo_banner(client)
+explain_module("contract_assistant")
 st.write(
     "Upload a contract, and the assistant extracts its clauses, key dates, obligations and "
     "risks - each with the page it came from, the heading it sat under, a supporting excerpt "
@@ -257,28 +266,63 @@ def _obligation_frame(obligations: list[dict[str, Any]]) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # 1. Upload
 # ---------------------------------------------------------------------------
-st.subheader("1. Upload a contract")
+st.subheader("1. Load a contract")
 
-uploaded = st.file_uploader(
-    "Text-based PDF, DOCX or TXT",
-    type=["pdf", "docx", "txt", "md"],
-    help=(
-        "A text-based PDF works with no extra setup. A scanned document needs an OCR provider; "
-        "if none is configured the assistant will say so rather than analysing an empty file."
-    ),
-)
+demo_col, upload_col = st.columns([1, 2])
 
-if uploaded is not None and st.button("Upload and extract text", type="primary"):
-    try:
-        extension = Path(uploaded.name).suffix.lstrip(".").lower()
-        result = client.contract_upload(
-            uploaded.name, uploaded.getvalue(), MIME_TYPES.get(extension, "application/octet-stream")
-        )
-        st.session_state["contract"] = result
+with demo_col:
+    st.caption(
+        "Three fictional contracts ship with the project: a master services agreement, an NDA "
+        "and a SaaS agreement."
+    )
+    loaded = load_demo_button("contract_assistant", label="Load the demo contracts", key="ca_demo")
+    if loaded:
+        st.session_state["contract"] = loaded["uploads"]["msa"]
+        st.session_state["contract_choices"] = loaded["uploads"]
         st.session_state.pop("analysis", None)
         st.session_state.pop("chat_history", None)
-    except ApiError as error:
-        show_error(error.message, error.details)
+        st.success("Demonstration contracts loaded. Demo data - fictional, not from SAP.")
+
+choices = st.session_state.get("contract_choices") or {}
+if len(choices) > 1:
+    labels = {
+        f"{payload.get('detected_title') or key} ({payload.get('page_count', 0)} pages)": payload
+        for key, payload in choices.items()
+    }
+    chosen_label = st.selectbox("Demonstration contract", list(labels), key="ca_choice")
+    if labels[chosen_label] is not st.session_state.get("contract"):
+        st.session_state["contract"] = labels[chosen_label]
+        st.session_state.pop("analysis", None)
+        st.session_state.pop("chat_history", None)
+
+with upload_col:
+    if not uploads_enabled(client):
+        upload_disabled_notice("document")
+    else:
+        uploaded = st.file_uploader(
+            "Text-based PDF, DOCX or TXT",
+            type=["pdf", "docx", "txt", "md"],
+            help=(
+                "A text-based PDF works with no extra setup. A scanned document needs an OCR "
+                "provider; if none is configured the assistant will say so rather than "
+                "analysing an empty file."
+            ),
+        )
+
+        if uploaded is not None and st.button("Upload and extract text", type="primary"):
+            try:
+                extension = Path(uploaded.name).suffix.lstrip(".").lower()
+                result = client.contract_upload(
+                    uploaded.name,
+                    uploaded.getvalue(),
+                    MIME_TYPES.get(extension, "application/octet-stream"),
+                )
+                st.session_state["contract"] = result
+                st.session_state.pop("contract_choices", None)
+                st.session_state.pop("analysis", None)
+                st.session_state.pop("chat_history", None)
+            except ApiError as error:
+                show_error(error.message, error.details)
 
 contract = st.session_state.get("contract")
 
