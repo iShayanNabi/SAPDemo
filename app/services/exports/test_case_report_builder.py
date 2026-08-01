@@ -37,6 +37,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
 from app.services.documents.pdf_writer import build_text_pdf
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -149,12 +150,11 @@ def build_test_case_xlsx_report(payload: dict[str, Any]) -> bytes:
     )
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info(
         "Built test case XLSX: %d test case(s)", len(payload.get("test_cases", []))
     )
-    return buffer.getvalue()
+    return payload_bytes
 
 
 def _step_rows(test_cases: list[dict[str, Any]]) -> list[dict[str, Any]]:

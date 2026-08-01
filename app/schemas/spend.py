@@ -288,10 +288,17 @@ class SpendTransactionListResponse(BaseModel):
 
 
 class SpendOpportunityListResponse(BaseModel):
-    """Savings opportunities with their standing disclaimer."""
+    """Savings opportunities with their standing disclaimer.
+
+    ``limit`` and ``offset`` echo the window that was served. The endpoint has
+    always paged; without them a client holding 100 of 137 opportunities had no
+    way to tell that from holding all of them.
+    """
 
     analysis_id: str
     total: int
+    limit: int
+    offset: int
     total_estimated_saving_base: float
     base_currency: str
     disclaimer: str

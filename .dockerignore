@@ -1,0 +1,40 @@
+# Build context exclusions. Keep the image small and keep local state out of it.
+
+.git
+.gitignore
+.github
+
+# Local secrets - never copied into an image.
+.env
+*.key
+
+# Python build/runtime artefacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local runtime data. data/sample/ IS copied (it is the demo dataset);
+# uploads, exports and the SQLite file are not.
+data/uploads/*
+data/exports/*
+data/*.db
+
+# Documentation and examples are not needed to run the API.
+docs/
+examples/
+*.md
+!README.md
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

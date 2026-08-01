@@ -30,7 +30,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -40,7 +39,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class Contract(Base, TimestampMixin):
@@ -105,7 +104,7 @@ class Contract(Base, TimestampMixin):
     config_version: Mapped[str] = mapped_column(String(20), default="0.0.0")
     engine_version: Mapped[str] = mapped_column(String(20), default="0.0.0")
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    analyzed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    analyzed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     # -- optional AI narrative ------------------------------------------
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)

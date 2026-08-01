@@ -185,6 +185,8 @@ def list_opportunities(
         SpendOpportunityListResponse(
             analysis_id=analysis_id,
             total=total,
+            limit=limit,
+            offset=offset,
             total_estimated_saving_base=total_saving,
             base_currency=config.base_currency,
             disclaimer=config.reporting.opportunity_disclaimer,

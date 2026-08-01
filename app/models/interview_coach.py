@@ -38,7 +38,6 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -48,7 +47,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class InterviewSession(Base, TimestampMixin):
@@ -82,10 +81,10 @@ class InterviewSession(Base, TimestampMixin):
     engine_version: Mapped[str] = mapped_column(String(20), default="0.0.0")
 
     started_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
+        UtcDateTime(), nullable=True, index=True
     )
     completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
+        UtcDateTime(), nullable=True, index=True
     )
 
     answers: Mapped[list["InterviewAnswer"]] = relationship(
@@ -155,9 +154,9 @@ class InterviewAnswer(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    asked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    asked_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     answered_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
+        UtcDateTime(), nullable=True, index=True
     )
 
     session: Mapped[InterviewSession] = relationship(back_populates="answers")

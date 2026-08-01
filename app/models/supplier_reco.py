@@ -25,7 +25,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -36,7 +35,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class SupplierCatalog(Base, TimestampMixin):
@@ -144,7 +143,7 @@ class SupplierRecommendation(Base, TimestampMixin):
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     catalog: Mapped[SupplierCatalog] = relationship(back_populates="recommendations")
     entries: Mapped[list["SupplierRecommendationEntry"]] = relationship(

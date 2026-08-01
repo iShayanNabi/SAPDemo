@@ -28,6 +28,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -160,10 +161,9 @@ def build_inventory_xlsx_report(payload: dict[str, Any]) -> bytes:
     _data_quality_sheet(workbook.create_sheet("Data Quality"), payload, items)
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info("Built inventory forecast XLSX: %d materials", len(items))
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

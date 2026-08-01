@@ -16,15 +16,19 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.context import reset_request_id, set_request_id
 from app.core.exceptions import AppError
 from app.core.logging import configure_logging, get_logger
 from app.models.session import init_db
+from app.schemas.common import ApiResponse
 
 configure_logging()
 logger = get_logger(__name__)
@@ -70,12 +74,42 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):  # type: ignore[no-untyped-def]
-    """Attach a request id to every response for log correlation."""
+    """Attach a request id to every response for log correlation.
+
+    The id goes three places: ``request.state`` for the exception handlers, a
+    context variable so :class:`~app.schemas.common.ResponseMeta` can put the
+    same value inside the envelope, and the ``X-Request-ID`` header.
+    """
     request_id = uuid.uuid4().hex[:12]
     request.state.request_id = request_id
-    response = await call_next(request)
+    token = set_request_id(request_id)
+    try:
+        response = await call_next(request)
+    finally:
+        reset_request_id(token)
     response.headers["X-Request-ID"] = request_id
     return response
+
+
+def _error_response(
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    details: dict[str, object],
+    request_id: str | None,
+) -> JSONResponse:
+    """Render an error in exactly the envelope a success uses.
+
+    Built from :class:`~app.schemas.common.ApiResponse` rather than a hand
+    written dict. Hand written was how ``meta.timestamp`` came to exist on every
+    success and on no failure: a client that renders "received at" from the
+    envelope worked until the first error.
+    """
+    payload = ApiResponse[None].fail(
+        code, message, details=details, request_id=request_id
+    ).model_dump(mode="json")
+    return JSONResponse(status_code=status_code, content=payload)
 
 
 @app.exception_handler(AppError)
@@ -83,14 +117,32 @@ async def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     """Translate an expected application error into the response envelope."""
     request_id = getattr(request.state, "request_id", None)
     logger.warning("%s on %s: %s", exc.code, request.url.path, exc.message)
-    return JSONResponse(
+    return _error_response(
         status_code=exc.http_status,
-        content={
-            "success": False,
-            "data": None,
-            "error": exc.to_dict(),
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        request_id=request_id,
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def handle_http_exception(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    """Return Starlette's own errors (404, 405, ...) in the shared envelope.
+
+    Without this, a mistyped URL returned ``{"detail": "Not Found"}`` - a second
+    error shape a front end would have to special-case, produced by the one
+    request every client makes by accident.
+    """
+    codes = {404: "not_found", 405: "method_not_allowed", 401: "unauthorized", 403: "forbidden"}
+    return _error_response(
+        status_code=exc.status_code,
+        code=codes.get(exc.status_code, "http_error"),
+        message=str(exc.detail) if exc.detail else "The request could not be completed.",
+        details={},
+        request_id=getattr(request.state, "request_id", None),
     )
 
 
@@ -99,19 +151,12 @@ async def handle_validation_error(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """Return FastAPI validation problems in the shared envelope."""
-    request_id = getattr(request.state, "request_id", None)
-    return JSONResponse(
+    return _error_response(
         status_code=422,
-        content={
-            "success": False,
-            "data": None,
-            "error": {
-                "code": "request_validation_error",
-                "message": "The request could not be validated.",
-                "details": {"errors": exc.errors()[:10]},
-            },
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code="request_validation_error",
+        message="The request could not be validated.",
+        details={"errors": jsonable_encoder(exc.errors()[:10])},
+        request_id=getattr(request.state, "request_id", None),
     )
 
 
@@ -124,18 +169,12 @@ async def handle_unexpected_error(request: Request, exc: Exception) -> JSONRespo
     """
     request_id = getattr(request.state, "request_id", None)
     logger.exception("Unhandled error on %s (request_id=%s)", request.url.path, request_id)
-    return JSONResponse(
+    return _error_response(
         status_code=500,
-        content={
-            "success": False,
-            "data": None,
-            "error": {
-                "code": "internal_error",
-                "message": "An unexpected error occurred. Check the server log for details.",
-                "details": {"request_id": request_id},
-            },
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code="internal_error",
+        message="An unexpected error occurred. Check the server log for details.",
+        details={},
+        request_id=request_id,
     )
 
 

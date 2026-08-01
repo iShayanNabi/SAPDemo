@@ -24,6 +24,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -117,10 +118,9 @@ def build_invoice_validator_xlsx_report(payload: dict[str, Any]) -> bytes:
     _supplier_sheet(workbook.create_sheet("Supplier Summary"), payload.get("supplier_summary", []))
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info("Built invoice validation XLSX: %d exceptions", len(payload.get("exceptions", [])))
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

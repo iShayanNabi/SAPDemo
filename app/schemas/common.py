@@ -14,7 +14,12 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.context import get_request_id
+
 DataT = TypeVar("DataT")
+
+#: The single place the API version string is written.
+API_VERSION = "v1"
 
 
 class OutputOrigin(str, Enum):
@@ -54,11 +59,19 @@ class ErrorPayload(BaseModel):
 
 
 class ResponseMeta(BaseModel):
-    """Envelope metadata common to every response."""
+    """Envelope metadata common to every response.
+
+    All three fields are present on every response, success or failure. The
+    ``request_id`` defaults to the id the middleware minted for the current
+    request (the same value as the ``X-Request-ID`` header), so a user can read
+    it off a response that *succeeded but looked wrong* and a developer can find
+    the matching log line. Outside a request - a script, a test constructing a
+    schema directly - it is simply ``None``.
+    """
 
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    request_id: str | None = None
-    api_version: str = "v1"
+    request_id: str | None = Field(default_factory=get_request_id)
+    api_version: str = API_VERSION
 
 
 class ApiResponse(BaseModel, Generic[DataT]):
@@ -74,7 +87,7 @@ class ApiResponse(BaseModel, Generic[DataT]):
     @classmethod
     def ok(cls, data: DataT, request_id: str | None = None) -> "ApiResponse[DataT]":
         """Build a success envelope."""
-        return cls(success=True, data=data, meta=ResponseMeta(request_id=request_id))
+        return cls(success=True, data=data, meta=_meta(request_id))
 
     @classmethod
     def fail(
@@ -90,8 +103,19 @@ class ApiResponse(BaseModel, Generic[DataT]):
             success=False,
             data=None,
             error=ErrorPayload(code=code, message=message, details=details or {}),
-            meta=ResponseMeta(request_id=request_id),
+            meta=_meta(request_id),
         )
+
+
+def _meta(request_id: str | None) -> ResponseMeta:
+    """Build envelope metadata, letting the context supply a missing id.
+
+    Passing ``request_id=None`` explicitly would *override* the default factory
+    with ``None``, which is the opposite of what "the caller did not say" means.
+    """
+    if request_id is None:
+        return ResponseMeta()
+    return ResponseMeta(request_id=request_id)
 
 
 class PaginationMeta(BaseModel):

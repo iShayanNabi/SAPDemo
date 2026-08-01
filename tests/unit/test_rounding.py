@@ -117,24 +117,63 @@ class TestDecimalMean:
     def test_naive_float_averaging_is_order_dependent_and_the_policy_is_not(self):
         """This is the defect itself, not a symptom of it.
 
-        These 54 two-decimal values have an exact mean of 59.375. Summing them
-        in different orders gives 59.37 or 59.38 through the built-in round,
-        because the accumulated binary error changes sign. Identical inputs,
-        different answer - which is exactly how a baseline recorded on one
-        machine stops reproducing on another.
+        These 54 two-decimal values have an exact mean of 59.375. Accumulating
+        them in different orders and rounding gives 59.37 or 59.38, because the
+        accumulated binary error changes sign. Identical inputs, different
+        answer - which is exactly how a baseline recorded on one machine stops
+        reproducing on another.
+
+        The accumulation is written as an explicit loop rather than as
+        ``sum()``. That is not a stylistic choice: CPython 3.12 quietly gave the
+        built-in ``sum()`` compensated (Neumaier) summation for floats, so
+        ``sum()`` alone no longer reproduces the defect on the interpreter this
+        project targets. Every other way of adding floats up still does -
+        including ``numpy.mean`` and ``pandas.Series.mean``, which is the path
+        module 5 actually shipped the bug through. Asserting the defect through
+        ``sum()`` would have made this test quietly stop testing anything the
+        day the project moved to 3.12.
         """
         values = _ORDER_SENSITIVE_VALUES
         assert decimal_sum(values) / len(values) == Decimal("59.375")
+
+        def running_mean(numbers: list[float]) -> float:
+            """Accumulate left to right, the way ordinary code does."""
+            total = 0.0
+            for number in numbers:
+                total += number
+            return total / len(numbers)
 
         naive_results = set()
         policy_results = set()
         for seed in range(6):
             shuffled = list(values)
             random.Random(seed).shuffle(shuffled)
-            naive_results.add(round(sum(shuffled) / len(shuffled), 2))
+            naive_results.add(round(running_mean(shuffled), 2))
             policy_results.add(decimal_mean(shuffled))
 
         assert naive_results == {59.37, 59.38}, "the naive defect must still be real"
+        assert policy_results == {59.38}
+
+    def test_the_pandas_mean_that_module_five_used_is_order_dependent_too(self):
+        """The exact code path the shipped bug travelled.
+
+        Module 5 computed its category averages with a pandas mean. pandas (and
+        numpy underneath it) sum pairwise, so the accumulated error depends on
+        how the values happen to be arranged - and the answer flips across a
+        rounding tie. The policy reads the same number every time.
+        """
+        pandas = pytest.importorskip("pandas")
+
+        values = _ORDER_SENSITIVE_VALUES
+        pandas_results = set()
+        policy_results = set()
+        for seed in range(6):
+            shuffled = list(values)
+            random.Random(seed).shuffle(shuffled)
+            pandas_results.add(round(float(pandas.Series(shuffled).mean()), 2))
+            policy_results.add(decimal_mean(shuffled))
+
+        assert pandas_results == {59.37, 59.38}, "the naive defect must still be real"
         assert policy_results == {59.38}
 
     def test_the_mean_does_not_depend_on_order(self):

@@ -25,6 +25,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -117,10 +118,9 @@ def build_xlsx_report(payload: dict[str, Any]) -> bytes:
         workbook.create_sheet("Data Quality"), payload.get("data_quality_issues", [])
     )
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info("Built XLSX report with %d findings", len(payload.get("findings", [])))
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------
