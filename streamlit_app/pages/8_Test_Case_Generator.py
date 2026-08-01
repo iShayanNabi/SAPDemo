@@ -23,6 +23,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    filter_to_mine,
+    remember,
+    session_scope_caption,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     escape_html,
@@ -55,6 +62,8 @@ EXPORT_MIME = {
 }
 
 st.title("SAP Test Case Generator")
+demo_banner(client)
+explain_module("test_case_generator")
 st.write(
     "Describe an SAP business process and get a structured test suite you can edit, approve, "
     "execute and export. The identifiers, the test-type coverage, the priorities and the step "
@@ -151,10 +160,12 @@ with st.sidebar:
     st.header("Saved suites")
     try:
         listing = client.test_case_suites(limit=15)
-        if listing["suites"]:
+        suites = filter_to_mine(listing["suites"], "test_suite", "suite_id")
+        session_scope_caption("suites")
+        if suites:
             labels = {
                 f"{item['name'][:40]} ({item['test_case_count']} cases)": item["suite_id"]
-                for item in listing["suites"]
+                for item in suites
             }
             picked = st.selectbox("Open a suite", ["-"] + list(labels), key="tcg_saved")
             if picked != "-" and st.button("Open", use_container_width=True):
@@ -310,6 +321,7 @@ if generate_clicked:
                     default_owner=default_owner or None,
                     use_ai=use_ai,
                 )
+            remember("test_suite", st.session_state["tcg_suite"]["suite_id"])
             st.session_state.pop("tcg_loaded", None)
             st.rerun()
         except ApiError as error:

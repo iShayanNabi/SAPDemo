@@ -18,6 +18,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     format_currency,
@@ -38,6 +45,8 @@ DIMENSIONS = [
 SCORE_KEYS = [f"{key}_score" for key, _ in DIMENSIONS]
 
 st.title("Supplier Recommendation Engine")
+demo_banner(client)
+explain_module("supplier_recommendation")
 st.write(
     "Rank eligible suppliers for a purchasing requirement with a transparent, deterministic "
     "weighted-scoring model. AI, when enabled, only summarises the ranking - it never decides it."
@@ -61,33 +70,40 @@ st.header("1. Supplier catalogue")
 
 col_upload, col_sample = st.columns(2)
 with col_upload:
-    uploaded = st.file_uploader(
-        "Upload a supplier master file (CSV, XLSX or JSON)", type=["csv", "xlsx", "json"]
-    )
-    if uploaded is not None and st.button("Load catalogue", type="primary"):
-        try:
-            result = client.supplier_upload(uploaded.name, uploaded.getvalue(), uploaded.type or "text/csv")
-            if result.get("missing_required_fields"):
-                show_error(
-                    "The file is missing required fields.",
-                    {"missing_required_fields": result["missing_required_fields"]},
-                )
-            else:
-                st.session_state["catalog_id"] = result["catalog_id"]
-                st.success(f"Loaded {result['supplier_count']} suppliers.")
-        except ApiError as error:
-            show_error(error.message, error.details)
+    if not uploads_enabled(client):
+        upload_disabled_notice("file")
+    else:
+        uploaded = st.file_uploader(
+            "Upload a supplier master file (CSV, XLSX or JSON)", type=["csv", "xlsx", "json"]
+        )
+        if uploaded is not None and st.button("Load catalogue", type="primary"):
+            try:
+                result = client.supplier_upload(uploaded.name, uploaded.getvalue(), uploaded.type or "text/csv")
+                if result.get("missing_required_fields"):
+                    show_error(
+                        "The file is missing required fields.",
+                        {"missing_required_fields": result["missing_required_fields"]},
+                    )
+                else:
+                    st.session_state["catalog_id"] = result["catalog_id"]
+                    st.success(f"Loaded {result['supplier_count']} suppliers.")
+            except ApiError as error:
+                show_error(error.message, error.details)
 
 with col_sample:
     st.caption("No file handy? Load the bundled fictional demo catalogue.")
-    if st.button("Use the demo catalogue"):
-        try:
-            content = client.supplier_sample_file("csv")
-            result = client.supplier_upload("sample_suppliers.csv", content, "text/csv")
-            st.session_state["catalog_id"] = result["catalog_id"]
-            st.success(f"Loaded {result['supplier_count']} demo suppliers.")
-        except ApiError as error:
-            show_error(error.message, error.details)
+    # Loaded server-side from data/sample/ rather than downloaded and posted
+    # back: the round trip was an upload, and a public demonstration refuses
+    # uploads - including this page's own demo button.
+    loaded = load_demo_button(
+        "supplier_recommendation", label="Use the demo catalogue", key="reco_demo"
+    )
+    if loaded:
+        st.session_state["catalog_id"] = loaded["analyze_payload"]["catalog_id"]
+        st.success(
+            f"Loaded {loaded['datasets'][0]['row_count']} demo suppliers. "
+            "Demo data - fictional, not from SAP."
+        )
 
 catalog_id = st.session_state.get("catalog_id")
 if not catalog_id:

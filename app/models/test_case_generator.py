@@ -87,7 +87,7 @@ class TestSuite(Base, TimestampMixin):
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
     ai_model: Mapped[str | None] = mapped_column(String(60), nullable=True)
     ai_output_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    ai_prompt_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    ai_prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
     ai_input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ai_output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -152,7 +152,7 @@ class TestCase(Base, TimestampMixin):
     source: Mapped[str] = mapped_column(String(20), default="template", index=True)
     output_origin: Mapped[str] = mapped_column(String(20), default="rule_based")
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
-    ai_prompt_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    ai_prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
     #: What the deterministic repair had to fix in the drafted text.
     validation_notes: Mapped[list[str]] = mapped_column(JSON, default=list)
     regenerated_count: Mapped[int] = mapped_column(Integer, default=0)

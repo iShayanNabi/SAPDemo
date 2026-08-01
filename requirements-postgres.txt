@@ -1,0 +1,17 @@
+# PostgreSQL driver, kept out of requirements.txt on purpose.
+#
+# The lab's supported local path is SQLite, and that is what the test suite
+# runs on. Adding psycopg to the main requirements would install a database
+# driver on every developer's machine, enlarge the pip-audit surface, and imply
+# a PostgreSQL dependency the project does not have.
+#
+# The self-hosted deployment does need it. The Dockerfile installs this file
+# only when built with --build-arg INSTALL_POSTGRES=true, which
+# docker-compose.selfhosted.yml sets.
+#
+#     pip install -r requirements.txt -r requirements-postgres.txt
+#
+# The binary wheel is chosen deliberately: it bundles libpq, so the runtime
+# image needs no libpq-dev and no compiler. Wheels are published for
+# linux/amd64, which is what the target Intel Mac's Docker runs.
+psycopg[binary]==3.3.4

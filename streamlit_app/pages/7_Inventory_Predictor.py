@@ -23,6 +23,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import disclaimer, origin_badge, show_error  # noqa: E402
 
 st.set_page_config(page_title="Inventory Predictor", page_icon="📦", layout="wide")
@@ -43,6 +50,8 @@ OVERSTOCK_ICONS = {"high": "🔴", "medium": "🟠", "none": "🟢"}
 SEVERITY_ICONS = {"high": "🔴", "warning": "🟠", "info": "🔵"}
 
 st.title("Inventory Predictor")
+demo_banner(client)
+explain_module("inventory_predictor")
 st.write(
     "Forecast demand from an inventory history with explainable statistical models, project the "
     "stock level forward day by day, and get a reorder plan. The model is chosen per material by "
@@ -139,26 +148,37 @@ with sample_col:
             "`python scripts/generate_inventory_sample_data.py`"
         )
 
+    st.divider()
+    loaded = load_demo_button("inventory_predictor", key="inv_demo")
+    if loaded:
+        st.session_state["inventory_dataset"] = loaded["uploads"]["history"]
+        st.session_state["inventory_demo_parameters"] = loaded["suggested_parameters"]
+        st.session_state.pop("inventory_forecast", None)
+        st.success("Demonstration data loaded. Demo data - fictional, not from SAP.")
+
 with upload_col:
-    uploaded = st.file_uploader(
-        "Inventory history (CSV, XLSX or JSON)",
-        type=["csv", "xlsx", "json"],
-        key="inventory_upload",
-        help=(
-            "One row per material, plant and period, with the demand for that period. "
-            "Stock levels, lead times, reorder points, safety stock, supplier and open "
-            "purchase-order columns are all optional and each adds to what can be reported."
-        ),
-    )
-    if uploaded is not None and st.button("Load file", type="primary"):
-        try:
-            with st.spinner("Reading the history and detecting the period granularity..."):
-                st.session_state["inventory_dataset"] = client.inventory_upload(
-                    uploaded.name, uploaded.getvalue(), uploaded.type or "text/csv"
-                )
-            st.session_state.pop("inventory_forecast", None)
-        except ApiError as error:
-            show_error(error.message, error.details)
+    if not uploads_enabled(client):
+        upload_disabled_notice("file")
+    else:
+        uploaded = st.file_uploader(
+            "Inventory history (CSV, XLSX or JSON)",
+            type=["csv", "xlsx", "json"],
+            key="inventory_upload",
+            help=(
+                "One row per material, plant and period, with the demand for that period. "
+                "Stock levels, lead times, reorder points, safety stock, supplier and open "
+                "purchase-order columns are all optional and each adds to what can be reported."
+            ),
+        )
+        if uploaded is not None and st.button("Load file", type="primary"):
+            try:
+                with st.spinner("Reading the history and detecting the period granularity..."):
+                    st.session_state["inventory_dataset"] = client.inventory_upload(
+                        uploaded.name, uploaded.getvalue(), uploaded.type or "text/csv"
+                    )
+                st.session_state.pop("inventory_forecast", None)
+            except ApiError as error:
+                show_error(error.message, error.details)
 
 dataset = st.session_state.get("inventory_dataset")
 

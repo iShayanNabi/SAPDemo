@@ -5604,6 +5604,108 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Demonstration",
+      "description": "Guided demonstrations over the bundled fictional data, and the switch that makes this deployment safe to publish. `GET /api/v1/demo/status` reports whether public demo mode is on - which forces the mock AI provider and refuses uploads server-side - and `POST /api/v1/demo/load/{module}` hands a module the sample file it would otherwise have received from an upload. No analysis happens here: the load route calls the module's own upload handler and returns the identifiers its analysis endpoint already expects.",
+      "item": [
+        {
+          "name": "Demonstration status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/demo/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "demo",
+                "status"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Report whether this is a public demonstration, and what that changes.\n\nNeeds no credential and carries none: every field is a boolean, a fixed\nstring or a configured public address. This is what the Streamlit banner and\nthe public website read to decide what to say."
+          },
+          "response": []
+        },
+        {
+          "name": "Guided demonstrations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/demo/modules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "demo",
+                "modules"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Describe the guided demonstration for each of the ten modules.\n\n``loadable`` is computed from the bundled files actually being present, so a\ncheckout with a missing sample file reports it here rather than failing at\nthe moment somebody presses the button."
+          },
+          "response": []
+        },
+        {
+          "name": "Load a module's bundled demonstration data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/demo/load/{module}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "demo",
+                "load",
+                ":module"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "module",
+                  "value": "<module>"
+                }
+              ]
+            },
+            "description": "Ingest the bundled fictional data for one module.\n\nReturns the same identifiers an upload would have produced, so the page can\npost straight on to the module's analysis endpoint."
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

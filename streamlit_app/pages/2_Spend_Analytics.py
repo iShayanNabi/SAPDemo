@@ -21,6 +21,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     format_currency,
@@ -63,6 +70,8 @@ for key in ("spend_upload", "spend_analysis", "spend_filters"):
 # Explanation
 # ---------------------------------------------------------------------------
 st.title("Spend Analytics Dashboard")
+demo_banner(client)
+explain_module("spend_analytics")
 st.write(
     "Upload procurement transactions to analyse spend, measure contract coverage and "
     "concentration, drill into any figure, and review modelled savings opportunities."
@@ -127,23 +136,34 @@ with sample_column:
         st.warning("No sample file yet. Generate it with:")
         st.code("python scripts/generate_spend_sample_data.py", language="bash")
 
+    st.divider()
+    st.caption("Run the module on the bundled fictional dataset without uploading anything.")
+    loaded = load_demo_button("spend_analytics")
+    if loaded:
+        st.session_state["spend_upload"] = loaded["uploads"]["transactions"]
+        st.session_state["spend_analysis"] = None
+        st.success("Demonstration data loaded. Demo data - fictional, not from SAP.")
+
 with upload_column:
-    st.subheader("Upload your file")
-    uploaded = st.file_uploader(
-        "CSV, XLSX or JSON (max 25 MB)", type=["csv", "xlsx", "json"], key="spend_file"
-    )
-    if uploaded is not None and st.button("Validate and preview", type="primary"):
-        with st.spinner("Validating file and detecting columns..."):
-            try:
-                extension = Path(uploaded.name).suffix.lower()
-                st.session_state["spend_upload"] = client.spend_upload(
-                    uploaded.name, uploaded.getvalue(), MEDIA_TYPES.get(extension, "text/csv")
-                )
-                st.session_state["spend_analysis"] = None
-                st.success("File accepted.")
-            except ApiError as error:
-                st.session_state["spend_upload"] = None
-                show_error(error.message, error.details)
+    if not uploads_enabled(client):
+        upload_disabled_notice("file")
+    else:
+        st.subheader("Upload your file")
+        uploaded = st.file_uploader(
+            "CSV, XLSX or JSON (max 25 MB)", type=["csv", "xlsx", "json"], key="spend_file"
+        )
+        if uploaded is not None and st.button("Validate and preview", type="primary"):
+            with st.spinner("Validating file and detecting columns..."):
+                try:
+                    extension = Path(uploaded.name).suffix.lower()
+                    st.session_state["spend_upload"] = client.spend_upload(
+                        uploaded.name, uploaded.getvalue(), MEDIA_TYPES.get(extension, "text/csv")
+                    )
+                    st.session_state["spend_analysis"] = None
+                    st.success("File accepted.")
+                except ApiError as error:
+                    st.session_state["spend_upload"] = None
+                    show_error(error.message, error.details)
 
 upload = st.session_state.get("spend_upload")
 

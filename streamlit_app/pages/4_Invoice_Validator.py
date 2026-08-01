@@ -19,6 +19,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     format_currency,
@@ -39,6 +46,8 @@ DATASETS = [
 ]
 
 st.title("Invoice Validator")
+demo_banner(client)
+explain_module("invoice_validator")
 st.write(
     "Validate invoices against purchase orders and goods receipts with a transparent, deterministic "
     "three-way match. AI, when enabled, only summarises the exceptions - it never decides them."
@@ -69,35 +78,35 @@ uploads = st.session_state.setdefault("iv_uploads", {})
 
 col_load_demo, _ = st.columns([1, 3])
 with col_load_demo:
-    if st.button("Load the demo datasets"):
-        try:
-            for dataset, _label, _icon in DATASETS:
-                content = client.invoice_sample_file(dataset, "csv")
-                stem = {
-                    "invoices": "sample_invoices.csv",
-                    "purchase_orders": "sample_invoice_purchase_orders.csv",
-                    "goods_receipts": "sample_goods_receipts.csv",
-                }[dataset]
-                result = client.invoice_upload(dataset, stem, content, "text/csv")
-                uploads[dataset] = result
-            st.success("Loaded the three demo datasets.")
-        except ApiError as error:
-            show_error(error.message, error.details)
+    # All three datasets in one server-side load. The previous version
+    # downloaded each sample and posted it back, which is an upload, and a
+    # public demonstration refuses uploads - including its own demo button.
+    loaded = load_demo_button(
+        "invoice_validator", label="Load the demo datasets", key="iv_demo"
+    )
+    if loaded:
+        for dataset, result in loaded["uploads"].items():
+            uploads[dataset] = result
+        st.success("Loaded the three demo datasets. Demo data - fictional, not from SAP.")
+
+if not uploads_enabled(client):
+    upload_disabled_notice("file")
 
 upload_cols = st.columns(3)
 for (dataset, label, icon), column in zip(DATASETS, upload_cols):
     with column:
         st.subheader(f"{icon} {label}")
-        picked = st.file_uploader(
-            f"{label} file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key=f"file_{dataset}"
-        )
-        if picked is not None and st.button(f"Upload {label.lower()}", key=f"btn_{dataset}"):
-            try:
-                result = client.invoice_upload(dataset, picked.name, picked.getvalue(), picked.type or "text/csv")
-                uploads[dataset] = result
-                st.success(f"Uploaded {result['row_count']} rows.")
-            except ApiError as error:
-                show_error(error.message, error.details)
+        if uploads_enabled(client):
+            picked = st.file_uploader(
+                f"{label} file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key=f"file_{dataset}"
+            )
+            if picked is not None and st.button(f"Upload {label.lower()}", key=f"btn_{dataset}"):
+                try:
+                    result = client.invoice_upload(dataset, picked.name, picked.getvalue(), picked.type or "text/csv")
+                    uploads[dataset] = result
+                    st.success(f"Uploaded {result['row_count']} rows.")
+                except ApiError as error:
+                    show_error(error.message, error.details)
         current = uploads.get(dataset)
         if current:
             st.caption(f"`{current['upload_id'][:8]}` · {current['row_count']} rows")
@@ -105,7 +114,7 @@ for (dataset, label, icon), column in zip(DATASETS, upload_cols):
                 st.warning("Missing required: " + ", ".join(current["missing_required_fields"]))
 
 if "invoices" not in uploads:
-    st.info("Upload an invoice file (or load the demo datasets) to begin.", icon="👆")
+    st.info("Load the demo datasets to begin.", icon="👆")
     disclaimer()
     st.stop()
 

@@ -19,17 +19,28 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import demo_banner, is_demo_mode  # noqa: E402
 from streamlit_app.components.ui import disclaimer, origin_badge  # noqa: E402
 
 st.set_page_config(page_title="SAP AI Application Lab", page_icon="🧪", layout="wide")
 
-st.title("SAP AI Application Lab")
-st.write(
-    "A local workbench for SAP-focused AI applications. Each module runs entirely on your "
-    "machine: no SAP credentials, no paid APIs and no AI API key are required."
-)
-
 client = ApiClient()
+
+st.title("SAP AI Application Lab")
+demo_banner(client)
+
+if is_demo_mode(client):
+    st.write(
+        "A demonstration of ten SAP-focused applications, running on bundled fictional data. "
+        "Every module here works end to end - the calculations are the real ones - but nothing "
+        "is connected to an SAP system, file uploads are disabled, and the AI runs in mock mode "
+        "with no provider key."
+    )
+else:
+    st.write(
+        "A local workbench for SAP-focused AI applications. Each module runs entirely on your "
+        "machine: no SAP credentials, no paid APIs and no AI API key are required."
+    )
 
 with st.sidebar:
     st.header("Backend status")

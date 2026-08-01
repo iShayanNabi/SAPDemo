@@ -1549,6 +1549,74 @@
         "title": "ApiResponse[DeleteTestCaseResponse]",
         "type": "object"
       },
+      "ApiResponse_DemoLoadResponse_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoLoadResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "success": {
+            "default": true,
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "title": "ApiResponse[DemoLoadResponse]",
+        "type": "object"
+      },
+      "ApiResponse_DemoStatus_": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "success": {
+            "default": true,
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "title": "ApiResponse[DemoStatus]",
+        "type": "object"
+      },
       "ApiResponse_ExceptionListResponse_": {
         "properties": {
           "data": {
@@ -3387,6 +3455,44 @@
           }
         },
         "title": "ApiResponse[dict[str, object]]",
+        "type": "object"
+      },
+      "ApiResponse_list_DemoModuleInfo__": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DemoModuleInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "success": {
+            "default": true,
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "title": "ApiResponse[list[DemoModuleInfo]]",
         "type": "object"
       },
       "ApiResponse_list_FieldDefinitionSchema__": {
@@ -7199,6 +7305,283 @@
           }
         },
         "title": "DemandProfileSchema",
+        "type": "object"
+      },
+      "DemoDatasetInfo": {
+        "description": "One bundled file a demonstration uses.",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "key": {
+            "description": "Which of the module's inputs this file is.",
+            "title": "Key",
+            "type": "string"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          }
+        },
+        "required": [
+          "key",
+          "filename",
+          "available"
+        ],
+        "title": "DemoDatasetInfo",
+        "type": "object"
+      },
+      "DemoLoadResponse": {
+        "description": "Result of loading a module's bundled demonstration data.",
+        "properties": {
+          "analyze_path": {
+            "title": "Analyze Path",
+            "type": "string"
+          },
+          "analyze_payload": {
+            "additionalProperties": true,
+            "title": "Analyze Payload",
+            "type": "object"
+          },
+          "data_origin": {
+            "$ref": "#/components/schemas/OutputOrigin",
+            "default": "demo_data"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DemoLoadedDataset"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "module": {
+            "title": "Module",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "suggested_parameters": {
+            "additionalProperties": true,
+            "title": "Suggested Parameters",
+            "type": "object"
+          },
+          "uploads": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Uploads",
+            "type": "object"
+          }
+        },
+        "required": [
+          "module",
+          "number",
+          "name",
+          "datasets",
+          "analyze_path",
+          "analyze_payload"
+        ],
+        "title": "DemoLoadResponse",
+        "type": "object"
+      },
+      "DemoLoadedDataset": {
+        "description": "A bundled file that was ingested, and the handle it produced.",
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "identifier": {
+            "title": "Identifier",
+            "type": "string"
+          },
+          "identifier_name": {
+            "title": "Identifier Name",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "row_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row Count"
+          }
+        },
+        "required": [
+          "key",
+          "filename",
+          "identifier_name",
+          "identifier"
+        ],
+        "title": "DemoLoadedDataset",
+        "type": "object"
+      },
+      "DemoModuleInfo": {
+        "description": "What the guided demonstration offers for one module.",
+        "properties": {
+          "ai_summary": {
+            "title": "Ai Summary",
+            "type": "string"
+          },
+          "business_question": {
+            "title": "Business Question",
+            "type": "string"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DemoDatasetInfo"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "deterministic_summary": {
+            "title": "Deterministic Summary",
+            "type": "string"
+          },
+          "expected_output": {
+            "title": "Expected Output",
+            "type": "string"
+          },
+          "input_style": {
+            "title": "Input Style",
+            "type": "string"
+          },
+          "loadable": {
+            "title": "Loadable",
+            "type": "boolean"
+          },
+          "module": {
+            "title": "Module",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "module",
+          "number",
+          "name",
+          "loadable",
+          "input_style",
+          "datasets",
+          "business_question",
+          "deterministic_summary",
+          "ai_summary",
+          "expected_output"
+        ],
+        "title": "DemoModuleInfo",
+        "type": "object"
+      },
+      "DemoStatus": {
+        "description": "How this deployment is configured, in terms safe to show a browser.",
+        "properties": {
+          "ai_is_mock": {
+            "title": "Ai Is Mock",
+            "type": "boolean"
+          },
+          "ai_provider": {
+            "title": "Ai Provider",
+            "type": "string"
+          },
+          "authentication": {
+            "title": "Authentication",
+            "type": "string"
+          },
+          "banner_headline": {
+            "title": "Banner Headline",
+            "type": "string"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          },
+          "data_origin": {
+            "$ref": "#/components/schemas/OutputOrigin",
+            "default": "demo_data"
+          },
+          "demo_mode": {
+            "title": "Demo Mode",
+            "type": "boolean"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "do_not_submit": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Do Not Submit",
+            "type": "array"
+          },
+          "site_name": {
+            "title": "Site Name",
+            "type": "string"
+          },
+          "uploads_enabled": {
+            "title": "Uploads Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "demo_mode",
+          "uploads_enabled",
+          "ai_provider",
+          "ai_is_mock",
+          "banner_headline",
+          "do_not_submit",
+          "disclaimer",
+          "site_name",
+          "authentication"
+        ],
+        "title": "DemoStatus",
         "type": "object"
       },
       "DifficultyPerformanceSchema": {
@@ -27822,6 +28205,517 @@
         ]
       }
     },
+    "/api/v1/demo/load/{module}": {
+      "post": {
+        "description": "Ingest the bundled fictional data for one module.\n\nReturns the same identifiers an upload would have produced, so the page can\npost straight on to the module's analysis endpoint.",
+        "operationId": "load_demo_api_v1_demo_load__module__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module",
+            "required": true,
+            "schema": {
+              "maxLength": 60,
+              "pattern": "^[a-z_]+$",
+              "title": "Module",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DemoLoadResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty": {
+                    "summary": "An empty payload",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {},
+                        "message": "The uploaded file is empty."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "too_large": {
+                    "summary": "Past the configured size limit",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "max_bytes": 26214400
+                        },
+                        "message": "The file is larger than the 25 MB limit."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "wrong_type": {
+                    "summary": "A file type this endpoint does not accept",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "allowed_extensions": [
+                            ".csv",
+                            ".json",
+                            ".xlsx"
+                          ]
+                        },
+                        "message": "File type '.pdf' is not supported. Allowed types: .csv, .json, .xlsx"
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The upload was rejected before anything was stored."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "not_found",
+                    "details": {
+                      "analysis_id": "does-not-exist"
+                    },
+                    "message": "Analysis not found."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "No resource with that identifier exists."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "request_validation_error",
+                    "details": {
+                      "errors": [
+                        {
+                          "loc": [
+                            "body",
+                            "upload_id"
+                          ],
+                          "msg": "Field required",
+                          "type": "missing"
+                        }
+                      ]
+                    },
+                    "message": "The request could not be validated."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "The request body or a query parameter failed validation. `details.errors` lists up to ten problems, each naming the field it is about."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "internal_error",
+                    "details": {},
+                    "message": "An unexpected error occurred. Check the server log for details."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "Something unexpected failed. The message is deliberately generic; the full traceback is in the server log against the `request_id` shown here."
+          }
+        },
+        "summary": "Load a module's bundled demonstration data",
+        "tags": [
+          "Demonstration"
+        ]
+      }
+    },
+    "/api/v1/demo/modules": {
+      "get": {
+        "description": "Describe the guided demonstration for each of the ten modules.\n\n``loadable`` is computed from the bundled files actually being present, so a\ncheckout with a missing sample file reports it here rather than failing at\nthe moment somebody presses the button.",
+        "operationId": "demo_modules_api_v1_demo_modules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_DemoModuleInfo__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty": {
+                    "summary": "An empty payload",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {},
+                        "message": "The uploaded file is empty."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "too_large": {
+                    "summary": "Past the configured size limit",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "max_bytes": 26214400
+                        },
+                        "message": "The file is larger than the 25 MB limit."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "wrong_type": {
+                    "summary": "A file type this endpoint does not accept",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "allowed_extensions": [
+                            ".csv",
+                            ".json",
+                            ".xlsx"
+                          ]
+                        },
+                        "message": "File type '.pdf' is not supported. Allowed types: .csv, .json, .xlsx"
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The upload was rejected before anything was stored."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "not_found",
+                    "details": {
+                      "analysis_id": "does-not-exist"
+                    },
+                    "message": "Analysis not found."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "No resource with that identifier exists."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "request_validation_error",
+                    "details": {
+                      "errors": [
+                        {
+                          "loc": [
+                            "body",
+                            "upload_id"
+                          ],
+                          "msg": "Field required",
+                          "type": "missing"
+                        }
+                      ]
+                    },
+                    "message": "The request could not be validated."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "The request body or a query parameter failed validation. `details.errors` lists up to ten problems, each naming the field it is about."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "internal_error",
+                    "details": {},
+                    "message": "An unexpected error occurred. Check the server log for details."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "Something unexpected failed. The message is deliberately generic; the full traceback is in the server log against the `request_id` shown here."
+          }
+        },
+        "summary": "Guided demonstrations",
+        "tags": [
+          "Demonstration"
+        ]
+      }
+    },
+    "/api/v1/demo/status": {
+      "get": {
+        "description": "Report whether this is a public demonstration, and what that changes.\n\nNeeds no credential and carries none: every field is a boolean, a fixed\nstring or a configured public address. This is what the Streamlit banner and\nthe public website read to decide what to say.",
+        "operationId": "demo_status_api_v1_demo_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DemoStatus_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty": {
+                    "summary": "An empty payload",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {},
+                        "message": "The uploaded file is empty."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "too_large": {
+                    "summary": "Past the configured size limit",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "max_bytes": 26214400
+                        },
+                        "message": "The file is larger than the 25 MB limit."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "wrong_type": {
+                    "summary": "A file type this endpoint does not accept",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "allowed_extensions": [
+                            ".csv",
+                            ".json",
+                            ".xlsx"
+                          ]
+                        },
+                        "message": "File type '.pdf' is not supported. Allowed types: .csv, .json, .xlsx"
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The upload was rejected before anything was stored."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "not_found",
+                    "details": {
+                      "analysis_id": "does-not-exist"
+                    },
+                    "message": "Analysis not found."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "No resource with that identifier exists."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "request_validation_error",
+                    "details": {
+                      "errors": [
+                        {
+                          "loc": [
+                            "body",
+                            "upload_id"
+                          ],
+                          "msg": "Field required",
+                          "type": "missing"
+                        }
+                      ]
+                    },
+                    "message": "The request could not be validated."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "The request body or a query parameter failed validation. `details.errors` lists up to ten problems, each naming the field it is about."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "internal_error",
+                    "details": {},
+                    "message": "An unexpected error occurred. Check the server log for details."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "Something unexpected failed. The message is deliberately generic; the full traceback is in the server log against the `request_id` shown here."
+          }
+        },
+        "summary": "Demonstration status",
+        "tags": [
+          "Demonstration"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "description": "Report application, database and AI provider status.\n\nNeeds no credential and never will: this is what a container healthcheck,\na load balancer and an uptime monitor poll, and none of them can log in.\n``status`` is ``ok`` or ``degraded`` - degraded means the API is up but the\ndatabase is not answering, which is a different action from \"down\".",
@@ -46759,6 +47653,10 @@
     {
       "description": "**Module 10.** Practise SAP interview questions and get a scored, explained result. The rubric marks the answer; a provider is only ever asked for the prose around a finished verdict, so the same answer scores the same with a real model, with the mock, or with no AI at all. An answer key never travels with an unanswered question.",
       "name": "SAP Interview Coach"
+    },
+    {
+      "description": "Guided demonstrations over the bundled fictional data, and the switch that makes this deployment safe to publish. `GET /api/v1/demo/status` reports whether public demo mode is on - which forces the mock AI provider and refuses uploads server-side - and `POST /api/v1/demo/load/{module}` hands a module the sample file it would otherwise have received from an upload. No analysis happens here: the load route calls the module's own upload handler and returns the identifiers its analysis endpoint already expects.",
+      "name": "Demonstration"
     }
   ]
 }

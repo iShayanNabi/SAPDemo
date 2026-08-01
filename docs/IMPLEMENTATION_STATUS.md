@@ -1149,7 +1149,65 @@ Still worth doing, and none of it blocking:
 - **Link module 9 to module 8.** A blueprint's SIT and UAT scenario sections and a
   generated test suite describe the same tests at two levels of detail, and
   nothing joins them today.
-- **A job queue and a live PostgreSQL run.** The migrations render for PostgreSQL
-  and the timestamp handling is tested against it, but no suite has been run
-  against a live server. That is one command
-  (`docker compose --profile postgres up`) and worth closing before a deployment.
+- **A job queue.** Every analysis is synchronous and finishes in seconds today, so
+  nothing needs one yet; a public deployment accepting long uploads would.
+
+---
+
+## Phase 6 — the public website and the self-hosted demonstration
+
+Phase 6 added no modules and changed none of the ten. It added the two things
+needed to put them in front of somebody: a website that explains them, and a
+deployment mode that makes the existing application safe to expose.
+
+### What was built
+
+| Area | What |
+| --- | --- |
+| Public demonstration mode | `DEMO_MODE` and four switches in `app/core/config.py`; the guards in `app/core/demo.py`; server-side upload refusal at both choke points |
+| Guided demonstrations | `app/services/demo/catalog.py` and `GET/POST /api/v1/demo/*` — one loader per file-taking module, calling each module's own `handle_upload` |
+| Streamlit | A banner, a do-not-submit list, uploaders replaced by a Load Demo action, list views scoped to the browser session |
+| Website | A Next.js 16 app under `frontend/` — 25 static routes including one per module, no runtime data source, no API call from a browser |
+| Deployment | `docker-compose.selfhosted.yml` (five services, two networks, nothing published) and `docker-compose.debug.yml` |
+| Operations | Nine scripts, a shared library, `docs/` for the Mac, Cloudflare, GoDaddy, backups, security and troubleshooting |
+
+### The live PostgreSQL run, finally done
+
+The previous phase closed with *"no suite has been run against a live server …
+worth closing before a deployment."* It has now been run, and it found exactly
+the kind of bug that motivated the note.
+
+`ai_prompt_version` was declared `String(20)` on `po_analyses` while the code
+writes a 24-character value into it. SQLite does not enforce `VARCHAR` length and
+every test runs on SQLite, so it had been wrong since phase 1 with a green suite
+throughout. On PostgreSQL it raises, and **two of the ten modules failed to
+seed** on the first start — the demonstration came up missing its purchase order
+and invoice data, with nothing in the logs a person would have looked at.
+
+Migration `b8e6a24f1d35` widens every `ai_prompt_version` to 64.
+`tests/integration/test_column_widths.py` compares declared widths against the
+constants the code writes, engine-independently, so the next one fails in CI
+rather than on a deployment.
+
+### Deliberate limitations
+
+- **No authentication.** Records created by one visitor are visible to another
+  through the API. Session-scoped views are a *display filter*; the page says so.
+  Cloudflare Access limits who reaches the demonstration at all.
+- **One machine.** No redundancy, and with FileVault on, an unattended reboot
+  leaves the site down until somebody logs in.
+- **The website is content, not a client.** It renders a typed content module and
+  never calls the API, which is why no public API hostname exists. Anything the
+  site should show *from* the platform needs that decision revisited.
+- **`npm audit` reports three high advisories**, all transitive through Next, all
+  with no fix short of a seven-major downgrade. Assessed and documented in
+  `FINAL_BUILD_REPORT.md`.
+
+### What is next
+
+1. **Authentication**, if the demonstration is ever to be more than
+   invitation-only. `API_AUTHENTICATION_PLAN.md` steps 1 and 3 in that order.
+2. **Run the Python suite against PostgreSQL in CI.** The column-width bug is the
+   argument; a second engine in the matrix is the fix.
+3. **Managed hosting**, when a laptop stops being appropriate. The compose file
+   is already the deployment description, and nothing in it is Mac-specific.

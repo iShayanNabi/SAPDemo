@@ -27,6 +27,7 @@ from app.api.openapi import API_DESCRIPTION, OPENAPI_TAGS, customise_openapi
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.context import reset_request_id, set_request_id
+from app.core.demo import DEMO_BANNER_HEADLINE
 from app.core.exceptions import AppError
 from app.core.logging import configure_logging, get_logger
 from app.models.session import init_db
@@ -47,6 +48,19 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         settings.app_name, settings.app_version, settings.environment, provider,
         " (mock mode - no API key needed)" if provider == "mock" else "",
     )
+    if settings.demo_mode:
+        # Worth its own line at INFO: the two things this mode changes are the
+        # two things an operator will be asked about, and "is the demo really
+        # refusing uploads" should be answerable from the log rather than by
+        # trying it.
+        logger.info(
+            "Public demonstration mode is ON | uploads=%s | ai=%s | seed_on_empty=%s | "
+            "reset_on_start=%s",
+            "enabled" if settings.uploads_enabled else "refused",
+            provider,
+            settings.demo_seed_on_empty,
+            settings.demo_reset_on_start,
+        )
     yield
     logger.info("Shutting down")
 
@@ -286,8 +300,14 @@ def index() -> dict[str, object]:
             for module in MODULES
         ],
         "ai_provider": settings.resolved_ai_provider(),
+        # Two booleans rather than the whole demo state: a client deciding
+        # whether to render an upload control needs these, and the full
+        # description has its own endpoint.
+        "demo_mode": settings.demo_mode,
+        "uploads_enabled": settings.uploads_enabled,
         "disclaimer": (
-            "Demo application. Not connected to any SAP system; no output has been validated "
+            (f"{DEMO_BANNER_HEADLINE}. " if settings.demo_mode else "")
+            + "Demo application. Not connected to any SAP system; no output has been validated "
             "in a live SAP environment, and no figure here is a guarantee."
         ),
     }

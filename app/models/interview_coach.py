@@ -148,7 +148,7 @@ class InterviewAnswer(Base, TimestampMixin):
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
     ai_model: Mapped[str | None] = mapped_column(String(60), nullable=True)
     ai_output_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    ai_prompt_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    ai_prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
     ai_input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ai_output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)

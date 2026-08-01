@@ -23,6 +23,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
+from streamlit_app.components.demo import (  # noqa: E402
+    demo_banner,
+    explain_module,
+    load_demo_button,
+    upload_disabled_notice,
+    uploads_enabled,
+)
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
     escape_html,
@@ -60,6 +67,8 @@ EXAMPLE_QUESTION_TEMPLATES = [
 ]
 
 st.title("Supplier Risk Copilot")
+demo_banner(client)
+explain_module("supplier_risk_copilot")
 st.write(
     "Score every supplier across ten risk categories with a transparent, deterministic model, "
     "then ask questions about the result. Answers are built from the uploaded internal records "
@@ -152,38 +161,20 @@ st.caption(
 
 demo_col, info_col = st.columns([1, 2])
 with demo_col:
-    if st.button("Load the demo dataset"):
-        try:
-            profiles = client.supplier_risk_sample_file("profiles", "csv")
-            uploaded_profiles = client.supplier_risk_upload(
-                "profiles", SAMPLE_FILES["profiles"], profiles, "text/csv"
-            )
-            st.session_state["sr_dataset_id"] = uploaded_profiles.get("dataset_id")
-            st.session_state["sr_profiles_upload"] = uploaded_profiles
-            st.session_state.pop("sr_assessment", None)
-            st.session_state.pop("sr_events_upload", None)
-            try:
-                events = client.supplier_risk_sample_file("events", "csv")
-                uploaded_events = client.supplier_risk_upload(
-                    "events",
-                    SAMPLE_FILES["events"],
-                    events,
-                    "text/csv",
-                    dataset_id=st.session_state["sr_dataset_id"],
-                )
-                st.session_state["sr_events_upload"] = uploaded_events
-            except ApiError as error:
-                st.warning(f"Risk events were not loaded: {error.message}")
-            st.success(
-                f"Loaded {uploaded_profiles.get('supplier_count', 0)} demo suppliers"
-                + (
-                    f" and {st.session_state['sr_events_upload'].get('event_count', 0)} risk events."
-                    if st.session_state.get("sr_events_upload")
-                    else "."
-                )
-            )
-        except ApiError as error:
-            show_error(error.message, error.details)
+    # Both files load server-side from data/sample/. Downloading each sample
+    # and posting it back is an upload, and a public demonstration refuses
+    # uploads - which would have broken this page's own demo button.
+    loaded = load_demo_button("supplier_risk_copilot", label="Load the demo dataset", key="sr_demo")
+    if loaded:
+        st.session_state["sr_dataset_id"] = loaded["analyze_payload"]["dataset_id"]
+        st.session_state["sr_profiles_upload"] = loaded["uploads"]["profiles"]
+        st.session_state["sr_events_upload"] = loaded["uploads"]["events"]
+        st.session_state.pop("sr_assessment", None)
+        st.success(
+            f"Loaded {loaded['uploads']['profiles'].get('supplier_count', 0)} demo suppliers "
+            f"and {loaded['uploads']['events'].get('event_count', 0)} risk events. "
+            "Demo data - fictional, not from SAP."
+        )
 
 with info_col:
     try:
@@ -204,52 +195,55 @@ with info_col:
     except ApiError as error:
         st.caption(f"Demo dataset info unavailable: {error.message}")
 
-upload_cols = st.columns(2)
-with upload_cols[0]:
-    st.subheader("🏢 Supplier risk profiles")
-    picked_profiles = st.file_uploader(
-        "Profile file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key="sr_file_profiles"
-    )
-    if picked_profiles is not None and st.button("Upload profiles", key="sr_btn_profiles"):
-        try:
-            result = client.supplier_risk_upload(
-                "profiles",
-                picked_profiles.name,
-                picked_profiles.getvalue(),
-                picked_profiles.type or "text/csv",
-            )
-            st.session_state["sr_dataset_id"] = result.get("dataset_id")
-            st.session_state["sr_profiles_upload"] = result
-            st.session_state.pop("sr_assessment", None)
-            st.session_state.pop("sr_events_upload", None)
-            st.success(f"Loaded {result.get('supplier_count', 0)} suppliers.")
-        except ApiError as error:
-            show_error(error.message, error.details)
+if not uploads_enabled(client):
+    upload_disabled_notice("file")
+else:
+    upload_cols = st.columns(2)
+    with upload_cols[0]:
+        st.subheader("🏢 Supplier risk profiles")
+        picked_profiles = st.file_uploader(
+            "Profile file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key="sr_file_profiles"
+        )
+        if picked_profiles is not None and st.button("Upload profiles", key="sr_btn_profiles"):
+            try:
+                result = client.supplier_risk_upload(
+                    "profiles",
+                    picked_profiles.name,
+                    picked_profiles.getvalue(),
+                    picked_profiles.type or "text/csv",
+                )
+                st.session_state["sr_dataset_id"] = result.get("dataset_id")
+                st.session_state["sr_profiles_upload"] = result
+                st.session_state.pop("sr_assessment", None)
+                st.session_state.pop("sr_events_upload", None)
+                st.success(f"Loaded {result.get('supplier_count', 0)} suppliers.")
+            except ApiError as error:
+                show_error(error.message, error.details)
 
-with upload_cols[1]:
-    st.subheader("📌 Risk events (optional)")
-    picked_events = st.file_uploader(
-        "Event file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key="sr_file_events"
-    )
-    events_disabled = not st.session_state.get("sr_dataset_id")
-    if events_disabled:
-        st.caption("Upload the profile file first - events attach to a dataset.")
-    if picked_events is not None and st.button(
-        "Upload events", key="sr_btn_events", disabled=events_disabled
-    ):
-        try:
-            result = client.supplier_risk_upload(
-                "events",
-                picked_events.name,
-                picked_events.getvalue(),
-                picked_events.type or "text/csv",
-                dataset_id=st.session_state.get("sr_dataset_id"),
-            )
-            st.session_state["sr_events_upload"] = result
-            st.session_state.pop("sr_assessment", None)
-            st.success(f"Loaded {result.get('event_count', 0)} risk events.")
-        except ApiError as error:
-            show_error(error.message, error.details)
+    with upload_cols[1]:
+        st.subheader("📌 Risk events (optional)")
+        picked_events = st.file_uploader(
+            "Event file (CSV, XLSX, JSON)", type=["csv", "xlsx", "json"], key="sr_file_events"
+        )
+        events_disabled = not st.session_state.get("sr_dataset_id")
+        if events_disabled:
+            st.caption("Upload the profile file first - events attach to a dataset.")
+        if picked_events is not None and st.button(
+            "Upload events", key="sr_btn_events", disabled=events_disabled
+        ):
+            try:
+                result = client.supplier_risk_upload(
+                    "events",
+                    picked_events.name,
+                    picked_events.getvalue(),
+                    picked_events.type or "text/csv",
+                    dataset_id=st.session_state.get("sr_dataset_id"),
+                )
+                st.session_state["sr_events_upload"] = result
+                st.session_state.pop("sr_assessment", None)
+                st.success(f"Loaded {result.get('event_count', 0)} risk events.")
+            except ApiError as error:
+                show_error(error.message, error.details)
 
 for state_key, label in (("sr_profiles_upload", "Profiles"), ("sr_events_upload", "Events")):
     upload = st.session_state.get(state_key)

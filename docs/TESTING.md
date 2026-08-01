@@ -378,3 +378,84 @@ Tests are necessary, not sufficient - run the thing.
   answer scoring full coverage against its own rubric**, the documented anchors against the
   recorded baseline, structured validation and repair of five malformed provider payloads, and the
   rubric-fingerprint staleness pair.
+
+---
+
+## Phase 6: publishing it
+
+Four test files were added for the public deployment, and one of them exists because of a bug the
+other 1,698 could not see.
+
+| File | Covers |
+| --- | --- |
+| `tests/unit/test_demo_mode.py` | The settings and the guards: demo mode wins over a provider key, the guard refuses before a payload is read, `trusted_ingest()` does not survive its own block |
+| `tests/api/test_demo_api.py` | The demonstration routes driven for real: all seven loadable modules ingest their bundled data, every upload route returns 403 in demo mode, a loaded dataset then analyses end to end |
+| `tests/integration/test_selfhosted_deployment.py` | The compose files, the scripts and the templates as text and YAML: no published port, the network boundaries, the reset refusal, backup checksums, no committed secret |
+| `tests/integration/test_column_widths.py` | Declared column widths against the values the code writes |
+| `tests/integration/test_streamlit_pages.py` | Every page opens, shows the banner and renders no uploader, and the guided demonstration completes |
+
+### Why `test_column_widths.py` exists
+
+`ai_prompt_version` was declared `String(20)` and the code writes
+`po_risk_narrative_v1.0.0` into it - 24 characters. It had been wrong for five phases.
+
+**SQLite does not enforce `VARCHAR` length**, and every test in this suite runs on SQLite. The
+first PostgreSQL start failed to seed two of the ten modules. The test compares declared widths
+against the constants the code writes, in plain Python with no database, so it holds on whichever
+engine is configured.
+
+The generalisation is worth more than the fix: *a constraint the test database does not enforce is
+a constraint that is not tested.* If you add a column with a length, add it to that file.
+
+### Testing the Streamlit pages
+
+Streamlit pages are scripts, and nothing else in this suite executes them - a page that raises on
+import is invisible to a green run and obvious to the first person who clicks the sidebar.
+
+`streamlit.testing.v1.AppTest` runs a page headlessly. The fixture starts a **real** uvicorn on a
+loopback port in demo mode, because the pages are HTTP clients and a stubbed one would prove
+nothing about the endpoints they call.
+
+One trap, documented in the fixture: setting `API_BASE_URL` in `os.environ` there does nothing.
+`app.core.config` builds its settings singleton at import time and conftest imports it during
+collection, so the value has to be written onto the live object *and* the client module dropped
+from `sys.modules` - `ApiClient` is a dataclass whose default binds at first import. Without the
+second step the pages silently talk to port 8000 and every demo-mode assertion fails while every
+page still renders.
+
+These are marked `slow`:
+
+```bash
+pytest -m "not slow"          # skip them
+pytest tests/integration/test_streamlit_pages.py
+```
+
+### The frontend suite
+
+Separate runner, separate directory:
+
+```bash
+cd frontend
+npm run lint         # eslint flat config: typescript-eslint, jsx-a11y, react-hooks
+npm run typecheck    # tsc --noEmit, strict
+npm test             # vitest: 112 tests
+npm run build        # next build - 25 static routes
+```
+
+`tests/content.test.ts` pins the exact ten module ids rather than a count - a count passes with the
+same module listed ten times. `tests/accessibility.test.tsx` runs axe-core against the real rendered
+markup of every page, and caught a genuine heading-order defect on four of them. `color-contrast`
+is disabled there and only there, because jsdom computes no layout and the rule cannot see the
+colours a browser will paint; that is stated next to the disable.
+
+### Running the deployment checks
+
+`tests/integration/test_selfhosted_deployment.py` needs no Docker daemon - it reads the files. The
+runtime checks live in a script instead:
+
+```bash
+./scripts/verify_selfhosted.sh
+```
+
+Twenty checks, including one that proves uploads are refused by *making a real upload request*
+rather than by reading configuration.

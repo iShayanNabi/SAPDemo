@@ -78,6 +78,19 @@ class ApiClient:
         """Return the active AI provider description."""
         return self._request("GET", "/po-risk/ai-status")
 
+    # -- guided demonstration -------------------------------------------
+    def demo_status(self) -> dict[str, Any]:
+        """Report whether this deployment is a public demonstration."""
+        return self._request("GET", "/demo/status")
+
+    def demo_modules(self) -> list[dict[str, Any]]:
+        """Describe the guided demonstration for each module."""
+        return self._request("GET", "/demo/modules")
+
+    def demo_load(self, module: str) -> dict[str, Any]:
+        """Ingest a module's bundled fictional data and return its handles."""
+        return self._request("POST", f"/demo/load/{module}")
+
     def upload(self, filename: str, content: bytes, content_type: str) -> dict[str, Any]:
         """Upload a purchase order file and get the mapping suggestion."""
         return self._request(

@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+/*
+ * Tailwind v4 configures itself from CSS, and its default `dark:` variant is
+ * already `prefers-color-scheme: dark`. That is deliberately left alone: the
+ * site follows the visitor's operating system rather than shipping a toggle
+ * and a preference to persist. Overriding the variant to a `.dark` class - the
+ * obvious-looking customisation - would silently disable every `dark:` class
+ * on this site, because nothing here ever adds that class.
+ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Respect a visitor who has asked the operating system to stop animating. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  @apply bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
