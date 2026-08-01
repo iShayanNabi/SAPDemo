@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -49,9 +50,15 @@ MEDIA_TYPES = {
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
-suppliers_router = APIRouter(prefix="/suppliers", tags=["Supplier Recommendation Engine"])
+suppliers_router = APIRouter(
+    prefix="/suppliers",
+    tags=["Supplier Recommendation Engine"],
+    responses=COMMON_ERROR_RESPONSES,
+)
 recommendations_router = APIRouter(
-    prefix="/supplier-recommendations", tags=["Supplier Recommendation Engine"]
+    prefix="/supplier-recommendations",
+    tags=["Supplier Recommendation Engine"],
+    responses=COMMON_ERROR_RESPONSES,
 )
 
 

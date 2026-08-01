@@ -67,7 +67,24 @@ class UploadResponse(BaseModel):
 class AnalyzeRequest(BaseModel):
     """Body of ``POST /po-risk/analyze``."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "generate_ai_summary": True,
+                },
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "column_mapping_overrides": {"VENDOR_NO": "supplier_id"},
+                    "enabled_rules": ["PO-R001", "PO-R009", "PO-R010"],
+                    "generate_ai_summary": False,
+                    "rewrite_findings": False,
+                },
+            ]
+        },
+    )
 
     upload_id: str = Field(min_length=1, max_length=36)
     column_mapping_overrides: dict[str, str] = Field(

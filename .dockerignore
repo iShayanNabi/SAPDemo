@@ -27,11 +27,15 @@ data/uploads/*
 data/exports/*
 data/*.db
 
-# Documentation and examples are not needed to run the API.
+# Documentation and examples are not needed to run the API. Listed explicitly
+# rather than as `*.md`: the demo manifests live in data/sample/ and describe
+# what each anomaly in the dataset is, which is worth keeping in the image
+# alongside the data it documents.
 docs/
 examples/
-*.md
-!README.md
+PROJECT_2_HANDOFF.md
+PROJECT_3_HANDOFF.md
+CLAUDE.md
 
 # Editors / OS
 .idea/

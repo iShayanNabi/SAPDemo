@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -48,7 +49,14 @@ from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/inventory", tags=["Inventory Predictor"])
+router = APIRouter(
+    prefix="/inventory",
+    tags=["Inventory Predictor"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 DbSession = Annotated[Session, Depends(get_db)]
 

@@ -81,7 +81,24 @@ class SpendFilterSchema(BaseModel):
 class SpendAnalyzeRequest(BaseModel):
     """Request body for ``POST /spend/analyze``."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {"upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246", "generate_ai_summary": True},
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "filters": {
+                        "date_from": "2026-01-01",
+                        "date_to": "2026-06-30",
+                        "category": ["Indirect materials"],
+                    },
+                    "top_n": 20,
+                    "generate_ai_summary": False,
+                },
+            ]
+        },
+    )
 
     upload_id: str = Field(min_length=8, max_length=64)
     column_mapping_overrides: dict[str, str] = Field(default_factory=dict)

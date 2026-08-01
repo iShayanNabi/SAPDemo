@@ -27,6 +27,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.logging import get_logger
 from app.models.session import get_db
 from app.modules.interview_coach import service
@@ -52,7 +53,14 @@ logger = get_logger(__name__)
 
 DbSession = Annotated[Session, Depends(get_db)]
 
-router = APIRouter(prefix="/interviews", tags=["Interview Coach"])
+router = APIRouter(
+    prefix="/interviews",
+    tags=["SAP Interview Coach"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------

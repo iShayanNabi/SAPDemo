@@ -30,6 +30,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.logging import get_logger
 from app.models.session import get_db
 from app.modules.test_case_generator import service
@@ -68,7 +69,14 @@ EXPORT_MEDIA_TYPES = {
     ExportFormat.XLSX: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
-router = APIRouter(prefix="/test-cases", tags=["Test Case Generator"])
+router = APIRouter(
+    prefix="/test-cases",
+    tags=["SAP Test Case Generator"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------

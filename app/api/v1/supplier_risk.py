@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -58,7 +59,14 @@ SAMPLE_STEMS = {
     RiskDatasetKind.EVENTS: "sample_supplier_risk_events",
 }
 
-router = APIRouter(prefix="/supplier-risk", tags=["Supplier Risk Copilot"])
+router = APIRouter(
+    prefix="/supplier-risk",
+    tags=["Supplier Risk Copilot"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------

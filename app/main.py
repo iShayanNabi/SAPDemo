@@ -19,9 +19,11 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.openapi import API_DESCRIPTION, OPENAPI_TAGS, customise_openapi
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.context import reset_request_id, set_request_id
@@ -52,16 +54,44 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description=(
-        "Local API for the SAP AI Application Lab. Module 1: Purchase Order Risk Checker.\n\n"
-        "Risk findings are produced by deterministic Python rules. AI is optional and only "
-        "rewrites those findings in business language; it never decides risk. No module in this "
-        "lab connects to a live SAP system."
-    ),
+    summary="Ten SAP-focused AI applications, running locally on fictional data.",
+    description=API_DESCRIPTION,
+    openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    swagger_ui_parameters={
+        # 130 endpoints across eleven tags: collapsed is the only readable
+        # starting point, and a filter box is what makes it navigable.
+        "docExpansion": "none",
+        "filter": True,
+        "displayRequestDuration": True,
+        "tryItOutEnabled": True,
+    },
 )
+
+
+def custom_openapi() -> dict[str, object]:
+    """Return the OpenAPI document, with the parts FastAPI cannot infer added.
+
+    Cached on the app the way FastAPI's own implementation does, so the document
+    is built once rather than on every ``/docs`` load.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        summary=app.summary,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+    )
+    app.openapi_schema = customise_openapi(schema)
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi  # type: ignore[method-assign]
 
 # CORS. The origin list comes from CORS_ORIGINS and defaults to the local
 # Next.js and Streamlit ports. Credentials are only allowed for a *named* list -
@@ -193,66 +223,71 @@ async def handle_unexpected_error(request: Request, exc: Exception) -> JSONRespo
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 
 
+#: The ten modules, in the order the README and the UI present them. This list
+#: is what ``GET /`` serves and what the module-count test asserts against, so a
+#: module cannot be finished without appearing here.
+MODULES: list[dict[str, str]] = [
+    {"id": "po_risk", "number": "1", "name": "Purchase Order Risk Checker", "path": "/po-risk"},
+    {"id": "spend_analytics", "number": "2", "name": "Spend Analytics Dashboard", "path": "/spend"},
+    {
+        "id": "supplier_recommendation",
+        "number": "3",
+        "name": "Supplier Recommendation Engine",
+        "path": "/supplier-recommendations",
+    },
+    {"id": "invoice_validator", "number": "4", "name": "Invoice Validator", "path": "/invoices"},
+    {
+        "id": "supplier_risk_copilot",
+        "number": "5",
+        "name": "Supplier Risk Copilot",
+        "path": "/supplier-risk",
+    },
+    {"id": "contract_assistant", "number": "6", "name": "Contract Assistant", "path": "/contracts"},
+    {"id": "inventory_predictor", "number": "7", "name": "Inventory Predictor", "path": "/inventory"},
+    {
+        "id": "test_case_generator",
+        "number": "8",
+        "name": "SAP Test Case Generator",
+        "path": "/test-cases",
+    },
+    {
+        "id": "blueprint_generator",
+        "number": "9",
+        "name": "SAP Blueprint Generator",
+        "path": "/blueprints",
+    },
+    {"id": "interview_coach", "number": "10", "name": "SAP Interview Coach", "path": "/interviews"},
+]
+
+
 @app.get("/", tags=["System"], summary="API index")
 def index() -> dict[str, object]:
-    """Return a small index of the available modules."""
+    """Return an index of the available modules and where to start.
+
+    The first call a new client makes. It answers "what is here", "where do I
+    read the contract" and "am I allowed to believe these numbers", which is
+    everything needed before the second call.
+    """
     return {
         "app": settings.app_name,
         "version": settings.app_version,
-        "docs": "/docs",
+        "api_version": "v1",
+        "docs": {"swagger": "/docs", "redoc": "/redoc", "openapi": "/openapi.json"},
+        "health": f"{settings.api_v1_prefix}/health",
+        "module_count": len(MODULES),
         "modules": [
             {
-                "id": "po_risk",
-                "name": "Purchase Order Risk Checker",
+                "id": module["id"],
+                "number": int(module["number"]),
+                "name": module["name"],
                 "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/po-risk",
-            },
-            {
-                "id": "spend_analytics",
-                "name": "Spend Analytics Dashboard",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/spend",
-            },
-            {
-                "id": "supplier_recommendation",
-                "name": "Supplier Recommendation Engine",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/supplier-recommendations",
-            },
-            {
-                "id": "invoice_validator",
-                "name": "Invoice Validator",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/invoices",
-            },
-            {
-                "id": "supplier_risk_copilot",
-                "name": "Supplier Risk Copilot",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/supplier-risk",
-            },
-            {
-                "id": "contract_assistant",
-                "name": "Contract Assistant",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/contracts",
-            },
-            {
-                "id": "inventory_predictor",
-                "name": "Inventory Predictor",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/inventory",
-            },
-            {
-                "id": "test_case_generator",
-                "name": "SAP Test Case Generator",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/test-cases",
-            },
+                "base_path": f"{settings.api_v1_prefix}{module['path']}",
+            }
+            for module in MODULES
         ],
-        "planned_modules": ["blueprint_generator", "interview_coach"],
+        "ai_provider": settings.resolved_ai_provider(),
         "disclaimer": (
             "Demo application. Not connected to any SAP system; no output has been validated "
-            "in a live SAP environment."
+            "in a live SAP environment, and no figure here is a guarantee."
         ),
     }
