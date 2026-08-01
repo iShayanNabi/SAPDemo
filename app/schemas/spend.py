@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin
 
 
 class ExportFormat(str, Enum):
@@ -151,7 +151,7 @@ class SavingsOpportunitySchema(BaseModel):
     gross_saving_base: float
     realization_factor: float
     estimated_saving_base: float
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     transaction_count: int
     supplier_count: int
     evidence: dict[str, Any] = Field(default_factory=dict)
@@ -218,7 +218,7 @@ class SpendAnalysisSummarySchema(BaseModel):
     """Compact analysis record used by the list endpoint."""
 
     analysis_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     base_currency: str
     total_spend: float
@@ -237,7 +237,7 @@ class SpendAnalysisDetailSchema(BaseModel):
 
     analysis_id: str
     upload_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     created_at: datetime
     completed_at: datetime | None = None
@@ -248,7 +248,7 @@ class SpendAnalysisDetailSchema(BaseModel):
     savings_engine_version: str
     applied_mapping: dict[str, str]
     unmapped_columns: list[str]
-    data_quality_issues: list[dict[str, Any]] = Field(default_factory=list)
+    data_quality_issues: list[DataQualityIssueSchema] = Field(default_factory=list)
 
     applied_filter: dict[str, Any] = Field(default_factory=dict)
     filter_options: dict[str, list[str]] = Field(default_factory=dict)
@@ -324,7 +324,7 @@ class SavingsRuleInfoSchema(BaseModel):
     name: str
     enabled: bool
     description: str
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     realization_factor: float
     params: dict[str, Any] = Field(default_factory=dict)
 

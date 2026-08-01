@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin, Severity
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin, Severity
 
 
 class ExportFormat(str, Enum):
@@ -85,17 +85,6 @@ class AnalyzeRequest(BaseModel):
     )
 
 
-class DataQualityIssueSchema(BaseModel):
-    """A non-fatal data problem detected during normalisation."""
-
-    field: str
-    issue_type: str
-    message: str
-    affected_rows: int
-    sample_rows: list[int] = Field(default_factory=list)
-    severity: str
-
-
 class FindingSchema(BaseModel):
     """One risk finding as returned by the API."""
 
@@ -112,7 +101,7 @@ class FindingSchema(BaseModel):
     explanation: str
     evidence: dict[str, Any]
     recommended_action: str
-    confidence_score: float
+    confidence_score: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     estimated_financial_exposure: float
     exposure_currency: str
     output_origin: OutputOrigin
@@ -172,7 +161,7 @@ class AnalysisSummarySchema(BaseModel):
 
     analysis_id: str
     upload_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     created_at: datetime
     completed_at: datetime | None
@@ -238,7 +227,7 @@ class RuleInfoSchema(BaseModel):
     category: str
     enabled: bool
     base_severity: Severity
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     recommended_action: str
     params: dict[str, Any]
 

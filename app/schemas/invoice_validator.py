@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin, Severity
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin, Severity
 
 
 class ExportFormat(str, Enum):
@@ -151,7 +151,7 @@ class ExceptionSchema(BaseModel):
     currency: str = "EUR"
     explanation: str
     recommended_action: str
-    confidence_score: float = 1.0
+    confidence_score: float = Field(default=1.0, ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     evidence: dict[str, Any] = Field(default_factory=dict)
     output_origin: OutputOrigin = OutputOrigin.RULE_BASED
     ai_explanation: str | None = None
@@ -180,7 +180,7 @@ class ValidationSummarySchema(BaseModel):
     """Compact validation record used by the list endpoint and detail header."""
 
     validation_id: str
-    status: str
+    status: AnalysisStatus
     invoice_filename: str | None = None
     po_filename: str | None = None
     gr_filename: str | None = None
@@ -215,7 +215,7 @@ class ValidationDetailSchema(ValidationSummarySchema):
     applied_invoice_mapping: dict[str, str] = Field(default_factory=dict)
     applied_po_mapping: dict[str, str] = Field(default_factory=dict)
     applied_gr_mapping: dict[str, str] = Field(default_factory=dict)
-    data_quality_issues: list[dict[str, Any]] = Field(default_factory=list)
+    data_quality_issues: list[DataQualityIssueSchema] = Field(default_factory=list)
     kpis: dict[str, Any] = Field(default_factory=dict)
     supplier_summary: list[dict[str, Any]] = Field(default_factory=list)
     three_way_matches: list[dict[str, Any]] = Field(default_factory=list)
@@ -254,7 +254,7 @@ class RuleInfoSchema(BaseModel):
     category: str
     enabled: bool
     base_severity: Severity
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     recommended_action: str
     params: dict[str, Any] = Field(default_factory=dict)
 

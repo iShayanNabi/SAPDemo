@@ -149,6 +149,8 @@ def handle_upload(
         upload_id=upload.id,
         dataset=dataset,
         filename=validated.original_filename,
+        file_extension=validated.extension,
+        size_bytes=validated.size_bytes,
         row_count=read_result.row_count,
         detected_columns=list(read_result.source_columns),
         suggested_mapping=dict(mapping_result.mapping),

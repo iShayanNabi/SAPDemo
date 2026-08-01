@@ -17,7 +17,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin
 
 
 class ExportFormat(str, Enum):
@@ -45,19 +45,8 @@ class ColumnSuggestionSchema(BaseModel):
 
     source_column: str
     canonical_field: str
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     strategy: str
-
-
-class DataQualityIssueSchema(BaseModel):
-    """A non-fatal problem found while loading a file."""
-
-    field_name: str
-    issue_type: str
-    message: str
-    affected_rows: int
-    sample_rows: list[int] = Field(default_factory=list)
-    severity: str = "warning"
 
 
 class SupplierRiskFieldDefinitionSchema(BaseModel):
@@ -79,6 +68,8 @@ class SupplierRiskUploadResponse(BaseModel):
     upload_id: str
     dataset: RiskDatasetKind = RiskDatasetKind.PROFILES
     filename: str
+    file_extension: str = ""
+    size_bytes: int = 0
     row_count: int
     supplier_count: int = 0
     event_count: int = 0
@@ -373,7 +364,7 @@ class RiskAssessmentDetailSchema(BaseModel):
 
     assessment_id: str
     dataset_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str | None = None
     config_version: str
     engine_version: str

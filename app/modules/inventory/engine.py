@@ -351,7 +351,7 @@ def _forecast_one(
                     f"{config.forecast.minimum_observations} are needed to forecast. No demand "
                     "forecast, shortage date or reorder recommendation is produced for it."
                 ),
-                severity="high",
+                severity="error",
             )
         )
         item.projection = ProjectionResult(
@@ -381,7 +381,7 @@ def _forecast_one(
                     "No configured forecasting method can be applied to this material. The "
                     "reason for each method is listed against the candidates."
                 ),
-                severity="high",
+                severity="error",
             )
         )
         item.projection = ProjectionResult(
@@ -470,7 +470,7 @@ def _series_warnings(series: InventorySeries, config: InventoryConfig) -> list[S
         dates = ", ".join(item.isoformat() for item in series.missing_period_dates[:5])
         suffix = "" if len(missing) <= 5 else f" and {len(missing) - 5} more"
         severity = (
-            "high"
+            "error"
             if series.missing_period_pct > config.period.max_missing_period_pct
             else "warning"
         )
@@ -496,7 +496,7 @@ def _series_warnings(series: InventorySeries, config: InventoryConfig) -> list[S
                     "level, shortage date or reorder recommendation can be produced. The demand "
                     "forecast is still reported."
                 ),
-                severity="high",
+                severity="error",
             )
         )
 
