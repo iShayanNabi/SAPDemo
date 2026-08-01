@@ -1,0 +1,109 @@
+{
+  "generated_by": "scripts/generate_blueprint_sample_data.py",
+  "config_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "disclaimer": "This is a PROPOSED SAP implementation blueprint drafted from the project request entered in this application. It requires review by qualified SAP professionals before any part of it is used to configure, build or plan a system. No configuration, organisational structure, integration, role or migration approach described here has been validated against a live SAP system, and this application is not connected to one. Any effort, duration or benefit mentioned is an indication, never a commitment.",
+  "projects": [
+    {
+      "name": "p2p_wholesale",
+      "title": "Procure to pay for a wholesale distributor",
+      "summary": "A complete project request: every field supplied, so every section is written and nothing waits for input. The positive control.",
+      "company": "Nordwind Logistics GmbH"
+    },
+    {
+      "name": "finance_gaps",
+      "title": "Record to report with deliberate gaps in the request",
+      "summary": "A request with holes in it: no integrations, no data sources and no user groups. The sections that need those fields come back waiting for input, naming the field - none of them invents an interface, a source system or a role.",
+      "company": "Helvetia Precision AG"
+    },
+    {
+      "name": "retail_subset",
+      "title": "Retail rollout, eight sections only",
+      "summary": "A request for eight sections, listed out of order. The blueprint comes back in the canonical order and the twenty-two excluded sections are reported.",
+      "company": "Baltic Retail Group OY"
+    },
+    {
+      "name": "hostile_rollout",
+      "title": "A project description carrying prompt-injection bait",
+      "summary": "The process description contains text written as an instruction to an automated system. It is filtered before drafting, the attempt is reported on the blueprint, and no section obeys it.",
+      "company": "Calder Industrial Services Ltd"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "BP-S001",
+      "project": "p2p_wholesale",
+      "condition": "A complete project request produces every section, none waiting for input.",
+      "expectation": {
+        "section_count": 30,
+        "needs_input_sections": [],
+        "completeness_pct": 100.0
+      }
+    },
+    {
+      "id": "BP-S002",
+      "project": "p2p_wholesale",
+      "condition": "The organisational structure holds exactly the units the request named - three countries, three company codes, three plants, two purchasing organisations and three locations - and nothing else.",
+      "expectation": {
+        "section_key": "organizational_structure",
+        "derived_item_count": 14
+      }
+    },
+    {
+      "id": "BP-S003",
+      "project": "finance_gaps",
+      "condition": "A request with no integrations, no data sources and no user groups leaves those sections waiting for input rather than inventing content for them.",
+      "expectation": {
+        "needs_input_sections": [
+          "integrations",
+          "interfaces_apis",
+          "data_migration",
+          "security_roles"
+        ],
+        "missing_inputs": [
+          "integrations",
+          "data_sources",
+          "user_groups"
+        ]
+      }
+    },
+    {
+      "id": "BP-S004",
+      "project": "finance_gaps",
+      "condition": "A section waiting for input holds no items at all: not one invented interface, source system or role.",
+      "expectation": {
+        "item_count_in_needs_input_sections": 0,
+        "completeness_pct": 86.7
+      }
+    },
+    {
+      "id": "BP-S005",
+      "project": "retail_subset",
+      "condition": "Eight sections requested out of order come back in the canonical document order, and the twenty-two excluded sections are reported.",
+      "expectation": {
+        "section_order": [
+          "executive_summary",
+          "business_objectives",
+          "scope",
+          "process_steps",
+          "organizational_structure",
+          "test_strategy",
+          "cutover_activities",
+          "risks"
+        ],
+        "excluded_section_count": 22
+      }
+    },
+    {
+      "id": "BP-S006",
+      "project": "hostile_rollout",
+      "condition": "A project description carrying prompt-injection bait is reported on the blueprint, and no section claims validation in a live SAP system.",
+      "expectation": {
+        "injection_detected": true,
+        "injection_markers": [
+          "current_process"
+        ]
+      }
+    }
+  ]
+}

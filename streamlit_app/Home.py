@@ -57,7 +57,7 @@ modules = [
     ("6. Contract Assistant", "Available", "Extract clauses, key dates, obligations and risks from PDF, DOCX and TXT contracts, each with a page reference, an excerpt and a confidence score, then ask questions answered with citations."),
     ("7. Inventory Predictor", "Available", "Forecast demand with five explainable statistical models chosen per material by backtesting, project stock levels forward, and get shortage dates, reorder plans and stock classifications - no AI produces any number."),
     ("8. SAP Test Case Generator", "Available", "Describe an SAP business process and get a structured, editable test suite across eight test types. The identifiers, the type coverage, the priorities and the step numbering are deterministic; only the wording of each case is drafted by AI, and each case says which produced it. Edit, approve, record execution results and export to CSV, XLSX, JSON or PDF."),
-    ("9. SAP Blueprint Generator", "Planned", "Draft configuration blueprints."),
+    ("9. SAP Blueprint Generator", "Available", "Describe an SAP implementation project and get a thirty-section blueprint you can edit, approve, version and export. The section list, the organisational structure, the module list, the integration register, the interface list, the migration sources and the security roles are computed from the project request; only the wording is drafted by AI. A section whose inputs are missing says so instead of being invented. Save versions, compare them, and export to Markdown, JSON, DOCX or PDF."),
     ("10. SAP Interview Coach", "Planned", "Practice questions and structured feedback."),
 ]
 

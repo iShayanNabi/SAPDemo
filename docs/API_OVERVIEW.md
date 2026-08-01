@@ -267,6 +267,72 @@ Editing has consequences the response reports rather than hides:
 keep_execution_record?}`. It keeps the identifier and the sequence, always clears the approval, and
 keeps the execution record unless told otherwise.
 
+
+### Module 9 - SAP Blueprint Generator
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/blueprints/generate` | Generate a blueprint from a structured project request |
+| GET | `/api/v1/blueprints/{blueprint_id}` | One blueprint with its summary and all sections |
+| PUT | `/api/v1/blueprints/{blueprint_id}` | Edit the blueprint, or replace its project request |
+| POST | `/api/v1/blueprints/{blueprint_id}/sections/{section_id}/regenerate` | Redraft one section |
+| GET | `/api/v1/blueprints/{blueprint_id}/versions` | The version history, newest first |
+| GET | `/api/v1/blueprints/{blueprint_id}/export` | Download (`markdown\|json\|docx\|pdf`) |
+| POST | `/api/v1/blueprints/{blueprint_id}/sections` | Add a custom section |
+| GET | `/api/v1/blueprints/{blueprint_id}/sections/{section_id}` | One section |
+| PUT | `/api/v1/blueprints/{blueprint_id}/sections/{section_id}` | Edit one section (partial) |
+| DELETE | `/api/v1/blueprints/{blueprint_id}/sections/{section_id}` | Delete one **custom** section |
+| POST | `/api/v1/blueprints/{blueprint_id}/sections/{section_id}/approve` | Approve or un-approve |
+| POST | `/api/v1/blueprints/{blueprint_id}/versions` | Save the current state as a version |
+| GET | `/api/v1/blueprints/{blueprint_id}/versions/{version_number}` | One version with its snapshot |
+| GET | `/api/v1/blueprints/{blueprint_id}/versions/compare` | Compare two versions (`from=`, `to=`) |
+| GET | `/api/v1/blueprints` | List generated blueprints, newest first |
+| GET | `/api/v1/blueprints/catalog` | The thirty sections, the project fields and the rules |
+| GET | `/api/v1/blueprints/sample` | Load one fictional demo project request (`name=`) |
+| GET | `/api/v1/blueprints/sample/info` | Describe the demo project requests |
+| GET | `/api/v1/blueprints/ai-status` | Active AI provider (never a key) |
+
+The `generate` body is `{project, blueprint_name?, sections?, owner?, use_ai?}`, where `project`
+carries the nineteen project inputs: `company`, `industry`, `sap_product`, `modules`,
+`business_objectives`, `current_process`, `desired_process`, `countries`, `locations`,
+`company_codes`, `plants`, `purchasing_organizations`, `systems_involved`, `integrations`,
+`data_sources`, `user_groups`, `timeline`, `constraints` and `assumptions`. Every list also accepts
+a newline-separated string, which is what a form sends.
+
+- **`sections` is a filter, not an order.** The document always comes back in the canonical order,
+  and the sections left out are reported in `excluded_sections`.
+- **`use_ai: false` still returns a complete document**, written from the configured templates and
+  labelled `rule_based`. So does a provider outage; the failure lands in `ai.error` and in
+  `generation_issues`.
+- **A section whose required project fields are empty comes back `status: "needs_input"`** with
+  `missing_inputs` naming them and `items: []`. It is not drafted, not templated with invented
+  content, and never sent to a provider. `summary.missing_inputs` aggregates the fields across the
+  document.
+
+Each section carries three provenance fields: `output_origin` (`rule_based`, `ai_generated` or
+`mock_ai` - what produced the words), `source` (`ai_generated`, `derived`, `template` or `manual` -
+how the content came to exist) and `validation_notes` (what the deterministic repair had to fix).
+Each *item* carries its own `source`, so a reader can tell a company code taken from the project
+request from a risk a model drafted.
+
+Editing has consequences the response reports rather than hides:
+
+- editing the title, narrative or items clears `approved_by`/`approved_at` and returns the section
+  to `draft`; editing only the status or a comment does not;
+- every section carries a `content_revision`, and `depends_on` lists the sections it describes.
+  When one of those changes, the section reports it in `stale_dependencies`;
+- a section that is **approved and stale** sets `approval_is_stale` and is counted in
+  `summary.stale_approved_count`. The approval is kept - somebody gave it - but it was given to a
+  description of something that has since changed;
+- only custom sections can be deleted; the thirty standard ones return `422`;
+- a custom section identifier is never reissued, even after the section is deleted;
+- `PUT /blueprints/{id}` with a `project` block rebuilds the sections whose items are computed from
+  the request and clears their approvals, and it unblocks any section that was waiting for input.
+
+`GET /blueprints/{id}/versions/compare?from=2&to=0` compares a saved version with **the live
+document** - version `0` means "as it stands now". Sections are matched by `section_key` and items
+by title, so inserting a section or renumbering items does not report everything below as rewritten.
+
 ---
 
 ## Health

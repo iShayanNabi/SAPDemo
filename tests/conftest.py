@@ -440,6 +440,48 @@ def test_case_baseline() -> dict:
 
 
 @pytest.fixture(scope="session")
+def blueprint_config():
+    """The default Blueprint Generator configuration."""
+    from app.modules.blueprint_generator.thresholds import get_blueprint_config
+
+    return get_blueprint_config()
+
+
+def _blueprint_sample(name: str) -> Path:
+    path = SAMPLE_DIR / name
+    if not path.is_file():
+        pytest.skip("Run 'python scripts/generate_blueprint_sample_data.py' first.")
+    return path
+
+
+@pytest.fixture(scope="session")
+def blueprint_projects() -> dict:
+    """The bundled fictional SAP project definitions."""
+    import json
+
+    path = _blueprint_sample("sample_blueprint_projects.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def blueprint_manifest() -> dict:
+    """The documented blueprint generator scenarios."""
+    import json
+
+    path = _blueprint_sample("blueprint_scenario_manifest.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def blueprint_baseline() -> dict:
+    """The recorded deterministic output for the demo projects."""
+    import json
+
+    path = _blueprint_sample("expected_blueprint_baseline.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
 def sample_csv_path() -> Path:
     """Path of the generated sample CSV, skipping tests when it is absent."""
     path = SAMPLE_DIR / "sample_purchase_orders.csv"

@@ -23,7 +23,7 @@ are required.**
 | 6 | **Contract Assistant** | **Implemented** |
 | 7 | **Inventory Predictor** | **Implemented** |
 | 8 | **SAP Test Case Generator** | **Implemented** |
-| 9 | SAP Blueprint Generator | Planned |
+| 9 | **SAP Blueprint Generator** | **Implemented** |
 | 10 | SAP Interview Coach | Planned |
 
 Detailed progress: [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
@@ -662,6 +662,122 @@ section per case, with the execution record printed underneath).
 > this application. Nothing has been executed or validated in a live SAP system, and the generator
 > is told never to name a transaction code, table or program the process description did not.
 
+---
+
+## Module 9 - SAP Blueprint Generator
+
+Describe an SAP implementation project; get a thirty-section blueprint you can edit, approve,
+version, compare and export. Module 8 was the first where the AI output *is* the deliverable; this
+one is the first where the deliverable is a **document under review** - so the interesting rules
+are about what happens to it *after* it is written.
+
+**Workflow:** project form -> deterministic skeleton -> optional AI drafting -> field-by-field
+repair -> section navigator -> edit / regenerate / approve -> add or delete custom sections ->
+save a version -> compare versions -> export.
+
+### The thirty sections
+
+Executive summary · Business objectives · Scope · Out-of-scope items · Assumptions · Current-state
+process · Future-state process · Process steps · SAP products and modules · SAP Best Practice
+alignment · Organizational structure · Master data · Configuration requirements · Functional
+requirements · Nonfunctional requirements · Integrations · Interfaces and APIs · Data migration ·
+Security roles · Controls · Reporting requirements · Test strategy · SIT scenarios · UAT scenarios
+· Training · Cutover activities · Hypercare · Risks · Dependencies · Open decisions
+
+The list, the order and the identifiers (`BP-EXEC`, `BP-SCOPE`, `BP-ORG` ...) are fixed in code and
+configuration, so two blueprints from this lab can be read side by side.
+
+### What is decided by code, and what is written by a model
+
+| Decided by deterministic Python | Written by the AI provider |
+| --- | --- |
+| Which sections exist, what they are called and their order | The narrative of each section |
+| Which project inputs each section requires, and whether they were supplied | The wording of the items in the sections that accept drafted items |
+| The organisational structure, module list, integration register, interface list, migration sources and security roles - each computed from the project request | |
+| Every section and item identifier, and the item numbering | |
+| Every size limit and every repair of drafted text | |
+| The completeness and approval percentages | |
+| Every approval, version snapshot and version comparison | |
+| Which section describes another section that has since changed | |
+
+**A model may describe the organisational structure; it may never add a plant to it.** Six sections
+are computed entirely from the project request, and a drafted item returned for one of them is
+discarded and the attempt reported.
+
+### A section with no input is not a section to invent
+
+This is the rule the module is built around. Leave the integrations field empty and the
+Integrations section comes back marked `needs_input`, naming the field to fill in - it does not
+list three plausible interfaces nobody asked for. The heading stays in the document, because a
+blueprint *missing* its Integrations heading reads as a project with no integrations, which is a
+different claim from "nobody told us".
+
+Supply the field later (`PUT /blueprints/{id}` with a `project` block) and the section is rebuilt.
+The same call re-derives every factual section, because a blueprint whose organisational structure
+disagrees with its own project request is worse than one that is out of date.
+
+### A section that summarises another records which version it read
+
+The executive summary describes the scope. The SIT scenarios describe the process steps. The
+cutover plan describes the migration. Every section carries a `content_revision`, and a dependent
+section records the revisions it was written against - so editing the scope marks the executive
+summary as describing a scope that has moved on, instead of leaving it quietly wrong.
+
+The pair that matters most is **approved + stale**. The approval is real - somebody gave it - so it
+is kept, but it was given to a description of something that has since changed. It is flagged on
+the section (`approval_is_stale`), counted on its own in the summary (`stale_approved_count`) and
+printed next to the approver's name in every export. "Approved by Ingrid" over a scope Ingrid never
+read is the single most misleading state this document can be in.
+
+### Versions
+
+`POST /blueprints/{id}/versions` freezes the sections as data, so editing the document tomorrow
+cannot change what version 1 says today. `GET .../versions/compare?from=1&to=2` diffs them, and
+`to=0` means "the blueprint as it stands now" - what have I changed since I last saved?
+
+Two matching decisions make the diff readable: sections are matched by **key**, never by position
+(insert one custom section at the top and a position-matched diff calls everything below it
+rewritten), and items are matched by **title**, never by identifier (identifiers are renumbered on
+every edit).
+
+### Editing rules worth knowing
+
+- **Custom sections can be deleted; the thirty standard ones cannot.** A reader who finds
+  twenty-nine headings cannot tell whether the thirtieth was considered and dropped or never
+  written. Record that a standard section does not apply by editing it.
+- **A custom section identifier is never reissued.** Delete `BP-CUS-001` and the next custom
+  section is `BP-CUS-002`, even when nothing is left to read the number from - a review comment
+  written against a name has to keep meaning what it meant.
+- **Editing the content clears the approval**; editing only the status or a comment does not.
+- **A section waiting for project input cannot be approved.** Approving a heading that says
+  "nothing was written here" would make the completeness figures describe a document that does not
+  exist.
+
+### Every failure mode ends with a usable document
+
+| What went wrong | What happens |
+| --- | --- |
+| No API key, or `use_ai=false` | The configured templates write every section. The document is complete and labelled `rule_based` |
+| The provider is down or times out | Same, plus the error is reported on the blueprint |
+| The response is not JSON, or is the wrong shape | Same |
+| One drafting batch of six sections fails | Only those six fall back to the template; the rest keep their drafts |
+| The response skips a section, or names one that does not exist | The section is templated / the entry discarded, and both are reported |
+| A drafted section has a blank narrative, or two hundred items | Repaired field by field against the configured limits, with every repair recorded |
+| A drafted item arrives for a section computed from the project request | Discarded, and the attempt reported on the section |
+
+### Exports
+
+Markdown (the format a blueprint actually travels in - straight into a wiki or a pull request),
+JSON (everything), DOCX (real heading styles, so Word can build a table of contents and a reviewer
+can comment on a section) and PDF (the read-only copy that gets forwarded). Every format carries
+the disclaimer, the provenance of each section, the sections still waiting for input and any
+approval that predates a later change.
+
+> **A proposal, not a validated design.** Every blueprint is drafted from a project request typed
+> into this application. It requires review by qualified SAP professionals, no configuration,
+> structure, interface, role or migration approach in it has been validated against a live SAP
+> system, and this application is not connected to one.
+
 
 ---
 
@@ -676,9 +792,11 @@ This separation is the core design decision of the project.
 | Calculations, aggregation, ranking | ✅ | ❌ never |
 | Forecasting demand and projecting stock | ✅ | ❌ never |
 | Planning a test suite: identifiers, coverage, priorities, numbering | ✅ | ❌ never |
+| A blueprint's section list, organisational structure, interfaces, roles and versions | ✅ | ❌ never |
 | Rewriting a finding in business language | | ✅ |
 | Executive summary | | ✅ |
 | Drafting the wording of a test case | | ✅ |
+| Drafting the wording of a blueprint section | | ✅ |
 
 **Mock mode is the default.** With no API key the lab uses a deterministic mock provider that
 templates the real rule results into narrative text. Output is labelled `mock_ai`, so nobody
@@ -793,6 +911,24 @@ Test Case Generator works from - this module has no dataset, its input is a form
   when a provider, a key or a model changes. Drafted prose is deliberately not baselined, because
   it is the one part that is allowed to differ.
 
+`python scripts/generate_blueprint_sample_data.py` produces the demo **project requests** the
+Blueprint Generator works from - this module has no dataset either, its input is a form:
+
+- **four fictional SAP project requests** (a procure-to-pay rollout for a wholesale distributor, a
+  record-to-report project, a retail rollout and a field-services rollout), each ready to post
+  straight to `POST /api/v1/blueprints/generate`
+- each one is chosen so a deterministic decision is observable: a complete request where nothing
+  waits for input; a request with **deliberate holes** in it, where five sections come back saying
+  which field to fill in and none of them invents an interface, a source system or a role; a
+  request for eight sections listed out of order, returned in the canonical document order; and a
+  project description carrying prompt-injection bait
+- **6 documented scenarios** in
+  [`data/sample/BLUEPRINT_SCENARIO_MANIFEST.md`](data/sample/BLUEPRINT_SCENARIO_MANIFEST.md)
+- `expected_blueprint_baseline.json`, recorded with **AI drafting switched off**, so it pins the
+  section list, the order, the identifiers, the statuses, the missing inputs, the derived items and
+  the readiness figures. Drafted prose is deliberately not baselined.
+
+
 ---
 
 ## Project layout
@@ -811,6 +947,8 @@ app/
   modules/supplier_risk/ field definitions, normaliser, scoring, engine, copilot, service
   modules/contract_assistant/ segmentation, clauses, dates, obligations, risk rules, qa, engine
   modules/inventory/ field definitions, periods, normaliser, forecasting, accuracy, selection, projection, engine, service
+  modules/test_case_generator/ planning, builder, ai drafting, engine, service
+  modules/blueprint_generator/ planning, rendering, builder, ai drafting, engine, versioning, service
 streamlit_app/     temporary UI - calls the API over HTTP
 data/              sample/, uploads/, exports/
 tests/             unit/, api/, integration/
@@ -827,14 +965,15 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (1,165 tests, ~80s)
-pytest tests/unit         # 666 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, security, AI
-pytest tests/api          # 314 - endpoints against a temporary database
-pytest tests/integration  # 185 - full journeys over all eight sample datasets
+pytest                    # everything (1,320 tests, ~115s)
+pytest tests/unit         # 742 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, blueprint skeletons, blueprint versioning, security, AI
+pytest tests/api          # 371 - endpoints against a temporary database
+pytest tests/integration  # 207 - full journeys over all nine sample datasets
 ```
 
 The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract,
-inventory and test-case manifests and assert that every documented condition is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+inventory, test-case and blueprint manifests and assert that every documented condition is actually
+detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

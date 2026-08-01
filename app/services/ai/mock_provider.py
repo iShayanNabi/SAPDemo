@@ -59,6 +59,12 @@ class MockAIProvider(AIProvider):
             text = json.dumps(
                 _test_case_generation(payload, regenerated=True), ensure_ascii=False
             )
+        elif task == "blueprint_generation":
+            text = json.dumps(_blueprint_generation(payload), ensure_ascii=False)
+        elif task == "blueprint_section":
+            text = json.dumps(
+                _blueprint_generation(payload, regenerated=True), ensure_ascii=False
+            )
         else:
             text = json.dumps(
                 {
@@ -110,6 +116,10 @@ def _infer_task(prompt: str) -> str:
         return "contract_answer"
     if "contract review" in lowered or "contract analysis" in lowered:
         return "contract_analysis"
+    if "redraft the single blueprint section" in lowered:
+        return "blueprint_section"
+    if "blueprint section" in lowered or "implementation blueprint" in lowered:
+        return "blueprint_generation"
     if "redraft the single sap test case" in lowered:
         return "test_case_regeneration"
     if "test case" in lowered or "test_case" in lowered:
@@ -1002,4 +1012,390 @@ def _mock_test_case(
             f"business rules recorded for this suite."
         ),
         "comments": comments,
+    }
+
+
+# ---------------------------------------------------------------------------
+# SAP Blueprint Generator
+# ---------------------------------------------------------------------------
+
+#: Three angles the mock writes about, per section that accepts drafted items.
+#: They are deliberately shaped like a consultant's checklist rather than like
+#: the configured fallback templates, so a reader can tell at a glance which
+#: sections were drafted and which the template had to fill.
+_MOCK_SECTION_ITEMS: dict[str, list[tuple[str, str, str]]] = {
+    "scope": [
+        ("Process delivery for the named modules",
+         "The future-state process is delivered for {company_codes} within {modules}.",
+         "Process"),
+        ("Organisational rollout",
+         "Delivery covers the organisational units recorded in this blueprint and no others.",
+         "Organisation"),
+    ],
+    "out_of_scope": [
+        ("Processes outside the described flow",
+         "Anything the future-state process description does not cover stays on its current "
+         "process until a later phase agrees otherwise.",
+         "Process scope"),
+        ("Historical data beyond the agreed cut",
+         "Only the data the migration section names is loaded. Older history stays available "
+         "in the source systems for reference.",
+         "Data scope"),
+        ("Reporting rebuilt after go-live",
+         "Reporting beyond the requirements listed in this blueprint is handled as a separate "
+         "piece of work.",
+         "Reporting scope"),
+    ],
+    "assumptions": [
+        ("The named organisational structure is stable",
+         "No further company code, plant or purchasing organisation is added after design "
+         "sign-off without a change decision.",
+         "Organisation"),
+        ("Business availability is committed",
+         "The user groups named for {company} are released for design, test and training.",
+         "Resourcing"),
+    ],
+    "process_steps": [
+        ("Raise the request",
+         "The role that owns the trigger creates the request in {sap_product}, using the data "
+         "the future-state process describes.",
+         "Step 1"),
+        ("Check and approve",
+         "The request is checked against the business rules and approved by the role the "
+         "design names.",
+         "Step 2"),
+        ("Post the follow-on documents",
+         "The follow-on documents the design calls for are created and posted.",
+         "Step 3"),
+        ("Close and report the outcome",
+         "The process closes and the outcome reaches the reporting listed in this blueprint.",
+         "Step 4"),
+    ],
+    "best_practice_alignment": [
+        ("Start from the standard delivered process",
+         "The design begins from the standard process for {modules} and records every "
+         "departure with the objective it serves.",
+         "Alignment"),
+        ("Record departures as decisions",
+         "Each departure carries a build cost and an upgrade cost, so each one needs a named "
+         "approver.",
+         "Departure"),
+    ],
+    "master_data": [
+        ("Business partner data",
+         "Owners, mandatory fields and the maintenance process after go-live are agreed before "
+         "migration starts.",
+         "Master data object"),
+        ("Item and pricing data",
+         "The views and condition records {modules} needs for the organisational units in "
+         "scope.",
+         "Master data object"),
+        ("Ongoing governance",
+         "A named owner maintains each object after go-live; unowned master data degrades "
+         "faster than any configuration.",
+         "Governance"),
+    ],
+    "configuration_requirements": [
+        ("Enterprise structure and assignments",
+         "The organisational units recorded in this blueprint are created and assigned so the "
+         "process posts to the right place.",
+         "Enterprise structure"),
+        ("Document types and numbering",
+         "Document types and number ranges the business can recognise and reconcile.",
+         "Documents"),
+        ("Approval behaviour",
+         "The approval the process requires is enforced by configuration, not by convention.",
+         "Process control"),
+    ],
+    "functional_requirements": [
+        ("The responsible role can start the process unaided",
+         "The role named in the process steps can raise the request in {sap_product} without "
+         "leaving the system.",
+         "Functional"),
+        ("Business rules are enforced by the system",
+         "A document that breaks a rule recorded for this process cannot be posted.",
+         "Functional"),
+        ("The outcome is visible the same day",
+         "The result reaches the reporting listed in this blueprint on the day it is posted.",
+         "Functional"),
+    ],
+    "nonfunctional_requirements": [
+        ("Response time target to be agreed",
+         "No response-time figure was supplied in the project request, so the target is "
+         "recorded as one to agree with {company}.",
+         "Performance"),
+        ("Volumes to be confirmed",
+         "Daily and peak document volumes are confirmed by the business before sizing is "
+         "fixed.",
+         "Capacity"),
+        ("Traceability and retention",
+         "Every posting is traceable to the user and document that caused it, and is retained "
+         "for the statutory period.",
+         "Compliance"),
+    ],
+    "data_migration": [
+        ("Profile the sources before agreeing rules",
+         "Each source is profiled so cleansing rules are agreed on evidence rather than on "
+         "assumption.",
+         "Approach"),
+        ("Reconcile every load",
+         "Each load is reconciled and signed off by the business owner named for the object.",
+         "Control"),
+    ],
+    "controls": [
+        ("Approval before commitment",
+         "A document that commits {company} cannot proceed without the recorded approval.",
+         "Preventive"),
+        ("Segregation of duties",
+         "The role that creates a document does not approve it.",
+         "Preventive"),
+        ("Periodic reconciliation",
+         "Postings are reconciled on an agreed cycle against the source that triggered them.",
+         "Detective"),
+    ],
+    "reporting_requirements": [
+        ("Daily operational view",
+         "Documents in flight, ageing and exceptions, for the team running the process.",
+         "Operational"),
+        ("Objective tracking for the sponsor",
+         "A periodic view against the business objectives recorded in this blueprint.",
+         "Management"),
+    ],
+    "test_strategy": [
+        ("Unit and string testing by the builder",
+         "Every configured object is demonstrated once by the consultant who built it.",
+         "Test level"),
+        ("System integration testing on migrated data",
+         "The end-to-end process is tested across {modules} and every named integration.",
+         "Test level"),
+        ("Business-owned acceptance testing",
+         "The business runs the process in its own words and signs off per scenario.",
+         "Test level"),
+    ],
+    "sit_scenarios": [
+        ("End-to-end happy path",
+         "The process runs from trigger to close, and every follow-on document the design "
+         "calls for is checked.",
+         "SIT scenario"),
+        ("Each named integration is exercised",
+         "The process is run so that every integration recorded in this blueprint carries "
+         "data, and the far side is checked.",
+         "SIT scenario"),
+        ("Errors stop the process with a usable message",
+         "The errors the business rules are meant to catch are forced deliberately.",
+         "SIT scenario"),
+    ],
+    "uat_scenarios": [
+        ("A normal working day",
+         "The business runs a typical case from start to finish and confirms it matches what "
+         "they expect today.",
+         "UAT scenario"),
+        ("A case that needs approval",
+         "A case above the approval threshold is raised, approved and completed.",
+         "UAT scenario"),
+        ("A mistake that has to be corrected",
+         "A correction is made using only the tools the business will have after go-live.",
+         "UAT scenario"),
+    ],
+    "training": [
+        ("Role-based process training",
+         "Each audience is trained on the job it does, using migrated data in a training "
+         "client before cutover.",
+         "Approach"),
+        ("Reference material that survives go-live",
+         "Short task guides are produced per audience so hypercare answers the same question "
+         "once.",
+         "Materials"),
+    ],
+    "cutover_activities": [
+        ("Freeze the legacy process",
+         "New transactions stop in the current systems and the ones in flight are completed.",
+         "Cutover task"),
+        ("Take the final extracts and load them",
+         "Extracts are taken from the sources named in this blueprint and loaded, with counts "
+         "recorded.",
+         "Cutover task"),
+        ("Reconcile and obtain sign-off",
+         "The business owner for each object reconciles the load and signs it off.",
+         "Cutover task"),
+        ("Assign roles and open the system",
+         "The roles recorded in this blueprint are assigned and the system is opened.",
+         "Cutover task"),
+    ],
+    "hypercare": [
+        ("A named contact per audience",
+         "Each user group has a contact during hypercare who knows the process, not just the "
+         "system.",
+         "Support model"),
+        ("Daily triage with the business",
+         "Issues are classified daily and either fixed, worked around or accepted with a date.",
+         "Rhythm"),
+        ("Exit on criteria, not on a date",
+         "Hypercare ends after a full business cycle with no open high-severity issue.",
+         "Exit"),
+    ],
+    "risks": [
+        ("Source data quality is unknown until it is profiled",
+         "Cause: legacy data was never cleansed for this purpose. Consequence: cutover slips "
+         "or the business goes live on data it does not trust.",
+         "Data"),
+        ("The people who know the process also run it",
+         "Cause: business availability is finite. Consequence: the design records the wrong "
+         "process.",
+         "Resourcing"),
+        ("Requirements surface after design sign-off",
+         "Cause: scope grows. Consequence: rework in configuration, security and testing.",
+         "Scope"),
+    ],
+    "dependencies": [
+        ("Environments available on the assumed dates",
+         "Development, test and training environments for {sap_product} are ready when the "
+         "timeline assumes.",
+         "Infrastructure"),
+        ("Third-party readiness",
+         "Any party on the far side of a named integration is ready to test when the plan "
+         "needs them.",
+         "External"),
+    ],
+    "open_decisions": [
+        ("Standard process or deliberate departure",
+         "Blocks the configuration requirements and the build estimate.",
+         "Design decision"),
+        ("Interface technology and ownership",
+         "Blocks the interface specifications and the integration test plan.",
+         "Architecture decision"),
+        ("Single or phased cutover",
+         "Blocks the cutover plan and the migration sequence.",
+         "Programme decision"),
+    ],
+}
+
+_MOCK_FALLBACK_SECTION_ITEMS: list[tuple[str, str, str]] = [
+    ("Scope and ownership",
+     "Records what this section covers for {company} and who owns it.",
+     "Definition"),
+    ("Prerequisites",
+     "Lists what has to be in place before this section can be completed.",
+     "Prerequisite"),
+    ("Acceptance",
+     "States how the project knows this section is complete and who accepts it.",
+     "Acceptance"),
+]
+
+
+def _blueprint_generation(
+    payload: dict[str, Any], *, regenerated: bool = False
+) -> dict[str, Any]:
+    """Draft one blueprint section per planned section, with no API key.
+
+    Every section is written from the project request the caller supplied and
+    from the section skeleton the deterministic planner produced. The mock never
+    invents a section, never adds an organisational unit or an interface, and
+    never names an SAP object the project request did not name - which are
+    exactly the constraints the real providers are held to by the prompt.
+    """
+    project: dict[str, Any] = payload.get("project", {}) or {}
+    sections: list[dict[str, Any]] = payload.get("sections", []) or []
+    instruction = str(payload.get("reviewer_instruction", "") or "").strip()
+    values = _blueprint_values(project)
+
+    return {
+        "sections": [
+            _mock_blueprint_section(
+                values, section, instruction=instruction, regenerated=regenerated
+            )
+            for section in sections
+            if isinstance(section, dict) and section.get("section_key")
+        ]
+    }
+
+
+def _blueprint_values(project: dict[str, Any]) -> dict[str, str]:
+    """The project facts the mock is allowed to mention, and nothing else."""
+
+    def _list(key: str) -> list[str]:
+        return [str(item) for item in (project.get(key) or []) if str(item).strip()]
+
+    def _join(items: list[str], fallback: str) -> str:
+        if not items:
+            return fallback
+        if len(items) <= 4:
+            return ", ".join(items)
+        return ", ".join(items[:4]) + f" and {len(items) - 4} more"
+
+    modules = _list("modules")
+    company_codes = _list("company_codes")
+    user_groups = _list("user_groups")
+    return {
+        "company": str(project.get("company") or "the customer"),
+        "industry": str(project.get("industry") or "the industry recorded for this project"),
+        "sap_product": str(project.get("sap_product") or "the SAP product in scope"),
+        "modules": _join(modules, "the modules recorded for this project"),
+        "primary_module": modules[0] if modules else "the lead module",
+        "company_codes": _join(company_codes, "the company codes recorded for this project"),
+        "primary_user_group": user_groups[0] if user_groups else "the responsible business role",
+        "timeline": str(project.get("timeline") or "the timeline recorded for this project"),
+    }
+
+
+def _mock_blueprint_section(
+    values: dict[str, str],
+    section: dict[str, Any],
+    *,
+    instruction: str = "",
+    regenerated: bool = False,
+) -> dict[str, Any]:
+    """Build one mock blueprint section from the project facts and the skeleton."""
+    section_key = str(section.get("section_key") or "")
+    title = str(section.get("title") or section_key.replace("_", " ").title())
+    purpose = str(section.get("purpose") or "").strip()
+    facts = [
+        str(fact.get("title"))
+        for fact in (section.get("facts_already_recorded") or [])
+        if isinstance(fact, dict) and fact.get("title")
+    ]
+    wants_items = bool(section.get("wants_items"))
+    max_items = int(section.get("max_items") or 0)
+
+    sentences = [
+        f"{title} for the {values['sap_product']} implementation at {values['company']} "
+        f"({values['industry']}), covering {values['modules']} for {values['company_codes']}."
+    ]
+    if purpose:
+        sentences.append(purpose.rstrip(".") + ".")
+    if facts:
+        shown = ", ".join(facts[:5])
+        more = f" and {len(facts) - 5} further entries" if len(facts) > 5 else ""
+        sentences.append(
+            f"The entries recorded for this section come from the project request: {shown}{more}."
+        )
+    sentences.append(
+        "This wording is a proposal drafted locally by the mock AI provider from the project "
+        "request. No language model was called, and nothing here has been validated in a live "
+        "SAP system: it requires review by qualified SAP professionals."
+    )
+    if instruction:
+        sentences.append(f"Reviewer instruction applied: {instruction}")
+    if regenerated:
+        sentences.insert(0, "Redrafted section.")
+
+    items: list[dict[str, Any]] = []
+    if wants_items and max_items:
+        outline = _MOCK_SECTION_ITEMS.get(section_key, _MOCK_FALLBACK_SECTION_ITEMS)
+        for item_title, detail, category in outline[:max_items]:
+            items.append(
+                {
+                    "title": item_title.format(**values),
+                    "detail": detail.format(**values),
+                    "category": category,
+                    "reference": title,
+                    "owner": "",
+                    "rating": "",
+                }
+            )
+
+    return {
+        "section_key": section_key,
+        "narrative": " ".join(sentences),
+        "items": items,
     }

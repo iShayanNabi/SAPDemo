@@ -91,6 +91,7 @@ def _wrap_untrusted(payload: dict[str, Any]) -> str:
                 "sample_findings", "top_rules", "top_suppliers",
                 "clauses", "risks", "missing_clauses", "citations",
                 "shortage_items", "overstock_items",
+                "sections",
             )
             if isinstance(cleaned.get(key), list) and cleaned[key]
         ]
@@ -693,6 +694,177 @@ def build_test_case_regeneration_request(
         system_prompt=TEST_CASE_SYSTEM,
         user_prompt=user_prompt,
         prompt_version=TEST_CASE_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.3,
+        expects_json=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# SAP Blueprint Generator
+# ---------------------------------------------------------------------------
+
+#: Bump when the blueprint wording changes. Stored on every generated blueprint.
+BLUEPRINT_PROMPT_VERSION = "blueprint_generator_v1.0.0"
+
+#: How many project-request values travel per list, and how many already-derived
+#: facts are shown per section. The *sections* are the thing the response is
+#: keyed on, so the context around them is what gets trimmed first.
+MAX_BLUEPRINT_LIST_ITEMS = 20
+MAX_BLUEPRINT_FACTS = 10
+
+#: Output budget per requested section, and the ceiling for one request.
+#: A thirty-section blueprint needs far more output than a one-paragraph
+#: narrative, so this module sizes its own budget.
+TOKENS_PER_SECTION = 550
+MAX_BLUEPRINT_TOKENS = 8_000
+
+#: How many sections travel in one drafting request. A thirty-section document
+#: asked for in a single call is a payload that has to be trimmed and a response
+#: that gets truncated - and both failures land on the sections at the end,
+#: silently. Batching keeps every payload and every response small, and makes
+#: the unit of recovery one batch rather than the whole document.
+BLUEPRINT_SECTIONS_PER_REQUEST = 6
+
+#: Like the test case generator, this module's AI output *is* the deliverable.
+#: The rules below are stricter than the narrative prompts in three specific
+#: ways: the model may not add an organisational unit, an interface or a role to
+#: a section whose content came from the project request; it may not name an SAP
+#: object the request did not name; and it may not present the result as
+#: anything other than a proposal awaiting review.
+BLUEPRINT_SYSTEM = (
+    "You are an experienced SAP solution architect drafting an implementation blueprint for a "
+    "project team.\n"
+    "A DETERMINISTIC planner has ALREADY decided which sections the document contains, what "
+    "they are called, in what order they appear, and which facts each section holds. You write "
+    "the wording inside that skeleton and nothing else.\n\n"
+    "Hard rules:\n"
+    "1. Return exactly one entry for every section in the data block, keyed by its "
+    "'section_key'. Never invent a section, never merge two sections, never skip one.\n"
+    "2. When a section has 'wants_items': false, return its narrative and an EMPTY items list. "
+    "Its items were computed from the project request - the company codes, plants, "
+    "integrations, migration sources and roles the customer actually named. Describe them; "
+    "never add to them, remove from them or rename them.\n"
+    "3. Never state that a transaction code, table, IMG path, BAdI, IDoc type, CDS view, Fiori "
+    "app, scope item code or standard role exists unless the data block names it. Write 'the "
+    "transaction used for <activity>' instead of guessing. A confidently wrong identifier costs "
+    "a consultant a day.\n"
+    "4. Never invent an organisational unit, a system, an interface, a country, a date, a cost, "
+    "a duration, a headcount or a benefit figure. If a figure is needed and none was supplied, "
+    "write that it is to be agreed and say who agrees it.\n"
+    "5. Never claim that any configuration, structure, interface, role or migration approach "
+    "has been validated in a live SAP system. Nothing here has been.\n"
+    "6. Write every section as a PROPOSAL that qualified SAP professionals must review, not as "
+    "a decision that has been taken.\n"
+    "7. Stay inside the section's stated purpose and guidance. Do not repeat another section's "
+    "content.\n"
+    "8. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"sections": [{"section_key": "scope", "narrative": "...", "items": [{"title": "...", '
+    '"detail": "...", "category": "...", "reference": "...", "owner": "...", '
+    '"rating": ""}]}]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def _trim_project(project: dict[str, Any]) -> dict[str, Any]:
+    """Cap every list in the project request so the sections always fit."""
+    trimmed: dict[str, Any] = {}
+    for key, value in project.items():
+        if isinstance(value, list):
+            trimmed[key] = value[:MAX_BLUEPRINT_LIST_ITEMS]
+        else:
+            trimmed[key] = value
+    return trimmed
+
+
+def _trim_sections(sections: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Cap the facts shown per section, keeping every section itself intact."""
+    trimmed: list[dict[str, Any]] = []
+    for section in sections:
+        entry = dict(section)
+        facts = entry.get("facts_already_recorded")
+        if isinstance(facts, list) and len(facts) > MAX_BLUEPRINT_FACTS:
+            dropped = len(facts) - MAX_BLUEPRINT_FACTS
+            entry["facts_already_recorded"] = facts[:MAX_BLUEPRINT_FACTS]
+            entry["facts_not_shown"] = (
+                f"{dropped} further entries exist in this section and are already recorded; "
+                f"do not restate or re-list them."
+            )
+        trimmed.append(entry)
+    return trimmed
+
+
+def _blueprint_token_budget(section_count: int) -> int:
+    """Size the output budget to the number of sections actually requested."""
+    return max(
+        1500, min(TOKENS_PER_SECTION * max(section_count, 1), MAX_BLUEPRINT_TOKENS)
+    )
+
+
+def build_blueprint_generation_request(
+    project: dict[str, Any],
+    sections: list[dict[str, Any]],
+    *,
+    max_tokens: int | None = None,
+) -> AIRequest:
+    """Build the request that drafts a whole blueprint.
+
+    The sections are the contract: the response is matched back to them by
+    ``section_key``, so a section that comes back missing or unrecognised is
+    filled from the configured template rather than lost.
+    """
+    payload = {
+        "task": "blueprint_generation",
+        "project": _trim_project(project),
+        "sections": _trim_sections(sections),
+    }
+    user_prompt = (
+        "Draft the wording of each blueprint section below, using the project request "
+        "supplied.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions, with one entry per section_key."
+    )
+    return AIRequest(
+        system_prompt=BLUEPRINT_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=BLUEPRINT_PROMPT_VERSION,
+        max_tokens=max_tokens or _blueprint_token_budget(len(sections)),
+        temperature=0.3,
+        expects_json=True,
+    )
+
+
+def build_blueprint_section_request(
+    project: dict[str, Any],
+    section: dict[str, Any],
+    *,
+    instruction: str | None = None,
+    previous_narrative: str | None = None,
+    max_tokens: int = 2000,
+) -> AIRequest:
+    """Build the request that redrafts a single blueprint section.
+
+    The reviewer's instruction is user text, so it travels inside the data block
+    with everything else rather than being interpolated into the system prompt.
+    """
+    payload = {
+        "task": "blueprint_section",
+        "project": _trim_project(project),
+        "sections": _trim_sections([section]),
+        "reviewer_instruction": instruction or "",
+        "previous_narrative": (previous_narrative or "")[:MAX_STRING_CHARS],
+    }
+    user_prompt = (
+        "Redraft the single blueprint section below. Keep its section_key and its purpose; "
+        "improve the wording and follow the reviewer instruction if one is given.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions, containing exactly one entry."
+    )
+    return AIRequest(
+        system_prompt=BLUEPRINT_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=BLUEPRINT_PROMPT_VERSION,
         max_tokens=max_tokens,
         temperature=0.3,
         expects_json=True,
