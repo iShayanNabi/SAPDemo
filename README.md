@@ -1,13 +1,35 @@
-# SAP AI Application Lab
+# SAPDemo — SAP AI Application Lab
 
-A local workbench for building and testing SAP-focused AI applications before any of them
-reaches a public website.
+Ten SAP-focused procurement and supply-chain applications, built so that every number they
+produce is ordinary code you can read, and every sentence a language model writes is labelled as
+such.
 
 Everything runs on your machine. **No SAP credentials, no paid APIs, no AI API key and no Docker
 are required.**
 
+```bash
+git clone https://github.com/iShayanNabi/SAPDemo.git
+cd SAPDemo
+```
+
 > **Demo software.** Each module analyses only the file you give it. Nothing here connects to an
 > SAP system, and no output has been validated in a live SAP environment.
+
+**SAP is a third-party trademark.** SAPDemo is an independent demonstration project and is not
+endorsed by, certified by, sponsored by, partnered with or affiliated with SAP.
+
+---
+
+## Two ways to run it
+
+| | For | Start here |
+| --- | --- | --- |
+| **Locally** | Development, evaluating the modules on your own files | [Quick start](#quick-start) below |
+| **Self-hosted, published** | A public website plus an invitation-only interactive demonstration | [`docs/PUBLIC_DEMO_DEPLOYMENT.md`](docs/PUBLIC_DEMO_DEPLOYMENT.md) |
+
+The published deployment adds a Next.js marketing site (`frontend/`) and a public demonstration
+mode that refuses uploads server-side, forces the mock AI provider and runs entirely on the
+bundled fictional data. Neither the API nor the database is ever exposed.
 
 ---
 
@@ -1442,6 +1464,39 @@ compose file, and `.dockerignore` keeps `.env` out of the build context.
 
 ---
 
+### The self-hosted public stack
+
+A second compose file describes the published deployment: a Next.js website, the Streamlit
+demonstration, FastAPI, PostgreSQL and a Cloudflare tunnel connector.
+
+```bash
+cp .env.selfhosted.example .env.selfhosted    # fill it in
+./scripts/start_selfhosted.sh --build         # first run builds and seeds
+./scripts/verify_selfhosted.sh                # 20 checks
+```
+
+**Nothing is published.** There is no `ports:` entry anywhere in
+`docker-compose.selfhosted.yml`: the tunnel container dials out, so no host port listens and no
+router forwarding exists. Two networks enforce the rest — the API and the database sit on one
+declared `internal: true`, and the website is not on it at all, because it never calls them.
+
+For local inspection, `docker-compose.debug.yml` binds the website, the demonstration and
+(optionally) the API to `127.0.0.1` only. The database is deliberately absent from that overlay.
+
+| Script | Does |
+| --- | --- |
+| `start_selfhosted.sh` | Validate the environment, start, wait for health |
+| `stop_selfhosted.sh` | Stop. Never touches a volume |
+| `restart_selfhosted.sh` | Restart. Does not reseed and does not reset |
+| `status_selfhosted.sh` | What is running and how it is configured |
+| `logs_selfhosted.sh` | Bounded, rotated container logs |
+| `verify_selfhosted.sh` | The boundaries, demo mode, secrets, persistence |
+| `reset_public_demo.sh` | Reset the demonstration. Refuses unless `DEMO_MODE=true` |
+| `backup_selfhosted.sh` | `pg_dump` with a checksum, optionally verified by restoring |
+| `restore_selfhosted.sh` | Restore, or verify into a throwaway database |
+
+---
+
 ## Deployment
 
 Four paths, in order of effort: a local virtualenv, Docker Compose, a single VM, a container
@@ -1530,8 +1585,20 @@ Full detail, including the data flow of one analysis and where a new module goes
 | [`docs/DEPLOYMENT_OPTIONS.md`](docs/DEPLOYMENT_OPTIONS.md) | Four deployment paths, PostgreSQL, Redis, the pre-launch checklist |
 | [`examples/typescript-client/`](examples/typescript-client/) | A runnable TypeScript client and the seven calls a front end needs |
 | [`docs/openapi.json`](docs/openapi.json) | The API contract, committed so a change is a diff |
-| [`docs/postman_collection.json`](docs/postman_collection.json) | 135 requests in eleven folders, generated |
+| [`docs/postman_collection.json`](docs/postman_collection.json) | Every request, in one folder per module, generated |
 | [`data/sample/*_MANIFEST.md`](data/sample/) | What every deliberate anomaly in each demo dataset is |
+
+### Publishing it
+
+| Document | Contents |
+| --- | --- |
+| [`docs/PUBLIC_DEMO_DEPLOYMENT.md`](docs/PUBLIC_DEMO_DEPLOYMENT.md) | Public demonstration mode: what each switch changes, guided demonstrations, seeding and reset |
+| [`docs/MACBOOK_SELF_HOSTING.md`](docs/MACBOOK_SELF_HOSTING.md) | Running it from a MacBook: Docker resources, sleep, heat, FileVault, updates, scheduling |
+| [`docs/CLOUDFLARE_TUNNEL_SETUP.md`](docs/CLOUDFLARE_TUNNEL_SETUP.md) | The tunnel, the three routes, and the Access policy on the demonstration |
+| [`docs/GODADDY_NAMESERVER_SETUP.md`](docs/GODADDY_NAMESERVER_SETUP.md) | Moving DNS without breaking mail |
+| [`docs/DEMO_SECURITY_CHECKLIST.md`](docs/DEMO_SECURITY_CHECKLIST.md) | What to verify before anyone else can reach it |
+| [`docs/BACKUP_AND_RECOVERY.md`](docs/BACKUP_AND_RECOVERY.md) | Backups, checksums, and testing a restore before you need one |
+| [`docs/SELF_HOSTED_TROUBLESHOOTING.md`](docs/SELF_HOSTED_TROUBLESHOOTING.md) | Symptoms, causes and fixes |
 
 ---
 

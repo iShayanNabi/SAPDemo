@@ -13,8 +13,9 @@ PostgreSQL.
 # 1. Python 3.12 (skip if `python3 --version` already reports 3.12+)
 brew install python@3.12
 
-# 2. Get into the project folder
-cd sap-ai-lab
+# 2. Clone the repository
+git clone https://github.com/iShayanNabi/SAPDemo.git
+cd SAPDemo
 
 # 3. Virtual environment
 python3.12 -m venv .venv
@@ -41,8 +42,9 @@ On Apple Silicon everything installs as native arm64 wheels; no Rosetta needed.
 # 1. Install Python 3.12 from python.org or:
 winget install Python.Python.3.12
 
-# 2. Project folder
-cd sap-ai-lab
+# 2. Clone the repository
+git clone https://github.com/iShayanNabi/SAPDemo.git
+cd SAPDemo
 
 # 3. Virtual environment
 py -3.12 -m venv .venv
@@ -76,8 +78,9 @@ Use `python` (not `python3`) inside an activated venv on Windows, and backslashe
 sudo apt update
 sudo apt install -y python3.12 python3.12-venv python3-pip
 
-# 2. Project folder
-cd sap-ai-lab
+# 2. Clone the repository
+git clone https://github.com/iShayanNabi/SAPDemo.git
+cd SAPDemo
 
 # 3. Virtual environment
 python3.12 -m venv .venv

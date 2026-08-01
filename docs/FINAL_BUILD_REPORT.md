@@ -1,4 +1,4 @@
-# Final build report — Phase 5
+# Final build report — Phases 5 and 6
 
 What exists, what it was hardened against, what it still cannot do, and what to
 build next.
@@ -525,3 +525,108 @@ block and the standing disclaimer are what make the software honest about what
 it is: a demo, on fictional data, not connected to any SAP system, with no
 output validated in a live SAP environment. A front end that omits them is
 making claims the software does not support.
+
+---
+
+# Phase 6 — the public website and the self-hosted demonstration
+
+Phase 6 built no modules and changed none of the ten. It added a website that
+explains them and a mode that makes the existing application safe to publish.
+
+## What changed, in one paragraph
+
+`DEMO_MODE=true` refuses uploads server-side, forces the mock AI provider and
+runs everything on the bundled fictional data. A guided-demonstration route hands
+each module the sample file an upload would have provided, by calling that
+module's own upload handler. A Next.js site describes all ten modules from a
+typed content module and never calls the API from a browser, which is why the API
+needs no public hostname. A five-service compose file publishes no port at all.
+
+## Verification performed
+
+| Gate | Result |
+| --- | --- |
+| `python scripts/check_quality.py` | **PASS** — lint, secret scan, pip-audit, tests |
+| `pytest` | **1928 passed** (baseline 1698; 230 added) |
+| `pip-audit` | **No known vulnerabilities** |
+| `npm run lint` / `typecheck` / `test` / `build` | **PASS** / **PASS** / **112 passed** / **25 routes** |
+| `npm audit` | **3 high**, all transitive via Next — assessed below |
+| `docker compose config` | Valid, both the deployed file and the debug overlay |
+| `docker compose build` | Both images built (`sapdemo-api` 1.48 GB, `sapdemo-website` 381 MB) |
+| `./scripts/verify_selfhosted.sh` | **20 passed, 0 failed** in the deployed configuration |
+| Persistence | 4,558 rows survived a full `down` / `up` cycle |
+| Backup + disposable restore | 34 tables, ~4,558 rows restored into a throwaway database and dropped |
+| Reset | Refused with exit 2 outside demo mode; idempotent inside it |
+| Corrupt backup | Refused on checksum before any restore |
+
+## Dependency findings, reported rather than hidden
+
+**Python — `pip-audit`: clean.**
+
+**Frontend — `npm audit`: 3 high, 0 critical.** All three are transitive through
+`next@16.2.12`, and the only offered remediation is `next@9.3.3`, a seven-major
+downgrade. That is not a fix, so both are accepted residual risk with mitigation:
+
+| Advisory | Package | Runtime attack path | Disposition |
+| --- | --- | --- | --- |
+| GHSA-qx2v-qp2m-jg93, GHSA-6g55-p6wh-862q, GHSA-r28c-9q8g-f849 | `postcss` 8.4.31, **nested inside `next`** | Build-time CSS processing of CSS authored in this repository. Not reachable at runtime. The top-level `postcss` (8.5.25, used by Tailwind) is already patched. | **Accepted.** Not in a runtime path. |
+| GHSA-f88m-g3jw-g9cj (4 libvips CVEs) | `sharp` | Next's image optimizer. | **Mitigated.** `images.unoptimized: true` in `next.config.ts` — the site ships no images, so the optimizer has no reachable entry point. The package is still traced into the standalone output; the code path is not invoked. Revisit when `sharp` clears the advisory. |
+
+No dependency could not be upgraded for any other reason.
+
+## Bugs found by running it
+
+Four, none visible to a green suite.
+
+1. **`ai_prompt_version` too narrow for its own value.** SQLite ignores `VARCHAR`
+   length; PostgreSQL does not. Two of ten modules failed to seed on the first
+   real-database start. Fixed by migration `b8e6a24f1d35` and a new
+   engine-independent test.
+2. **The demo-mode upload guard blocked the demonstration's own Load Demo
+   button.** The guard was keyed on "is the seeder running" rather than on "did
+   these bytes come from the repository". Renamed `trusted_ingest()`.
+3. **The debug overlay's API port was never published.** Docker cannot publish
+   from a container attached only to an `internal: true` network — it accepts the
+   entry, reports healthy, and creates no mapping.
+4. **The website's Launch Demo button pointed at the deployment hostname when
+   served locally.** `NEXT_PUBLIC_*` is compiled in at build time.
+
+Two more were found by tests written in this phase: a heading-order accessibility
+defect on four pages (axe-core), and three of my own assertions that were wrong
+rather than strict.
+
+## Known limitations
+
+- **No authentication.** One visitor's records are visible to another through the
+  API. Session-scoped views are a display filter, and every surface says so.
+- **A single machine.** With FileVault on, an unattended reboot leaves the site
+  down until a person logs in at the keyboard.
+- **Mock AI prose is illustrative.** It is composed from the computed results and
+  labelled `mock_ai`; it is not model output.
+- **Not production-ready**, and not described as such anywhere.
+
+## Manual steps still required
+
+Nothing below has been done, and no script here does any of it.
+
+**Cloudflare** — add the domain; verify MX/SPF/DKIM/DMARC/verification records
+were imported; create a remotely-managed tunnel; add three public hostnames and
+**no `api.` hostname**; create an Access application on the demonstration with an
+exact email allow list, one-time PIN and a default-deny; paste the token into
+`.env.selfhosted` only.
+
+**GoDaddy** — record the existing zone, then change nameservers, then re-test
+mail in both directions.
+
+**The MacBook** — Docker Desktop resources (3 CPU / 8 GB / 2 GB swap) and
+start-at-login; prevent sleep on power while letting the display sleep; keep the
+lid open; Ethernet; turn off automatic macOS updates; attach an encrypted backup
+drive; test a full reboot recovery once, deliberately.
+
+## Recommended next step after merge
+
+Run the Python suite against PostgreSQL in CI. The column-width bug is the whole
+argument: five phases of green tests on SQLite hid a schema defect that broke two
+modules on the first real database. A second engine in the test matrix costs one
+service and closes an entire class of bug that this project has now demonstrated
+it is exposed to.

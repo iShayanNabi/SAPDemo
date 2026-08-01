@@ -60,8 +60,23 @@ class TestTheDocumentIsComplete:
         }
         assert used - described == set(), f"tags used but not described: {sorted(used - described)}"
 
-    def test_there_is_one_tag_per_module_plus_system(self, spec):
-        assert len(spec["tags"]) == len(MODULES) + 1
+    def test_there_is_one_tag_per_module_plus_the_two_cross_cutting_ones(self, spec):
+        """Exactly one tag per module, plus System and Demonstration.
+
+        Asserting the tag *set* rather than the tag count, which is what this
+        checked before the Demonstration tag was added. A count passes when a
+        module tag is renamed to something the API does not serve, or when one
+        module gains a second tag while another loses its only one; the set does
+        not. The two non-module tags are named explicitly so adding a third is a
+        deliberate edit here rather than a number quietly going up.
+        """
+        described = {tag["name"] for tag in spec["tags"]}
+        module_tags = {module["name"] for module in MODULES}
+        cross_cutting = {"System", "Demonstration"}
+
+        assert described == module_tags | cross_cutting
+        # No duplicates in the declared list.
+        assert len(spec["tags"]) == len(described)
 
     def test_the_description_explains_the_envelope_and_the_disclaimer(self, spec):
         """The two things a reader must know before trusting a single number."""

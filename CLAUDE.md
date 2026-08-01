@@ -38,6 +38,27 @@ OpenPyXL · PyPDF · python-docx · Uvicorn.
 
 AI providers: Anthropic, OpenAI, and a **mock provider that is the default**.
 
+Public deployment (phase 6): Next.js + TypeScript + Tailwind under `frontend/`, PostgreSQL,
+Docker Compose, an outbound Cloudflare tunnel. The ten modules are unchanged by it.
+
+---
+
+## Publishing it
+
+The lab was written for a laptop, where "upload your own spreadsheet" is the point. Publishing it
+inverts that, and `DEMO_MODE=true` is what makes the same application safe to expose:
+
+- **Uploads are refused server-side**, at the two choke points every upload passes through, not by
+  hiding a widget.
+- **The AI provider is forced to mock**, checked before any key is consulted.
+- **The data is the bundled fictional data.** There is no other data.
+
+`docker-compose.selfhosted.yml` publishes **no port at all** - the tunnel dials out. Two networks
+carry the rest: `internal` is declared `internal: true` and holds the API and the database; the
+website is not on it, because it never calls them.
+
+See `docs/PUBLIC_DEMO_DEPLOYMENT.md` and `docs/DEMO_SECURITY_CHECKLIST.md`.
+
 ---
 
 ## Architecture rules
@@ -260,12 +281,22 @@ uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 1698 tests
+pytest                                  # 1928 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
 alembic upgrade head
 alembic revision --autogenerate -m "description"
+
+# website (frontend/)
+cd frontend && npm ci
+npm run lint && npm run typecheck && npm test && npm run build
+
+# self-hosted stack - see docs/PUBLIC_DEMO_DEPLOYMENT.md
+cp .env.selfhosted.example .env.selfhosted     # then fill it in
+./scripts/start_selfhosted.sh --build          # --debug binds ports to 127.0.0.1
+./scripts/verify_selfhosted.sh
+./scripts/backup_selfhosted.sh --verify
 ```
 
 ---
@@ -525,6 +556,67 @@ Two small rules that each prevented an invented number:
   marks on two different afternoons.
 
 
+### The test database is not the deployment database
+
+SQLite does not enforce `VARCHAR` length. PostgreSQL does. Every test in this project runs on
+SQLite, so `ai_prompt_version` sat at `String(20)` holding a 24-character value for five phases
+without a single failure - and two of the ten modules failed to seed the first time the stack was
+started against PostgreSQL. Two more columns held values of *exactly* their declared width and
+would have broken on the next version bump.
+
+The general shape: **a constraint the test database does not enforce is a constraint that is not
+tested.** `tests/integration/test_column_widths.py` compares declared widths against the constants
+the code writes, in plain Python with no database involved, so it holds whichever engine is
+configured. Widen to one number rather than nudging each column to fit the value it happens to
+hold today.
+
+### Name a permission block for the property, not the caller
+
+The guard that refuses uploads in demo mode has an escape hatch, and the first version called it
+`internal_seeding()` - because the seeder was the only thing that needed it. Public demo mode then
+refused its own **Load Demo** button, because the demonstration loader reads bundled bytes too.
+
+Renamed `trusted_ingest()`: these bytes came from the repository rather than from a request. That
+is the property the guard actually cares about, and naming it that way made the second caller
+obvious instead of a bug. It is a module-level flag rather than a `ContextVar` on purpose -
+`TestClient` drives the app on a blocking-portal thread started before any context is set, so the
+textbook implementation is the broken one here.
+
+### A network that cannot reach the internet cannot publish a port either
+
+`docker-compose.debug.yml` declared `127.0.0.1:8000:8000` for the API and Docker silently never
+created the mapping: a container attached only to a network declared `internal: true` has no
+external connectivity to publish *through*. Compose accepted the entry, reported the container
+healthy, and `curl` returned nothing at all.
+
+The overlay now adds the `edge` network to the API alongside the port, with the reason written next
+to it, and a test asserts the *deployed* file still keeps the API on `internal` alone. **A silent
+no-op in an isolation boundary looks exactly like the boundary working.**
+
+### A value compiled at build time is a value that can be wrong at run time
+
+`NEXT_PUBLIC_*` variables are baked into the browser bundle by `next build`. A website image built
+for the deployment therefore carries the *deployment's* demo URL, and opening it at
+`127.0.0.1:3000` gave a Launch Demo button pointing at a hostname that does not resolve. Loading
+correctly and linking nowhere is a page that looks fine in every automated check.
+
+The debug overlay overrides those build arguments, and the documentation says the image must be
+rebuilt when switching between configurations. Anything compiled in needs a rebuild step written
+down next to it.
+
+### An assertion that fails on prose gets deleted rather than fixed
+
+Three tests written in this phase had to be loosened *in the right direction* after first drafts
+that were wrong rather than strict: a ban on the substring `api.` that matched "the API." in a
+sentence; a ban on the phrase "live SAP" that matched the project's own disclaimer *denying* a live
+SAP connection; a check that internal hostnames never appear, which fired on the architecture page
+whose whole purpose is to document them.
+
+Each was rewritten to assert the thing that actually matters - a routing arrow, an affirmative
+sentence, a page other than the one deliberately documenting it. **Precision is what makes a test
+survive; a test that cries wolf is removed by the next person in a hurry.**
+
+
 ---
 
 ## Lesson worth carrying forward
@@ -632,6 +724,20 @@ only appeared when the API was driven by hand:
     topic. Every field was individually correct; the pair was a lie. **Derive the sentence from the
     data it describes, never from the branch that produced it.**
 
+
+- Phase 6 (publishing it): four bugs, none of which a green suite could see, and all four found by
+  starting the stack and using it.
+
+  - `ai_prompt_version` was too narrow on two tables. Invisible on SQLite, fatal on PostgreSQL -
+    see "The test database is not the deployment database" above.
+  - the demo-mode upload guard blocked the guided demonstration's own Load Demo button.
+  - the debug overlay's API port was silently never published, because the service was on an
+    `internal: true` network.
+  - the website's Launch Demo button pointed at the deployment hostname when served locally,
+    because `NEXT_PUBLIC_*` is compiled in at build time.
+
+  The pattern across all four: each one produced a *healthy, green, plausible* system that was
+  wrong in one specific place, and each was found within seconds of a person actually using it.
 
 After implementing a module, start the server and exercise the real endpoints before declaring it
 done. Then add the test that would have caught what you found.
