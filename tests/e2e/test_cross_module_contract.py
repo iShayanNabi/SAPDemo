@@ -273,6 +273,36 @@ class TestFileAndExportMetadata:
             assert properties & {"original_filename", "filename"}, f"{name} has no filename"
             assert properties & {"size_bytes"}, f"{name} does not report a size"
 
+    def test_every_module_can_export_its_result(self, spec):
+        """All ten modules produce a file, not eight of them.
+
+        The export route was the last inconsistency between modules: two of the
+        ten produced results that could only be read through the API. A website
+        - or a procurement manager who wants to mail the finding to a supplier -
+        needs the same affordance from every module, so this asserts the set
+        rather than a count that a new module would silently satisfy.
+        """
+        exports = {path for path in spec["paths"] if path.endswith("/export")}
+        prefixes = {path.split("/")[3] for path in exports}
+        assert prefixes == {
+            "blueprints",
+            "contracts",
+            "interviews",
+            "inventory",
+            "invoices",
+            "po-risk",
+            "spend",
+            "supplier-recommendations",
+            "supplier-risk",
+            "test-cases",
+        }, f"a module has no export route: {sorted(prefixes)}"
+
+        for path in exports:
+            parameters = spec["paths"][path]["get"].get("parameters", [])
+            assert any(item["name"] == "format" for item in parameters), (
+                f"{path} does not let the caller choose a format"
+            )
+
     @pytest.mark.parametrize(
         ("path_template", "formats"),
         [

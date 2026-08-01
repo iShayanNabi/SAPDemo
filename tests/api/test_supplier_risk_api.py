@@ -7,9 +7,12 @@ specified around.
 
 from __future__ import annotations
 
+import io
+import json
 from datetime import timedelta
 
 import pytest
+from openpyxl import load_workbook
 
 from tests.factories import (
     DEFAULT_RISK_PROFILE,
@@ -19,6 +22,7 @@ from tests.factories import (
 )
 
 CSV_MIME = "text/csv"
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def _profile_row(**overrides):
@@ -391,6 +395,180 @@ def test_get_unknown_supplier_is_a_404(api_client, loaded):
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "not_found"
+
+
+# ---------------------------------------------------------------------------
+# Export
+# ---------------------------------------------------------------------------
+
+
+def _assessment_for_export(api_client) -> tuple[str, str]:
+    """One assessment over two suppliers, and the id of the first."""
+    dataset = _upload_profiles(
+        api_client,
+        [
+            _profile_row(supplier_id="0000393001", supplier_name="Exportable GmbH"),
+            _profile_row(supplier_id="0000393002", supplier_name="Second Supplier Ltd"),
+        ],
+    )
+    assessment = _calculate(api_client, dataset["dataset_id"])
+    return assessment["assessment_id"], "0000393001"
+
+
+@pytest.mark.parametrize(
+    ("export_format", "extension", "media_type"),
+    [
+        ("xlsx", ".xlsx", XLSX_MIME),
+        ("csv", ".csv", "text/csv"),
+        ("json", ".json", "application/json"),
+    ],
+)
+def test_export_returns_a_named_file_in_every_format(
+    api_client, export_format, extension, media_type
+):
+    assessment_id, _ = _assessment_for_export(api_client)
+
+    response = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+        params={"format": export_format},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.headers["content-type"].startswith(media_type)
+    disposition = response.headers["content-disposition"]
+    assert "attachment" in disposition
+    assert extension in disposition
+    assert response.content
+
+
+def test_the_export_filename_is_safe_and_identifies_the_assessment(api_client):
+    """The filename is built from identifiers, and is sanitised anyway.
+
+    Today both parts are ours. The day one of them comes from a user is the day
+    nobody remembers this line was missing.
+    """
+    assessment_id, supplier_id = _assessment_for_export(api_client)
+
+    disposition = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+        params={"supplier_id": supplier_id},
+    ).headers["content-disposition"]
+
+    filename = disposition.split('filename="')[1].rstrip('"')
+    assert filename.startswith("supplier_risk_")
+    assert assessment_id[:8] in filename
+    for unsafe in ("/", "\\", "..", " "):
+        assert unsafe not in filename
+
+
+def test_the_json_export_carries_the_scores_evidence_and_disclaimer(api_client):
+    assessment_id, supplier_id = _assessment_for_export(api_client)
+
+    document = json.loads(
+        api_client.get(
+            f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+            params={"format": "json"},
+        ).content
+    )
+
+    assert document["assessment"]["assessment_id"] == assessment_id
+    assert len(document["suppliers"]) == 2
+    assert len(document["profiles"]) == 2
+    assert document["methodology"]["categories"], "the methodology is missing"
+    assert "NO EXTERNAL DATA SOURCE" in document["disclaimer"]
+
+    profile = next(p for p in document["profiles"] if p["supplier_id"] == supplier_id)
+    assert profile["categories"], "no category scores were exported"
+    assert "scored_categories" in profile and "unscored_categories" in profile
+    assert "actions" in profile
+    for category in profile["categories"]:
+        for key in ("weight", "normalized_weight", "contribution", "data_available"):
+            assert key in category, f"the exported category is missing {key}"
+
+
+def test_the_exported_contributions_reconstruct_the_overall_score(api_client):
+    """The arithmetic printed in the report has to be the arithmetic used."""
+    assessment_id, supplier_id = _assessment_for_export(api_client)
+
+    document = json.loads(
+        api_client.get(
+            f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+            params={"format": "json"},
+        ).content
+    )
+    profile = next(p for p in document["profiles"] if p["supplier_id"] == supplier_id)
+    contributions = sum(
+        category["contribution"] or 0.0 for category in profile["categories"]
+    )
+
+    assert contributions == pytest.approx(profile["overall_score"], abs=0.05)
+
+
+def test_the_xlsx_export_opens_and_has_its_sheets(api_client):
+    assessment_id, _ = _assessment_for_export(api_client)
+
+    content = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export", params={"format": "xlsx"}
+    ).content
+    workbook = load_workbook(io.BytesIO(content))
+
+    assert workbook.sheetnames == [
+        "Summary",
+        "Portfolio",
+        "Category Scores",
+        "Evidence & Missing Data",
+        "Recommended Actions",
+        "Methodology",
+    ]
+
+
+def test_the_export_can_be_narrowed_to_one_supplier(api_client):
+    assessment_id, supplier_id = _assessment_for_export(api_client)
+
+    response = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+        params={"format": "json", "supplier_id": supplier_id},
+    )
+
+    assert response.status_code == 200
+    assert supplier_id in response.headers["content-disposition"]
+    document = json.loads(response.content)
+    assert len(document["profiles"]) == 1
+    assert document["profiles"][0]["supplier_id"] == supplier_id
+    assert document["assessment"]["supplier_id_filter"] == supplier_id
+
+
+def test_exporting_an_unknown_assessment_is_a_clean_404(api_client):
+    response = api_client.get("/api/v1/supplier-risk/assessments/does-not-exist/export")
+
+    assert response.status_code == 404
+    body = response.json()
+    assert body["success"] is False
+    assert body["error"]["code"] == "not_found"
+    assert "Traceback" not in body["error"]["message"]
+
+
+def test_exporting_an_unknown_supplier_is_a_404_not_an_empty_file(api_client):
+    """An empty workbook looks like a supplier with no risk. It is not one."""
+    assessment_id, _ = _assessment_for_export(api_client)
+
+    response = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export",
+        params={"supplier_id": "0000999999"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_found"
+
+
+def test_an_unsupported_export_format_is_rejected(api_client):
+    assessment_id, _ = _assessment_for_export(api_client)
+
+    response = api_client.get(
+        f"/api/v1/supplier-risk/assessments/{assessment_id}/export", params={"format": "docx"}
+    )
+
+    assert response.status_code == 422
 
 
 # ---------------------------------------------------------------------------

@@ -1,12 +1,13 @@
 # Testing
 
-**1,448 tests, about 90 seconds, no network and no API key.**
+**1,698 tests, about two minutes, no network and no API key.**
 
 ```bash
 pytest                              # everything
-pytest tests/unit                   # 799
-pytest tests/api                    # 408
-pytest tests/integration            # 241
+pytest tests/unit                   # 832
+pytest tests/api                    # 434
+pytest tests/integration            # 313
+pytest tests/e2e                    # 119
 pytest -k duplicate -v              # by name
 pytest tests/unit/test_rules.py::test_split_purchase_detected
 ```
@@ -17,9 +18,10 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 799 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
-| `tests/api` | 314 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
-| `tests/integration` | 185 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
+| `tests/unit` | 832 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
+| `tests/api` | 434 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
+| `tests/integration` | 313 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
+| `tests/e2e` | 119 | Does the whole *journey* work - and do the ten modules still agree with each other about envelopes, errors, identifiers, timestamps, paging and exports? |
 
 | File | Covers |
 | --- | --- |
@@ -58,6 +60,13 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 | `tests/unit/test_blueprint_versioning.py` | Snapshot immutability, section matching by key, item matching by title, capped narrative diffs |
 | `tests/api/test_blueprint_api.py` | Blueprint endpoints: generate, read, edit, section edit/regenerate/approve/add/delete, versions, comparison, all four export formats, and the approved-but-stale pair |
 | `tests/integration/test_blueprint_sample_data.py` | All 6 documented blueprint scenarios, the recorded deterministic baseline, the demo projects driven through the real API |
+| `tests/unit/test_export_builders.py` | The two Phase 5 export builders: every format, empty and partial payloads, contributions that rebuild a score, an unscored category that is not a zero, the credited keyword, PDF page count, the disclaimer in every format |
+| `tests/integration/test_export_journeys.py` | Both new exports driven over HTTP against the bundled datasets, comparing the *file* to the *API response* rather than to a fixture |
+
+The e2e layer adds a check worth knowing about: `test_cross_module_contract.py`
+asserts the **set** of modules exposing an export route, not a count. Modules 5
+and 10 shipped without one for a whole phase, and a count would have been
+satisfied by any tenth module gaining one.
 
 ### Isolation
 

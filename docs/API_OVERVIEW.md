@@ -127,6 +127,7 @@ capacity, risk, esg, contract, geographic, past_performance) or the request is r
 | GET | `/api/v1/supplier-risk/datasets` | List uploaded risk datasets |
 | GET | `/api/v1/supplier-risk/assessments` | List past assessments |
 | GET | `/api/v1/supplier-risk/assessments/{id}` | One assessment with ranked suppliers |
+| GET | `/api/v1/supplier-risk/assessments/{id}/export` | Download the assessment (`xlsx\|csv\|json`), optionally `supplier_id=` for one supplier |
 | GET | `/api/v1/supplier-risk/scoring` | Categories, weights, metrics, bands, missing-data behaviour |
 | GET | `/api/v1/supplier-risk/fields` | Canonical risk fields and their aliases |
 | GET | `/api/v1/supplier-risk/sample` | Download a demo file (`dataset=profiles\|events`) |
@@ -343,6 +344,7 @@ by title, so inserting a section or renumbering items does not report everything
 | GET | `/api/v1/interviews/{session_id}` | The session, every answer, the scores and the summary |
 | POST | `/api/v1/interviews/{session_id}/answer` | Mark one answer and serve the next question |
 | POST | `/api/v1/interviews/{session_id}/complete` | Close the session and return the final summary |
+| GET | `/api/v1/interviews/{session_id}/export` | Download the transcript and feedback (`xlsx\|csv\|json\|pdf`) |
 | GET | `/api/v1/interviews/performance` | The performance dashboard across sessions |
 | GET | `/api/v1/interviews/catalog` | Tracks, modes, difficulties, bands and the published rubric |
 | GET | `/api/v1/interviews/questions` | Browse the bank (`track=`, `mode=`, `difficulty=`, `topic=`) |

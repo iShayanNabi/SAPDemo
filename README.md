@@ -154,6 +154,15 @@ curl -s -OJ "$API/po-risk/analyses/$ANALYSIS/export?format=xlsx"
 Expect **131 findings over 1,238 lines**, 21 of them critical. Every one names the rule that
 raised it, the evidence, and the threshold it crossed.
 
+Every module ends the same way. The route differs, the shape does not - a `format` query
+parameter, the file itself rather than the JSON envelope, and a filename in
+`Content-Disposition`:
+
+```bash
+curl -s -OJ "$API/supplier-risk/assessments/$ASSESSMENT/export?format=xlsx"
+curl -s -OJ "$API/interviews/$SESSION/export?format=pdf"
+```
+
 ### 4. Do the same from TypeScript
 
 ```bash
@@ -177,12 +186,12 @@ every one has something to show immediately.
 | **2. Spend Analytics** | Run the analysis, click a supplier in the chart | The drill-down total equals the figure you clicked |
 | **3. Supplier Recommendations** | Ask for MAT-1000, 100 units, plant 1010 | 30 eligible of 55; each excluded supplier says why |
 | **4. Invoice Validator** | Upload invoices, POs and goods receipts, validate | 17 exceptions; each names the two documents that disagree |
-| **5. Supplier Risk Copilot** | Score the portfolio, then ask "why is 0000390001 risky?" | The answer cites the records it came from |
+| **5. Supplier Risk Copilot** | Score the portfolio, ask "why is 0000390001 risky?", then download the XLSX | The answer cites the records it came from; the workbook rebuilds the score from its contributions |
 | **6. Contract Assistant** | Upload `sample_contract_msa_nordwind.pdf`, analyse | Every clause carries a page number and an excerpt |
 | **7. Inventory Predictor** | Forecast 6 periods from 2026-07-01 | 15 materials; each says which model was chosen and why |
 | **8. Test Case Generator** | Generate a suite, edit a step, then look at the approval | Editing the script clears the approval it had earned |
 | **9. Blueprint Generator** | Generate, approve the summary, then edit the scope | The approval is kept *and* flagged as stale |
-| **10. Interview Coach** | Answer three questions, then open the dashboard | The study plan quotes the same averages the dashboard shows |
+| **10. Interview Coach** | Answer three questions, open the dashboard, then download the PDF | The study plan quotes the same averages the dashboard shows; the transcript prints the keyword that credited each concept |
 
 ### 6. Try the things that are meant to fail
 
@@ -448,7 +457,7 @@ profile, and lets you **ask questions about the loaded data**.
 
 **Workflow:** upload the supplier risk profiles (and optionally the dated risk events) -> calculate
 -> portfolio KPIs -> pick a supplier -> risk score, category breakdown, trend, supporting metrics,
-contracts, delivery and invoice issues, recommended actions -> ask the copilot.
+contracts, delivery and invoice issues, recommended actions -> ask the copilot -> export.
 
 **Reuses the supplier master.** The field contract inherits module 3's 19 supplier fields through
 `FieldRegistry.extend()` and appends 25 risk facts, so `OTD`, `QUALITY_SCORE`, `DEFECT_RATE`,
@@ -512,9 +521,24 @@ Because the copilot and the supplier page read the same computed profile, **an a
 disagree with the page**. When a supplier is not in the loaded records, or a question is outside
 what the data supports, it says so plainly instead of producing a plausible sentence.
 
+### Exports
+
+XLSX (Summary, Portfolio, Category Scores, Evidence & Missing Data, Recommended Actions and
+Methodology sheets), CSV (the ranked portfolio table, ready to paste into a supplier review deck)
+and JSON (everything, including every metric's raw value and contribution). Passing
+`supplier_id=` exports one supplier's profile on its own - the same route, filtered, so a
+single-supplier report cannot drift from the portfolio one.
+
+The Category Scores sheet prints the score, the weight, the renormalised weight and the
+contribution side by side, so the overall score can be rebuilt from the file rather than taken on
+trust. A category with no data is written as **unscored**, never as zero - a supplier marked on
+four categories and one marked on ten produce the same kind of number, and only the report says
+which is which.
+
 > **No live external data.** No financial, credit, ESG, sanctions or news service is contacted.
 > Every figure comes from the uploaded internal records, and nothing here has been validated in a
-> live SAP environment.
+> live SAP environment. Every export repeats this in full: no credit bureau, sanctions list, news
+> feed, court register or ESG rating agency contributed to any score in it.
 
 ---
 
@@ -954,7 +978,7 @@ asked for the coaching prose around a verdict it cannot revisit.
 
 **Workflow:** pick tracks, mode, difficulty and a seed -> seeded question selection -> one question
 at a time, without its marking scheme -> answer -> rubric score plus feedback -> next question ->
-complete -> session summary -> performance dashboard across every session.
+complete -> session summary -> performance dashboard across every session -> export.
 
 ### Tracks and modes
 
@@ -1035,12 +1059,26 @@ POST /api/v1/interviews/start                 start a session, serve question 1
 GET  /api/v1/interviews/{session_id}          the session, its answers and its summary
 POST /api/v1/interviews/{session_id}/answer   mark one answer, serve the next question
 POST /api/v1/interviews/{session_id}/complete close the session, return the summary
+GET  /api/v1/interviews/{session_id}/export   download the transcript and feedback
 GET  /api/v1/interviews/performance           the performance dashboard
 GET  /api/v1/interviews/catalog               tracks, modes, bands, the published rubric
 GET  /api/v1/interviews/questions             browse the bank (never with answer keys)
 GET  /api/v1/interviews/sessions              list sessions
 GET  /api/v1/interviews/bank/info             describe the bundled bank
 ```
+
+### Exports
+
+XLSX (Summary, Answers, Dimension Scores, Concept Coverage and Study Plan sheets), CSV (one row
+per answer), JSON (everything) and PDF (the readable transcript - one page per question with the
+answer, the marks, the strengths, the missing concepts, the corrections and the improved answer
+underneath it).
+
+Two things the file has to carry that a score alone does not: the **keyword that credited each
+concept**, so a mark can be argued with away from the screen, and a dimension the question did not
+test printed as *not applicable* rather than as a zero. Every format states that this is practice
+feedback rather than an assessment, and labels which text came from the rubric and which from an
+AI provider or the mock.
 
 > **Not a qualification.** The question bank is entirely fictional, the scores come from the rubric
 > published in this repository rather than from any SAP certification scheme, and no answer here has
@@ -1253,7 +1291,7 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (1,627 tests, ~3 min)
+pytest                    # everything (1,698 tests, ~3 min)
 pytest tests/unit         # 800 - rules, metrics, scoring, forecasting, rubric marking, parsing, rounding
 pytest tests/api          # 409 - every endpoint against a temporary database
 pytest tests/integration  # 300 - the ten sample datasets, the migrations, the deployment files, the docs
@@ -1492,7 +1530,7 @@ Full detail, including the data flow of one analysis and where a new module goes
 | [`docs/DEPLOYMENT_OPTIONS.md`](docs/DEPLOYMENT_OPTIONS.md) | Four deployment paths, PostgreSQL, Redis, the pre-launch checklist |
 | [`examples/typescript-client/`](examples/typescript-client/) | A runnable TypeScript client and the seven calls a front end needs |
 | [`docs/openapi.json`](docs/openapi.json) | The API contract, committed so a change is a diff |
-| [`docs/postman_collection.json`](docs/postman_collection.json) | 133 requests in eleven folders, generated |
+| [`docs/postman_collection.json`](docs/postman_collection.json) | 135 requests in eleven folders, generated |
 | [`data/sample/*_MANIFEST.md`](data/sample/) | What every deliberate anomaly in each demo dataset is |
 
 ---

@@ -42,6 +42,20 @@ from app.schemas.common import OutputOrigin
 # ---------------------------------------------------------------------------
 
 
+class ExportFormat(str, Enum):
+    """Formats an interview session can be downloaded in.
+
+    PDF is included because a session transcript is a column of text somebody
+    reads top to bottom - exactly what the shared text PDF writer produces, and
+    the same reason the Test Case Generator offers it.
+    """
+
+    XLSX = "xlsx"
+    CSV = "csv"
+    JSON = "json"
+    PDF = "pdf"
+
+
 class InterviewTrack(str, Enum):
     """The nine learning tracks the coach supports.
 

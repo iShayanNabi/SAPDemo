@@ -21224,6 +21224,17 @@
         "title": "ExportFormat",
         "type": "string"
       },
+      "app__schemas__interview_coach__ExportFormat": {
+        "description": "Formats an interview session can be downloaded in.\n\nPDF is included because a session transcript is a column of text somebody\nreads top to bottom - exactly what the shared text PDF writer produces, and\nthe same reason the Test Case Generator offers it.",
+        "enum": [
+          "xlsx",
+          "csv",
+          "json",
+          "pdf"
+        ],
+        "title": "ExportFormat",
+        "type": "string"
+      },
       "app__schemas__inventory__ColumnSuggestionSchema": {
         "description": "One suggested source-column -> canonical-field mapping.",
         "properties": {
@@ -21997,6 +22008,16 @@
         ],
         "title": "ColumnSuggestionSchema",
         "type": "object"
+      },
+      "app__schemas__supplier_risk__ExportFormat": {
+        "description": "Formats a risk assessment can be downloaded in.",
+        "enum": [
+          "xlsx",
+          "csv",
+          "json"
+        ],
+        "title": "ExportFormat",
+        "type": "string"
       },
       "app__schemas__test_case_generator__ExportFormat": {
         "description": "Formats a test suite can be downloaded in.",
@@ -29727,6 +29748,193 @@
           }
         },
         "summary": "Complete an interview session",
+        "tags": [
+          "SAP Interview Coach"
+        ]
+      }
+    },
+    "/api/v1/interviews/{session_id}/export": {
+      "get": {
+        "description": "Download the session as XLSX, CSV, JSON or PDF.\n\nThe report carries the session metadata, every question and the answer given\nto it, the dimension scores with the reason for each, which concepts were\ncredited and *what credited them*, the strengths, missing concepts,\ncorrections and improved sample answer, the summary and the recommended\nstudy topics.\n\nEvery mark in it comes from the rubric and is labelled ``rule_based``; the\ncoaching prose is labelled with the provider that wrote it. The standing\ndisclaimer is on every format: this is practice feedback, not an assessment,\nand keyword matching has a ceiling.\n\nLike every export in the lab this returns the file itself rather than the\nJSON envelope, so a browser can stream it straight to a download.",
+        "operationId": "export_session_api_v1_interviews__session_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/app__schemas__interview_coach__ExportFormat",
+              "default": "xlsx"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {},
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {},
+              "text/csv": {}
+            },
+            "description": "The file itself, not the JSON envelope. `Content-Disposition` carries the filename to save it under and is exposed to cross-origin clients."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty": {
+                    "summary": "An empty payload",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {},
+                        "message": "The uploaded file is empty."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "too_large": {
+                    "summary": "Past the configured size limit",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "max_bytes": 26214400
+                        },
+                        "message": "The file is larger than the 25 MB limit."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "wrong_type": {
+                    "summary": "A file type this endpoint does not accept",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "allowed_extensions": [
+                            ".csv",
+                            ".json",
+                            ".xlsx"
+                          ]
+                        },
+                        "message": "File type '.pdf' is not supported. Allowed types: .csv, .json, .xlsx"
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The upload was rejected before anything was stored."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "not_found",
+                    "details": {
+                      "analysis_id": "does-not-exist"
+                    },
+                    "message": "Analysis not found."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "No resource with that identifier exists."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "request_validation_error",
+                    "details": {
+                      "errors": [
+                        {
+                          "loc": [
+                            "body",
+                            "upload_id"
+                          ],
+                          "msg": "Field required",
+                          "type": "missing"
+                        }
+                      ]
+                    },
+                    "message": "The request could not be validated."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "The request body or a query parameter failed validation. `details.errors` lists up to ten problems, each naming the field it is about."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "internal_error",
+                    "details": {},
+                    "message": "An unexpected error occurred. Check the server log for details."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "Something unexpected failed. The message is deliberately generic; the full traceback is in the server log against the `request_id` shown here."
+          }
+        },
+        "summary": "Download the session report",
         "tags": [
           "SAP Interview Coach"
         ]
@@ -40252,6 +40460,212 @@
           }
         },
         "summary": "Get one risk assessment",
+        "tags": [
+          "Supplier Risk Copilot"
+        ]
+      }
+    },
+    "/api/v1/supplier-risk/assessments/{assessment_id}/export": {
+      "get": {
+        "description": "Download the assessment as XLSX, CSV or JSON.\n\nThe workbook carries the portfolio, every supplier's category scores with\nthe weight and contribution behind them, the evidence each score rests on,\nthe categories that could **not** be scored and why, the recommended actions\nand the methodology. Every format carries the standing disclaimer, including\nthe one specific to this module: no external data source contributed to any\nscore, so a low score means a clean *internal* record.\n\nLike every export in the lab this returns the file itself rather than the\nJSON envelope, so a browser can stream it straight to a download.",
+        "operationId": "export_assessment_api_v1_supplier_risk_assessments__assessment_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assessment_id",
+            "required": true,
+            "schema": {
+              "title": "Assessment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/app__schemas__supplier_risk__ExportFormat",
+              "default": "xlsx"
+            }
+          },
+          {
+            "description": "Narrow the report to one supplier. Same sheets, one row.",
+            "in": "query",
+            "name": "supplier_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 20,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Narrow the report to one supplier. Same sheets, one row.",
+              "title": "Supplier Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {},
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {},
+              "text/csv": {}
+            },
+            "description": "The file itself, not the JSON envelope. `Content-Disposition` carries the filename to save it under and is exposed to cross-origin clients."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty": {
+                    "summary": "An empty payload",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {},
+                        "message": "The uploaded file is empty."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "too_large": {
+                    "summary": "Past the configured size limit",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "max_bytes": 26214400
+                        },
+                        "message": "The file is larger than the 25 MB limit."
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  },
+                  "wrong_type": {
+                    "summary": "A file type this endpoint does not accept",
+                    "value": {
+                      "data": null,
+                      "error": {
+                        "code": "file_validation_error",
+                        "details": {
+                          "allowed_extensions": [
+                            ".csv",
+                            ".json",
+                            ".xlsx"
+                          ]
+                        },
+                        "message": "File type '.pdf' is not supported. Allowed types: .csv, .json, .xlsx"
+                      },
+                      "meta": {
+                        "api_version": "v1",
+                        "request_id": "4864bdb5c1e0",
+                        "timestamp": "2026-08-01T09:12:33.481Z"
+                      },
+                      "success": false
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The upload was rejected before anything was stored."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "not_found",
+                    "details": {
+                      "analysis_id": "does-not-exist"
+                    },
+                    "message": "Analysis not found."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "No resource with that identifier exists."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "request_validation_error",
+                    "details": {
+                      "errors": [
+                        {
+                          "loc": [
+                            "body",
+                            "upload_id"
+                          ],
+                          "msg": "Field required",
+                          "type": "missing"
+                        }
+                      ]
+                    },
+                    "message": "The request could not be validated."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "The request body or a query parameter failed validation. `details.errors` lists up to ten problems, each naming the field it is about."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "error": {
+                    "code": "internal_error",
+                    "details": {},
+                    "message": "An unexpected error occurred. Check the server log for details."
+                  },
+                  "meta": {
+                    "api_version": "v1",
+                    "request_id": "4864bdb5c1e0",
+                    "timestamp": "2026-08-01T09:12:33.481Z"
+                  },
+                  "success": false
+                }
+              }
+            },
+            "description": "Something unexpected failed. The message is deliberately generic; the full traceback is in the server log against the `request_id` shown here."
+          }
+        },
+        "summary": "Download a risk report",
         "tags": [
           "Supplier Risk Copilot"
         ]

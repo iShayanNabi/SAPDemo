@@ -460,6 +460,17 @@ class ApiClient:
         params = {"assessment_id": assessment_id} if assessment_id else {}
         return self._request("GET", f"/supplier-risk/suppliers/{supplier_id}", params=params)
 
+    def supplier_risk_export(
+        self, assessment_id: str, export_format: str, supplier_id: str | None = None
+    ) -> bytes:
+        """Download a supplier risk report, optionally narrowed to one supplier."""
+        params: dict[str, Any] = {"format": export_format}
+        if supplier_id:
+            params["supplier_id"] = supplier_id
+        return self.download_bytes(
+            f"/supplier-risk/assessments/{assessment_id}/export", params
+        )
+
     def supplier_risk_chat(
         self,
         question: str,
@@ -985,6 +996,12 @@ class ApiClient:
         if notes:
             payload["notes"] = notes
         return self._request("POST", f"/interviews/{session_id}/complete", json=payload)
+
+    def interview_export(self, session_id: str, export_format: str) -> bytes:
+        """Download an interview session report."""
+        return self.download_bytes(
+            f"/interviews/{session_id}/export", {"format": export_format}
+        )
 
     def interview_performance(
         self,

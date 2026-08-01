@@ -618,6 +618,43 @@ with summary_tab:
         else:
             st.success(f"This session is {session['status']}.")
 
+        # -------------------------------------------------------------
+        # Export
+        # -------------------------------------------------------------
+        st.divider()
+        st.markdown("### Export this session")
+        st.caption(
+            "Every question, the answer given to it, the dimension scores with their reasons, "
+            "which concepts were credited and what credited them, the coaching prose with its "
+            "origin, and the study topics. The marks are the rubric's and are labelled "
+            "`rule_based`; the prose is labelled with whatever wrote it. The PDF is the "
+            "transcript, one answer per page."
+        )
+        export_columns = st.columns(4)
+        for column, fmt, mime in (
+            (
+                export_columns[0],
+                "xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ),
+            (export_columns[1], "csv", "text/csv"),
+            (export_columns[2], "json", "application/json"),
+            (export_columns[3], "pdf", "application/pdf"),
+        ):
+            with column:
+                try:
+                    data = client.interview_export(session["session_id"], fmt)
+                except ApiError as error:
+                    st.caption(f"{fmt.upper()} export unavailable: {error.message}")
+                    continue
+                st.download_button(
+                    f"Download {fmt.upper()}",
+                    data=data,
+                    file_name=f"interview_session_{session['session_id'][:8]}.{fmt}",
+                    mime=mime,
+                    key=f"ic_export_{fmt}",
+                )
+
 
 # ---------------------------------------------------------------------------
 # Performance

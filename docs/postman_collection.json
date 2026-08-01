@@ -2526,6 +2526,56 @@
           "response": []
         },
         {
+          "name": "Download a risk report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/supplier-risk/assessments/{assessment_id}/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "supplier-risk",
+                "assessments",
+                ":assessment_id",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "supplier_id",
+                  "value": "",
+                  "description": "Narrow the report to one supplier. Same sheets, one row.",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "assessment_id",
+                  "value": "<assessment_id>"
+                }
+              ]
+            },
+            "description": "Download the assessment as XLSX, CSV or JSON.\n\nThe workbook carries the portfolio, every supplier's category scores with\nthe weight and contribution behind them, the evidence each score rests on,\nthe categories that could **not** be scored and why, the recommended actions\nand the methodology. Every format carries the standing disclaimer, including\nthe one specific to this module: no external data source contributed to any\nscore, so a low score means a clean *internal* record.\n\nLike every export in the lab this returns the file itself rather than the\nJSON envelope, so a browser can stream it straight to a download."
+          },
+          "response": []
+        },
+        {
           "name": "Get one risk assessment",
           "request": {
             "method": "GET",
@@ -5409,6 +5459,49 @@
               ]
             },
             "description": "Return the session with every question asked, answer given and score."
+          },
+          "response": []
+        },
+        {
+          "name": "Download the session report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interviews/{session_id}/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interviews",
+                ":session_id",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": "<session_id>"
+                }
+              ]
+            },
+            "description": "Download the session as XLSX, CSV, JSON or PDF.\n\nThe report carries the session metadata, every question and the answer given\nto it, the dimension scores with the reason for each, which concepts were\ncredited and *what credited them*, the strengths, missing concepts,\ncorrections and improved sample answer, the summary and the recommended\nstudy topics.\n\nEvery mark in it comes from the rubric and is labelled ``rule_based``; the\ncoaching prose is labelled with the provider that wrote it. The standing\ndisclaimer is on every format: this is practice feedback, not an assessment,\nand keyword matching has a ceiling.\n\nLike every export in the lab this returns the file itself rather than the\nJSON envelope, so a browser can stream it straight to a download."
           },
           "response": []
         },

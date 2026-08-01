@@ -8,9 +8,15 @@ the interview screen needs.
 
 from __future__ import annotations
 
+import io
+import json
+
 import pytest
+from openpyxl import load_workbook
+from pypdf import PdfReader
 
 BASE = "/api/v1/interviews"
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 STRONG_ANSWER = (
     "First, the purchase order, the goods receipt and the invoice are compared on quantity "
@@ -363,6 +369,182 @@ class TestSession:
         assert data["total"] >= 1
         assert len(data["sessions"]) <= 5
         assert {"session_id", "name", "status", "question_count"} <= set(data["sessions"][0])
+
+
+# ---------------------------------------------------------------------------
+# Export
+# ---------------------------------------------------------------------------
+
+
+class TestExport:
+    @pytest.fixture
+    def answered_session(self, api_client) -> dict:
+        """A session with one real answer and one question left pending."""
+        session = _start(api_client, question_count=2)
+        _answer(api_client, session["session_id"], STRONG_ANSWER)
+        return api_client.get(f"{BASE}/{session['session_id']}").json()["data"]
+
+    @pytest.mark.parametrize(
+        ("export_format", "extension", "media_type"),
+        [
+            ("xlsx", ".xlsx", XLSX_MIME),
+            ("csv", ".csv", "text/csv"),
+            ("json", ".json", "application/json"),
+            ("pdf", ".pdf", "application/pdf"),
+        ],
+    )
+    def test_it_returns_a_named_file_in_every_format(
+        self, api_client, answered_session, export_format, extension, media_type
+    ):
+        response = api_client.get(
+            f"{BASE}/{answered_session['session_id']}/export",
+            params={"format": export_format},
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.headers["content-type"].startswith(media_type)
+        disposition = response.headers["content-disposition"]
+        assert "attachment" in disposition
+        assert extension in disposition
+        assert response.content
+
+    def test_the_filename_is_safe_and_identifies_the_session(
+        self, api_client, answered_session
+    ):
+        disposition = api_client.get(
+            f"{BASE}/{answered_session['session_id']}/export"
+        ).headers["content-disposition"]
+
+        filename = disposition.split('filename="')[1].rstrip('"')
+        assert filename.startswith("interview_session_")
+        assert answered_session["session_id"][:8] in filename
+        for unsafe in ("/", "\\", "..", " "):
+            assert unsafe not in filename
+
+    def test_the_json_export_carries_the_whole_session(self, api_client, answered_session):
+        document = json.loads(
+            api_client.get(
+                f"{BASE}/{answered_session['session_id']}/export", params={"format": "json"}
+            ).content
+        )
+
+        assert document["report_type"] == "sap_interview_session"
+        assert document["session"]["session_id"] == answered_session["session_id"]
+        assert document["session"]["tracks"] and document["session"]["mode"]
+        assert document["summary"]["question_count"] == 2
+        assert len(document["answers"]) == 2
+        assert document["methodology"]["pass_score"]
+        assert "NOT AN ASSESSMENT" in document["disclaimer"]
+
+    def test_the_exported_answer_carries_the_question_score_and_prose(
+        self, api_client, answered_session
+    ):
+        document = json.loads(
+            api_client.get(
+                f"{BASE}/{answered_session['session_id']}/export", params={"format": "json"}
+            ).content
+        )
+        answered = next(a for a in document["answers"] if a["status"] == "answered")
+
+        assert answered["question"]["question_id"]
+        assert answered["question"]["question"]
+        assert answered["question"]["difficulty"]
+        assert answered["answer_text"]
+        assert answered["score"]["overall_score"] is not None
+        assert answered["score"]["dimensions"], "dimension scores were dropped"
+        assert answered["score"]["concept_matches"], "concept coverage was dropped"
+        for key in (
+            "strengths",
+            "missing_concepts",
+            "incorrect_statements",
+            "improved_sample_answer",
+            "topics_to_study",
+        ):
+            assert key in answered["feedback"], f"the export dropped {key}"
+
+    def test_the_export_labels_the_score_and_the_prose_differently(
+        self, api_client, answered_session
+    ):
+        """A candidate has to be able to tell a mark from a paragraph."""
+        document = json.loads(
+            api_client.get(
+                f"{BASE}/{answered_session['session_id']}/export", params={"format": "json"}
+            ).content
+        )
+        answered = next(a for a in document["answers"] if a["status"] == "answered")
+
+        assert answered["score"]["output_origin"] == "rule_based"
+        assert answered["feedback"]["output_origin"] in {"mock_ai", "ai_generated", "rule_based"}
+
+    def test_an_unanswered_question_is_exported_without_its_answer_key(
+        self, api_client, answered_session
+    ):
+        """A downloaded report is not where the open-book rule stops applying."""
+        document = json.loads(
+            api_client.get(
+                f"{BASE}/{answered_session['session_id']}/export", params={"format": "json"}
+            ).content
+        )
+        pending = next(a for a in document["answers"] if a["status"] == "pending")
+
+        assert pending["score"] is None
+        assert not pending.get("answer_key")
+
+    def test_the_xlsx_export_opens_and_has_its_sheets(self, api_client, answered_session):
+        content = api_client.get(
+            f"{BASE}/{answered_session['session_id']}/export", params={"format": "xlsx"}
+        ).content
+        workbook = load_workbook(io.BytesIO(content))
+
+        assert workbook.sheetnames == [
+            "Summary",
+            "Answers",
+            "Dimension Scores",
+            "Concept Coverage",
+            "Study Plan",
+        ]
+
+    def test_the_pdf_export_is_a_readable_transcript(self, api_client, answered_session):
+        content = api_client.get(
+            f"{BASE}/{answered_session['session_id']}/export", params={"format": "pdf"}
+        ).content
+
+        assert content.startswith(b"%PDF-")
+        reader = PdfReader(io.BytesIO(content))
+        text = "\n".join(page.extract_text() for page in reader.pages)
+        assert "SAP INTERVIEW COACH" in text
+        assert "Candidate answer" in text
+        assert "PRACTICE FEEDBACK" in text
+
+    def test_exporting_an_unknown_session_is_a_clean_404(self, api_client):
+        response = api_client.get(f"{BASE}/does-not-exist/export")
+
+        assert response.status_code == 404
+        body = response.json()
+        assert body["success"] is False
+        assert body["error"]["code"] == "not_found"
+        assert "Traceback" not in body["error"]["message"]
+
+    def test_an_unsupported_export_format_is_rejected(self, api_client, answered_session):
+        response = api_client.get(
+            f"{BASE}/{answered_session['session_id']}/export", params={"format": "docx"}
+        )
+
+        assert response.status_code == 422
+
+    def test_a_session_with_no_answers_yet_still_exports(self, api_client):
+        """Exporting early is a reasonable thing to do, not an error."""
+        session = _start(api_client, question_count=2)
+
+        response = api_client.get(
+            f"{BASE}/{session['session_id']}/export", params={"format": "json"}
+        )
+
+        assert response.status_code == 200
+        document = json.loads(response.content)
+        assert document["summary"]["answered_count"] == 0
+        assert document["summary"]["pending_count"] == 2
+        assert all(answer["score"] is None for answer in document["answers"])
 
 
 # ---------------------------------------------------------------------------

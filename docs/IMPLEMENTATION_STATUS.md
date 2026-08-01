@@ -10,8 +10,8 @@ Last updated: 2026-08-01
 | --- | --- |
 | Modules complete | 10 of 10 |
 | Phases complete | 5 of 5 (module build, then integration and hardening) |
-| Tests | 1,627 passing (800 unit, 409 API, 300 integration, 118 end-to-end) |
-| Endpoints | 133 across 11 tag groups |
+| Tests | 1,698 passing (832 unit, 434 API, 313 integration, 119 end-to-end) |
+| Endpoints | 135 across 11 tag groups |
 | Database | 33 tables, 10 Alembic revisions, SQLite and PostgreSQL |
 | Python source | ~70,000 lines across `app/`, `streamlit_app/`, `scripts/`, `tests/` |
 | Runs without SAP, keys, Docker or a paid API | Yes |
@@ -337,9 +337,9 @@ migrations/versions/aa9af98480ef_invoice_validator_schema.py
 | Copilot answering the six documented questions | Done - deterministic intent router, no language model in the answer path |
 | Responses reference the internal records used | Done - every answer carries `citations[]` pointing at profile fields and event records |
 | Clearly states when information is unavailable | Done - six distinct `unavailable_reason` values, never a fabricated answer |
-| Four required API routes | Done, plus upload, datasets, assessments, scoring, fields, sample, sample/info, ai-status (13 total) |
+| Four required API routes | Done, plus upload, datasets, assessments, scoring, fields, sample, sample/info, ai-status and export (14 total) |
 | No claim of live financial/ESG/news retrieval | Done - stated in the config disclaimer, the AI system prompt, the API and the UI |
-| Streamlit page with all required elements | Done - selector, score, breakdown, trend, metrics, contracts, delivery/invoice issues, actions, chat |
+| Streamlit page with all required elements | Done - selector, score, breakdown, trend, metrics, contracts, delivery/invoice issues, actions, chat, export controls |
 | Tests: calculations, weighting, missing data, categorisation, citations, unavailable info, endpoints | Done - 158 new tests |
 
 ### Files created
@@ -1024,8 +1024,8 @@ coaching prose around a verdict it is forbidden to revisit.
 | Service | `app/modules/interview_coach/service.py` | Persistence, session lifecycle, dashboard assembly |
 | Models | `app/models/interview_coach.py` | `interview_sessions`, `interview_answers` |
 | Migration | `migrations/versions/a7d5f31c9e28_interview_coach_schema.py` | Upgrade and downgrade verified on a fresh database |
-| API | `app/api/v1/interviews.py` | The five specified routes plus catalogue, question browsing, session list and AI status |
-| UI | `streamlit_app/pages/10_SAP_Interview_Coach.py` | Set-up, interview screen with timer, feedback, session summary, dashboard, marking rules |
+| API | `app/api/v1/interviews.py` | The five specified routes plus catalogue, question browsing, session list, export and AI status |
+| UI | `streamlit_app/pages/10_SAP_Interview_Coach.py` | Set-up, interview screen with timer, feedback, session summary, dashboard, marking rules, export controls |
 | Sample data | `scripts/generate_interview_sample_data.py` | 104 fictional questions, the manifest and the baseline |
 
 ### The line between code and a model
@@ -1081,6 +1081,46 @@ is contacted, and nothing a provider returns can reach it.
 
 ---
 
+## Phase 5 addendum - the last two exports
+
+Phase 5 closed with one acceptance criterion passing only partially: eight of the
+ten modules could produce a downloadable report and modules 5 and 10 could not.
+That is now closed, and criterion 10 is marked passed.
+
+| Module | Route | Formats | Builder |
+| --- | --- | --- | --- |
+| 5 | `GET /api/v1/supplier-risk/assessments/{id}/export` | `xlsx`, `csv`, `json` | `app/services/exports/supplier_risk_report_builder.py` |
+| 10 | `GET /api/v1/interviews/{session_id}/export` | `xlsx`, `csv`, `json`, `pdf` | `app/services/exports/interview_report_builder.py` |
+
+No new export pipeline was built. Both reuse `workbook_to_bytes`, `build_text_pdf`
+and `sanitize_filename`, and both routes take the same `format` query parameter,
+return the file rather than the envelope, and name it in `Content-Disposition` -
+the shape the other eight already used. `app/services/exports/styling.py` is new
+and holds the header fills, fonts and value-coercion helpers that had been
+copy-pasted into seven builders; those seven were deliberately left alone, because
+rewriting a working export for tidiness is a redesign.
+
+**Module 5 exports the whole portfolio or one supplier from the same route**, via
+`supplier_id=`. A second route would have been a second thing to keep in step with
+the first. Six sheets: Summary, Portfolio, Category Scores, Evidence & Missing
+Data, Recommended Actions and Methodology. The Category Scores sheet prints the
+score, the weight, the renormalised weight and the contribution together, so the
+overall score can be rebuilt from the file. A category with no data is written as
+unscored rather than as zero, and the supplier whose score was withheld entirely
+(SRK-09) exports with no overall score and `limited_data` set.
+
+**Module 10 exports the transcript**, five sheets plus a PDF built one page per
+question. Two things the file carries that a score alone does not: the keyword
+that credited each concept, and a dimension the question did not test printed as
+*not applicable* rather than zero.
+
+71 tests were added across the four layers. One of them asserts the *set* of
+modules that expose an export route rather than a count, so this gap cannot
+silently reopen. Both were driven over a live API and through their Streamlit
+pages before criterion 10 was flipped.
+
+---
+
 ## Recommended next step
 
 Every module is implemented and Phase 5 has integrated, hardened and documented
@@ -1109,8 +1149,6 @@ Still worth doing, and none of it blocking:
 - **Link module 9 to module 8.** A blueprint's SIT and UAT scenario sections and a
   generated test suite describe the same tests at two levels of detail, and
   nothing joins them today.
-- **Exports for modules 5 and 10** - the two modules with no report download, and
-  the one acceptance criterion Phase 5 could only pass partially.
 - **A job queue and a live PostgreSQL run.** The migrations render for PostgreSQL
   and the timestamp handling is tested against it, but no suite has been run
   against a live server. That is one command

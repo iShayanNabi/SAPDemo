@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
+from app.core.security import sanitize_filename
 from app.models.po_risk import UploadedFile
 from app.models.supplier_risk import (
     SupplierRiskAssessment,
@@ -73,6 +74,7 @@ from app.schemas.supplier_risk import (
     CitationSchema,
     ColumnSuggestionSchema,
     DataQualityIssueSchema,
+    ExportFormat,
     MetricContributionSchema,
     RecommendedActionSchema,
     RiskAssessmentDetailSchema,
@@ -89,6 +91,11 @@ from app.schemas.supplier_risk import (
     SupplierRiskProfileSchema,
     SupplierRiskSummarySchema,
     SupplierRiskUploadResponse,
+)
+from app.services.exports.supplier_risk_report_builder import (
+    build_supplier_risk_csv_report,
+    build_supplier_risk_json_report,
+    build_supplier_risk_xlsx_report,
 )
 from app.services.files.readers import preview_records, read_tabular
 from app.services.files.storage import store_upload
@@ -865,6 +872,93 @@ def get_supplier(
             details={"supplier_id": supplier_id, "assessment_id": assessment.id},
         )
     return _profile_schema_from_row(row)
+
+
+def export_assessment(
+    db: Session,
+    assessment_id: str | None,
+    export_format: ExportFormat,
+    supplier_id: str | None = None,
+) -> tuple[bytes, str, str]:
+    """Build a downloadable risk report. Returns ``(content, filename, media_type)``.
+
+    ``supplier_id`` narrows the report to one supplier without changing its
+    shape: the same sheets, the same columns, one row. That is a filter rather
+    than a second export route, because a single-supplier report and a portfolio
+    report are the same document at two scopes, and a reader who has learned one
+    has learned the other.
+
+    The full profiles are rebuilt from the stored rows this function already has,
+    not fetched one at a time - a 55-supplier portfolio would otherwise be 55
+    extra queries to produce one file.
+    """
+    config = get_supplier_risk_config()
+    assessment = _require_assessment(db, assessment_id)
+
+    statement = select(SupplierRiskProfileRow).where(
+        SupplierRiskProfileRow.assessment_id == assessment.id
+    )
+    if supplier_id:
+        statement = statement.where(SupplierRiskProfileRow.supplier_id == supplier_id)
+    rows = db.execute(
+        statement.order_by(
+            SupplierRiskProfileRow.rank.is_(None),
+            SupplierRiskProfileRow.rank,
+            SupplierRiskProfileRow.supplier_id,
+        )
+    ).scalars().all()
+
+    if supplier_id and not rows:
+        raise NotFoundError(
+            "That supplier is not in this risk assessment.",
+            details={"supplier_id": supplier_id, "assessment_id": assessment.id},
+        )
+
+    detail = _assessment_detail(
+        assessment,
+        [_summary_schema_from_row(row) for row in rows],
+        _narrative_from_row(assessment),
+        config,
+    )
+    summaries = [item.model_dump(mode="json") for item in detail.suppliers]
+    profiles = [_profile_schema_from_row(row).model_dump(mode="json") for row in rows]
+    scoring = get_scoring_info()
+
+    payload = {
+        "assessment": {
+            "assessment_id": detail.assessment_id,
+            "dataset_id": detail.dataset_id,
+            "status": detail.status.value,
+            "source_filename": detail.source_filename,
+            "as_of_date": detail.as_of_date,
+            "base_currency": detail.base_currency,
+            "config_version": detail.config_version,
+            "engine_version": detail.engine_version,
+            "created_at": detail.created_at,
+            "supplier_id_filter": supplier_id,
+        },
+        "summary": detail.summary.model_dump(mode="json"),
+        "weights": dict(detail.weights),
+        "suppliers": summaries,
+        "profiles": profiles,
+        "rule_errors": list(detail.rule_errors or []),
+        "ai_narrative": detail.ai_narrative.model_dump(mode="json"),
+        "methodology": scoring.model_dump(mode="json"),
+    }
+
+    stem = f"supplier_risk_{detail.assessment_id[:8]}"
+    if supplier_id:
+        stem = f"{stem}_{sanitize_filename(supplier_id, default_stem='supplier')}"
+
+    if export_format is ExportFormat.JSON:
+        return build_supplier_risk_json_report(payload), f"{stem}.json", "application/json"
+    if export_format is ExportFormat.CSV:
+        return build_supplier_risk_csv_report(summaries), f"{stem}.csv", "text/csv"
+    return (
+        build_supplier_risk_xlsx_report(payload),
+        f"{stem}.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 def list_datasets(db: Session) -> list[SupplierRiskDatasetSchema]:
