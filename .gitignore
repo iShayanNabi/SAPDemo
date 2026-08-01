@@ -27,3 +27,9 @@ data/exports/*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# TypeScript example client (installed on demand, not committed)
+examples/typescript-client/node_modules/
+examples/typescript-client/dist/
+examples/typescript-client/src/schema.ts
+examples/typescript-client/package-lock.json
