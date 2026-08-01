@@ -19,8 +19,9 @@ Two behaviours are deliberate:
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from string import Formatter
-from typing import Any, Mapping
+from typing import Any
 
 from app.core.logging import get_logger
 from app.core.security import neutralize_prompt_injection

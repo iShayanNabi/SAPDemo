@@ -52,6 +52,7 @@ from app.services.exports.contract_report_builder import (
     build_contract_json_report,
     build_contract_xlsx_report,
 )
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
@@ -92,13 +93,9 @@ async def upload(
     is accepted, reported as ``needs_ocr`` and explained - never silently
     analysed as an empty contract.
     """
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded document is empty.")
-    if len(content) > settings.max_document_bytes:
-        raise FileValidationError(
-            f"The document exceeds the {settings.max_document_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(
+        file, max_bytes=settings.max_document_bytes, what="document"
+    )
     return ApiResponse.ok(service.handle_upload(db, file.filename or "contract", content))
 
 

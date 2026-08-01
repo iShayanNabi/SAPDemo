@@ -404,7 +404,7 @@ if analysis:
             x=monthly_frame["value"], y=monthly_frame["maverick_spend_base"],
             mode="lines+markers", name="Maverick spend",
         )
-        figure.update_layout(height=380, margin=dict(t=20, b=10))
+        figure.update_layout(height=380, margin={"t": 20, "b": 10})
         st.plotly_chart(figure, use_container_width=True)
 
     chart_left, chart_right = st.columns(2)
@@ -423,7 +423,7 @@ if analysis:
                     frame.sort_values("spend_base"), x="spend_base", y="label",
                     orientation="h", labels={"spend_base": f"Spend ({currency})", "label": ""},
                 )
-                figure.update_layout(height=380, margin=dict(t=20, b=10))
+                figure.update_layout(height=380, margin={"t": 20, "b": 10})
                 st.plotly_chart(figure, use_container_width=True)
             else:
                 st.info("No data for this breakdown.")
@@ -439,7 +439,7 @@ if analysis:
             if rows:
                 frame = pd.DataFrame(rows)
                 figure = px.pie(frame, names="value", values="spend_base", hole=0.45)
-                figure.update_layout(height=360, margin=dict(t=20, b=10))
+                figure.update_layout(height=360, margin={"t": 20, "b": 10})
                 st.plotly_chart(figure, use_container_width=True)
             else:
                 st.info("No data for this breakdown.")

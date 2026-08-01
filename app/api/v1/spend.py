@@ -32,6 +32,7 @@ from app.schemas.spend import (
     SpendTransactionListResponse,
     SpendUploadResponse,
 )
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
@@ -52,13 +53,7 @@ async def upload_file(
     file: Annotated[UploadFile, File(description="CSV, XLSX or JSON procurement transactions")],
 ) -> ApiResponse[SpendUploadResponse]:
     """Validate a spend file, store it and suggest a column mapping."""
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded file is empty.")
-    if len(content) > settings.max_upload_bytes:
-        raise FileValidationError(
-            f"The file exceeds the {settings.max_upload_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(file)
     return ApiResponse.ok(service.handle_upload(db, file.filename or "upload", content))
 
 

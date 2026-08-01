@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
+    escape_html,
     format_currency,
     origin_badge,
     show_error,
@@ -503,7 +504,7 @@ if profile:
     st.markdown(
         f"<span style='background:{_band_colour(profile.get('overall_band'))};color:#fff;"
         f"padding:3px 10px;border-radius:10px;'>"
-        f"{(profile.get('overall_band') or 'not scored').upper()} RISK</span>",
+        f"{escape_html(profile.get('overall_band') or 'not scored').upper()} RISK</span>",
         unsafe_allow_html=True,
     )
     meta_bits = [

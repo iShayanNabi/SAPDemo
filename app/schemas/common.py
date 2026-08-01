@@ -8,7 +8,7 @@ can implement one response handler for all modules::
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Generic, TypeVar
 
@@ -167,7 +167,7 @@ class ResponseMeta(BaseModel):
     schema directly - it is simply ``None``.
     """
 
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     request_id: str | None = Field(default_factory=get_request_id)
     api_version: str = API_VERSION
 
@@ -183,7 +183,7 @@ class ApiResponse(BaseModel, Generic[DataT]):
     meta: ResponseMeta = Field(default_factory=ResponseMeta)
 
     @classmethod
-    def ok(cls, data: DataT, request_id: str | None = None) -> "ApiResponse[DataT]":
+    def ok(cls, data: DataT, request_id: str | None = None) -> ApiResponse[DataT]:
         """Build a success envelope."""
         return cls(success=True, data=data, meta=_meta(request_id))
 
@@ -195,7 +195,7 @@ class ApiResponse(BaseModel, Generic[DataT]):
         *,
         details: dict[str, Any] | None = None,
         request_id: str | None = None,
-    ) -> "ApiResponse[DataT]":
+    ) -> ApiResponse[DataT]:
         """Build an error envelope."""
         return cls(
             success=False,

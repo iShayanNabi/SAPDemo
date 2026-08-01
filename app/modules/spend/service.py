@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -256,7 +256,7 @@ def run_analysis(db: Session, request: SpendAnalyzeRequest) -> SpendAnalysisDeta
         savings_executions=savings.rule_executions,
         savings_errors=savings.rule_errors,
         filter_options=available_filter_values(dataset.frame),
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
     db.add(analysis)
     db.flush()

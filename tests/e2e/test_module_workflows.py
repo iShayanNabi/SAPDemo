@@ -25,10 +25,8 @@ from tests.api.test_supplier_reco_api import REQUIREMENT
 from tests.api.test_test_case_api import PROCESS_CONTEXT
 from tests.e2e.conftest import (
     CSV_MIME,
-    JSON_MIME,
     PDF_MIME,
     VALID_ORIGINS,
-    XLSX_MIME,
     assert_identifier,
     assert_pagination,
     assert_timestamp,

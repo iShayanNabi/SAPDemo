@@ -97,7 +97,7 @@ class InvoiceValidation(Base, TimestampMixin):
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
-    exceptions: Mapped[list["InvoiceException"]] = relationship(
+    exceptions: Mapped[list[InvoiceException]] = relationship(
         back_populates="validation", cascade="all, delete-orphan", passive_deletes=True
     )
 

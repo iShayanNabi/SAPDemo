@@ -1,7 +1,7 @@
 [project]
 name = "sap-ai-application-lab"
 version = "0.1.0"
-description = "Local lab of SAP-focused AI applications. Module 1: Purchase Order Risk Checker."
+description = "Local workbench of ten SAP-focused AI applications. Demo data only; not connected to any SAP system."
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
@@ -19,6 +19,65 @@ filterwarnings = [
 line-length = 100
 target-version = "py312"
 
+# Style policy, stated so nobody has to guess:
+#
+# `ruff check` is the gate. It enforces import order (I), naming (N), modern
+# syntax (UP), line length and whitespace (E), and the bug-shaped rules (F, B,
+# A, C4, SIM). `scripts/check_quality.py` runs it and it passes clean.
+#
+# `ruff format` is deliberately *not* adopted. The reason is specific rather
+# than a matter of taste: this project's regression fixtures are frozen data
+# tables - the 54 values whose mean lands on a rounding tie, the SAP technical
+# header maps, the priority matrices - written several per line so a reader can
+# scan them. The formatter expands every one of them to a single element per
+# line, turning a nine-line table that can be read at a glance into fifty-four
+# lines that cannot. Those tables are the specification for several tests, so
+# the readability cost lands exactly where it matters most.
+#
+# If that trade is ever revisited, the mechanism is `# fmt: off` / `# fmt: on`
+# around each table, not a blanket reformat.
+
+[tool.ruff.format]
+# Recorded for anyone who runs the formatter by hand on a single new file.
+quote-style = "double"
+indent-style = "space"
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM"]
-ignore = ["E501"]
+ignore = [
+    # Long lines are allowed. Several rule explanations and SAP field tables
+    # read worse wrapped than they do long.
+    "E501",
+    # `class X(str, Enum)` rather than `StrEnum`. Pydantic, FastAPI's OpenAPI
+    # generation and `json.dumps` all treat the two differently in small ways,
+    # and every schema, every stored value and every test in this project was
+    # written against the first form. Rewriting 40 enums to satisfy a style rule
+    # would be a behaviour change wearing a lint fix's clothes.
+    "UP042",
+    # `zip(a, b)` without `strict=`. Worth revisiting deliberately, one call at
+    # a time: `strict=True` turns a silent truncation into an exception, which
+    # is right in some of these places and wrong in the ones that legitimately
+    # zip a header row against a shorter data row. Blanket-adding either value
+    # would encode a decision nobody made.
+    "B905",
+    # Nested `if`s and explicit `return True` / `return False`. Both rules ask
+    # for a compound boolean where the code currently reads as a sequence of
+    # guard clauses - "is this check enabled", then "does this supplier fail
+    # it". The stated goal of this codebase is that somebody learning Python can
+    # follow it, and a stack of one-line guards is easier to follow (and to set
+    # a breakpoint in) than one expression joined by `and`.
+    "SIM102",
+    "SIM103",
+    # PEP 695 generic syntax (`class ApiResponse[DataT]`). The envelope is the
+    # single most load-bearing type in the project and it works; rewriting its
+    # declaration for syntax fashion is risk with no reader benefit.
+    "UP046",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Streamlit decides these filenames: the entry point must be `Home.py` and the
+# pages must be numbered so the sidebar orders them.
+"streamlit_app/Home.py" = ["N999"]
+"streamlit_app/pages/*.py" = ["N999"]
+# Alembic generates the revision filenames from its own hashes.
+"migrations/versions/*.py" = ["N999"]

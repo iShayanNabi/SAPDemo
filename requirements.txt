@@ -4,11 +4,11 @@
 # --- API layer ---
 fastapi==0.141.1
 uvicorn[standard]==0.40.0
-python-multipart==0.0.20
+python-multipart==0.0.31
 
 # --- Validation and configuration ---
 pydantic==2.13.4
-pydantic-settings==2.13.0
+pydantic-settings==2.14.2
 
 # --- Persistence (SQLite now, PostgreSQL ready) ---
 SQLAlchemy==2.0.51
@@ -24,7 +24,7 @@ statsmodels==0.14.6
 
 # --- File processing ---
 openpyxl==3.1.5
-pypdf==5.9.0
+pypdf==6.14.2
 python-docx==1.2.0
 
 # --- HTTP client (AI providers, Streamlit -> API) ---
@@ -35,4 +35,8 @@ streamlit==1.60.0
 plotly==6.9.0
 
 # --- Testing ---
-pytest==9.0.1
+pytest==9.0.3
+
+# --- Lint / security tooling (optional, used by scripts/check_quality.py) ---
+ruff==0.15.2
+pip-audit==2.10.1

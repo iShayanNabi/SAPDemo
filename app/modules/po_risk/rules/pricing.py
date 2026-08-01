@@ -11,7 +11,6 @@ for the same material are comparable.
 
 from __future__ import annotations
 
-
 from app.modules.po_risk.rules.base import BaseRule, RuleContext, RuleFinding
 
 

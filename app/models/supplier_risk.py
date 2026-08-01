@@ -62,10 +62,10 @@ class SupplierRiskDataset(Base, TimestampMixin):
     supplier_count: Mapped[int] = mapped_column(Integer, default=0)
     event_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    records: Mapped[list["SupplierRiskRecord"]] = relationship(
+    records: Mapped[list[SupplierRiskRecord]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
-    assessments: Mapped[list["SupplierRiskAssessment"]] = relationship(
+    assessments: Mapped[list[SupplierRiskAssessment]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -143,7 +143,7 @@ class SupplierRiskAssessment(Base, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     dataset: Mapped[SupplierRiskDataset] = relationship(back_populates="assessments")
-    profiles: Mapped[list["SupplierRiskProfileRow"]] = relationship(
+    profiles: Mapped[list[SupplierRiskProfileRow]] = relationship(
         back_populates="assessment", cascade="all, delete-orphan", passive_deletes=True
     )
 

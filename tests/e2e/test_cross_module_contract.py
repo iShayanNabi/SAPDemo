@@ -93,7 +93,7 @@ class TestResponseEnvelope:
         """
         untyped = []
         for path, operations in spec["paths"].items():
-            for method, operation in operations.items():
+            for operation in operations.values():
                 if _success_content(operation).get("schema", {}).get("$ref"):
                     continue
                 untyped.append(path)
@@ -311,9 +311,8 @@ class TestFileAndExportMetadata:
 @pytest.fixture(scope="module")
 def po_analysis_id(client) -> str:
     """One PO analysis, reused by the export checks."""
-    from tests.e2e.conftest import CSV_MIME, upload
-
     from app.core.config import PROJECT_ROOT
+    from tests.e2e.conftest import CSV_MIME, upload
 
     path = PROJECT_ROOT / "data" / "sample" / "sample_purchase_orders.csv"
     if not path.is_file():
@@ -333,9 +332,8 @@ def po_analysis_id(client) -> str:
 @pytest.fixture(scope="module")
 def spend_analysis_id(client) -> str:
     """One spend analysis, reused by the export checks."""
-    from tests.e2e.conftest import CSV_MIME, upload
-
     from app.core.config import PROJECT_ROOT
+    from tests.e2e.conftest import CSV_MIME, upload
 
     path = PROJECT_ROOT / "data" / "sample" / "sample_spend_transactions.csv"
     if not path.is_file():

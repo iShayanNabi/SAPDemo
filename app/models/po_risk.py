@@ -53,7 +53,7 @@ class UploadedFile(Base, TimestampMixin):
     detected_columns: Mapped[list[str]] = mapped_column(JSON, default=list)
     suggested_mapping: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
 
-    analyses: Mapped[list["PoAnalysis"]] = relationship(
+    analyses: Mapped[list[PoAnalysis]] = relationship(
         back_populates="upload", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -113,10 +113,10 @@ class PoAnalysis(Base, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     upload: Mapped[UploadedFile] = relationship(back_populates="analyses")
-    findings: Mapped[list["PoFinding"]] = relationship(
+    findings: Mapped[list[PoFinding]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
-    records: Mapped[list["PoRecord"]] = relationship(
+    records: Mapped[list[PoRecord]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
 

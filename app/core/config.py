@@ -143,6 +143,28 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     @property
+    def cors_allows_any_origin(self) -> bool:
+        """Whether ``CORS_ORIGINS`` was set to the ``*`` wildcard."""
+        return "*" in self.cors_origin_list
+
+    @property
+    def cors_allow_credentials(self) -> bool:
+        """Whether cookies and Authorization headers may cross origins.
+
+        Never with a wildcard. ``Access-Control-Allow-Origin: *`` together with
+        ``Access-Control-Allow-Credentials: true`` is a combination browsers
+        reject outright, so the practical effect of setting both is that every
+        cross-origin call fails and somebody spends an afternoon on it. The
+        dangerous version is the one where a framework "helpfully" reflects the
+        caller's origin instead of sending ``*`` - then any site on the internet
+        can read a signed-in user's data.
+
+        So: a wildcard means an open, credential-free API. A named origin list -
+        which is what the future website will use - allows credentials.
+        """
+        return not self.cors_allows_any_origin
+
+    @property
     def allowed_extension_set(self) -> set[str]:
         """Allowed upload extensions, normalised to lowercase with a leading dot."""
         return _extension_set(self.allowed_upload_extensions)

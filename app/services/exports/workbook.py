@@ -20,7 +20,7 @@ future builder writes without knowing about this rule at all.
 from __future__ import annotations
 
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from openpyxl.workbook import Workbook
 
@@ -49,4 +49,4 @@ def _strip_timezones(workbook: Workbook) -> None:
             for cell in row:
                 value = cell.value
                 if isinstance(value, datetime) and value.tzinfo is not None:
-                    cell.value = value.astimezone(timezone.utc).replace(tzinfo=None)
+                    cell.value = value.astimezone(UTC).replace(tzinfo=None)

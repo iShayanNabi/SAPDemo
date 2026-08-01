@@ -47,7 +47,7 @@ __all__ = ["SelectionPlan", "allocate_questions", "plan_questions", "shuffle_key
 
 def shuffle_key(seed: int, question_id: str) -> str:
     """Return the stable ordering key for one question under one seed."""
-    digest = hashlib.sha256(f"{seed}:{question_id}".encode("utf-8"))
+    digest = hashlib.sha256(f"{seed}:{question_id}".encode())
     return digest.hexdigest()
 
 
@@ -88,7 +88,7 @@ def allocate_questions(
     if total <= 0 or not eligible:
         return {}
 
-    allocation: dict[InterviewTrack, int] = {track: 0 for track in eligible}
+    allocation: dict[InterviewTrack, int] = dict.fromkeys(eligible, 0)
     remaining = total
     # Round-robin in caller order. This handles "fewer questions than tracks"
     # (the first `total` tracks get one each) and the remainder in one loop.

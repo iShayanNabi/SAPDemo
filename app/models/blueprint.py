@@ -111,13 +111,13 @@ class Blueprint(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    sections: Mapped[list["BlueprintSection"]] = relationship(
+    sections: Mapped[list[BlueprintSection]] = relationship(
         back_populates="blueprint",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="BlueprintSection.position",
     )
-    versions: Mapped[list["BlueprintVersion"]] = relationship(
+    versions: Mapped[list[BlueprintVersion]] = relationship(
         back_populates="blueprint",
         cascade="all, delete-orphan",
         passive_deletes=True,

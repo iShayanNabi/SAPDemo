@@ -455,11 +455,7 @@ class InventorySampleGenerator:
             if offset >= PERIOD_COUNT - 14:
                 return 0.0
             level = spec.base_demand
-        elif spec.pattern == "intermittent":
-            if self.random.random() < spec.zero_probability:
-                return 0.0
-            level = spec.base_demand
-        elif spec.pattern == "slow":
+        elif spec.pattern == "intermittent" or spec.pattern == "slow":
             if self.random.random() < spec.zero_probability:
                 return 0.0
             level = spec.base_demand

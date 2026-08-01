@@ -361,18 +361,7 @@ def test_supplier_without_a_score_reports_missing_data_not_a_number(supplier_ris
     sparse = make_risk_profile(
         supplier_id="0000300099",
         supplier_name="Thin Data Ltd",
-        **{
-            name: None
-            for name in (
-                "quality_score", "defect_rate", "quality_incident_count", "credit_score",
-                "payment_default_count", "financial_distress_flag", "category_spend_share",
-                "single_source_material_count", "alternative_supplier_count", "contract_status",
-                "contract_expiration", "invoice_count", "invoice_exception_count",
-                "disputed_invoice_count", "compliance_finding_count", "certification_status",
-                "audit_status", "esg_score", "country", "capacity_utilization",
-                "lead_time_variability_days", "lead_time_days",
-            )
-        },
+        **dict.fromkeys(("quality_score", "defect_rate", "quality_incident_count", "credit_score", "payment_default_count", "financial_distress_flag", "category_spend_share", "single_source_material_count", "alternative_supplier_count", "contract_status", "contract_expiration", "invoice_count", "invoice_exception_count", "disputed_invoice_count", "compliance_finding_count", "certification_status", "audit_status", "esg_score", "country", "capacity_utilization", "lead_time_variability_days", "lead_time_days")),
         regions_served=[],
     )
     result = run_risk_assessment_for([sparse])

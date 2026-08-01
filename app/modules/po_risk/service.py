@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -246,7 +246,7 @@ def _persist_analysis(
         estimated_exposure=summary["estimated_exposure_base"],
         risk_score=summary["risk_score"],
         duration_ms=duration_ms,
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
 
     if narrative is not None:
@@ -407,7 +407,7 @@ def export_analysis(
         "findings": findings_payload,
     }
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     if export_format is ExportFormat.XLSX:
         return (
             build_xlsx_report(payload),

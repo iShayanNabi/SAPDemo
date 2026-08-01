@@ -23,7 +23,6 @@ from app.core.rounding import (
     round_half_up,
 )
 
-
 #: 54 two-decimal values whose exact mean is 59.375 - a rounding tie - and
 #: whose naive float mean changes with summation order. Frozen here rather
 #: than generated, so the test asserts a fixed, inspectable fact.

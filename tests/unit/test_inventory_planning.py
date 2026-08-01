@@ -20,10 +20,8 @@ from app.modules.inventory.normalizer import (
     build_series,
     normalize_inventory_dataframe,
 )
-from app.modules.inventory.projection import build_forecast_points, project_inventory
 from app.modules.inventory.thresholds import load_inventory_config
 from app.services.tabular.mapping import suggest_mapping
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -440,7 +440,7 @@ def main() -> int:
     print(f"  Sample data: {SAMPLE_DIR}\n")
 
     if not SAMPLE_DIR.is_dir():
-        print(f"data/sample/ does not exist. Run the scripts/generate_*_sample_data.py scripts.")
+        print("data/sample/ does not exist. Run the scripts/generate_*_sample_data.py scripts.")
         return 2
 
     try:

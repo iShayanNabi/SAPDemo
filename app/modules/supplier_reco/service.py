@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -69,7 +69,7 @@ from app.services.exports.supplier_reco_report_builder import (
     supplier_reco_disclaimer,
 )
 from app.services.files.readers import preview_records, read_tabular
-from app.services.files.storage import read_upload, store_upload
+from app.services.files.storage import store_upload
 from app.services.files.validation import validate_upload
 from app.services.tabular.mapping import suggest_mapping
 
@@ -237,7 +237,7 @@ def recommend(db: Session, request: RecommendRequest) -> RecommendationDetailSch
         ineligible_count=result.ineligible_count,
         top_supplier_id=result.top_supplier_id,
         top_supplier_score=result.top_supplier_score,
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
     db.add(recommendation)
     db.flush()

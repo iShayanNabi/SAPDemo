@@ -21,8 +21,8 @@ import numpy as np
 import pandas as pd
 
 from app.core.logging import get_logger
-from app.schemas.common import OutputOrigin, Severity
 from app.modules.po_risk.thresholds import PoRiskConfig
+from app.schemas.common import OutputOrigin, Severity
 
 logger = get_logger(__name__)
 

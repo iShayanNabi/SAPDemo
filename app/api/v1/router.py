@@ -9,10 +9,6 @@ from __future__ import annotations
 from fastapi import APIRouter
 from sqlalchemy import text
 
-from app.core.config import settings
-from app.core.logging import get_logger
-from app.models.session import engine
-from app.schemas.common import ApiResponse, HealthStatus
 from app.api.v1 import (
     blueprints,
     contracts,
@@ -25,6 +21,10 @@ from app.api.v1 import (
     supplier_risk,
     test_cases,
 )
+from app.core.config import settings
+from app.core.logging import get_logger
+from app.models.session import engine
+from app.schemas.common import ApiResponse, HealthStatus
 
 logger = get_logger(__name__)
 

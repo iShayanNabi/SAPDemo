@@ -20,7 +20,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ValidationError as PydanticValidationError
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
 
 from app.core.exceptions import AIProviderError
 from app.core.logging import get_logger

@@ -20,7 +20,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -114,7 +114,7 @@ def build_contract_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full contract payload as JSON."""
     document = {
         "report_type": "sap_contract_analysis",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": contract_disclaimer(),
         **payload,
     }

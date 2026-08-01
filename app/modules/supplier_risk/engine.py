@@ -543,7 +543,7 @@ def run_risk_assessment(
             )
 
     scored = [item for item in profiles if item.overall_score is not None]
-    band_counts: dict[str, int] = {label: 0 for label in config.risk_bands.labels}
+    band_counts: dict[str, int] = dict.fromkeys(config.risk_bands.labels, 0)
     for item in scored:
         if item.overall_band:
             band_counts[item.overall_band] = band_counts.get(item.overall_band, 0) + 1

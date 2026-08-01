@@ -7,7 +7,7 @@ provider.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -194,7 +194,7 @@ def _record(topic: str, score: float, *, difficulty="intermediate", track=MM,
         seconds_spent=seconds,
         scoring_is_stale=stale,
         passed=score >= 60,
-        answered_at=datetime(2026, 8, 1, tzinfo=timezone.utc),
+        answered_at=datetime(2026, 8, 1, tzinfo=UTC),
     )
 
 
@@ -246,7 +246,7 @@ class TestSessionSummary:
 
 class TestDashboard:
     def _sessions(self, count: int = 1) -> list[SessionRecord]:
-        base = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        base = datetime(2026, 7, 1, tzinfo=UTC)
         return [
             SessionRecord(
                 session_id=f"s{index + 1}",

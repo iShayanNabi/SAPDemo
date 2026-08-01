@@ -10,8 +10,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from app.core.exceptions import AIProviderError
 from app.modules.test_case_generator.ai_generator import (
     TestCaseDraftingService,

@@ -44,6 +44,7 @@ from app.schemas.inventory import (
     MethodologySchema,
 )
 from app.services.ai.factory import describe_active_provider
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
@@ -80,13 +81,7 @@ async def upload(
     period granularity that was inferred from the dates, and any data-quality
     problems found while loading.
     """
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded file is empty.")
-    if len(content) > settings.max_upload_bytes:
-        raise FileValidationError(
-            f"The file exceeds the {settings.max_upload_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(file)
     return ApiResponse.ok(service.handle_upload(db, file.filename or "upload", content))
 
 

@@ -9,8 +9,6 @@ from __future__ import annotations
 
 import copy
 
-import pytest
-
 
 def _upload_catalog(api_client, csv_path) -> str:
     content = csv_path.read_bytes()

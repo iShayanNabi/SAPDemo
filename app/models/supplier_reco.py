@@ -56,10 +56,10 @@ class SupplierCatalog(Base, TimestampMixin):
     data_quality_issues: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     supplier_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    suppliers: Mapped[list["Supplier"]] = relationship(
+    suppliers: Mapped[list[Supplier]] = relationship(
         back_populates="catalog", cascade="all, delete-orphan", passive_deletes=True
     )
-    recommendations: Mapped[list["SupplierRecommendation"]] = relationship(
+    recommendations: Mapped[list[SupplierRecommendation]] = relationship(
         back_populates="catalog", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -146,7 +146,7 @@ class SupplierRecommendation(Base, TimestampMixin):
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     catalog: Mapped[SupplierCatalog] = relationship(back_populates="recommendations")
-    entries: Mapped[list["SupplierRecommendationEntry"]] = relationship(
+    entries: Mapped[list[SupplierRecommendationEntry]] = relationship(
         back_populates="recommendation", cascade="all, delete-orphan", passive_deletes=True
     )
 

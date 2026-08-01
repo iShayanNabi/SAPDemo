@@ -21,19 +21,20 @@ template, never left blank and never invented.**
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from string import Formatter
-from typing import Any, Mapping
+from typing import Any
 
 from app.core.logging import get_logger
+from app.modules.test_case_generator.planning import TestCaseSlot
+from app.modules.test_case_generator.thresholds import TestCaseGeneratorConfig
 from app.schemas.common import OutputOrigin
 from app.schemas.test_case_generator import (
     ProcessContextSchema,
     TestCaseSource,
     TestStepSchema,
 )
-from app.modules.test_case_generator.planning import TestCaseSlot
-from app.modules.test_case_generator.thresholds import TestCaseGeneratorConfig
 
 logger = get_logger(__name__)
 

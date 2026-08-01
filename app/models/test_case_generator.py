@@ -93,7 +93,7 @@ class TestSuite(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    test_cases: Mapped[list["TestCase"]] = relationship(
+    test_cases: Mapped[list[TestCase]] = relationship(
         back_populates="suite",
         cascade="all, delete-orphan",
         passive_deletes=True,

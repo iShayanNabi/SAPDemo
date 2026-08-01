@@ -166,7 +166,7 @@ class ProcessContextSchema(BaseModel):
         layer, where business logic is not allowed to live.
         """
         if isinstance(value, str):
-            value = [line for line in value.splitlines()]
+            value = value.splitlines()
         if isinstance(value, list):
             return [
                 str(item).strip()[:500]
@@ -222,7 +222,7 @@ class CreateTestCaseRequest(BaseModel):
     priority: TestPriority | None = None
     preconditions: list[str] = Field(default_factory=list, max_length=40)
     test_data: list[str] = Field(default_factory=list, max_length=40)
-    steps: list["TestStepSchema"] = Field(default_factory=list, max_length=60)
+    steps: list[TestStepSchema] = Field(default_factory=list, max_length=60)
     expected_result: str = Field(default="", max_length=2000)
     owner: str | None = Field(default=None, max_length=120)
     comments: str | None = Field(default=None, max_length=2000)
@@ -239,7 +239,7 @@ class UpdateTestCaseRequest(BaseModel):
     priority: TestPriority | None = None
     preconditions: list[str] | None = Field(default=None, max_length=40)
     test_data: list[str] | None = Field(default=None, max_length=40)
-    steps: list["TestStepSchema"] | None = Field(default=None, max_length=60)
+    steps: list[TestStepSchema] | None = Field(default=None, max_length=60)
     expected_result: str | None = Field(default=None, max_length=2000)
     owner: str | None = Field(default=None, max_length=120)
     status: TestCaseStatus | None = None

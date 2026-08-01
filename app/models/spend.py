@@ -99,10 +99,10 @@ class SpendAnalysis(Base, TimestampMixin):
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
-    transactions: Mapped[list["SpendTransaction"]] = relationship(
+    transactions: Mapped[list[SpendTransaction]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
-    opportunities: Mapped[list["SpendOpportunity"]] = relationship(
+    opportunities: Mapped[list[SpendOpportunity]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
 

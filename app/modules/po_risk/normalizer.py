@@ -26,10 +26,10 @@ from app.modules.po_risk.field_definitions import CANONICAL_FIELDS, REGISTRY
 from app.modules.po_risk.thresholds import PoRiskConfig
 from app.services.tabular.parsing import (
     DataQualityIssue,
-    frame_to_records,
     build_canonical_frame,
     check_required_completeness,
     coerce_types,
+    frame_to_records,
     parse_date,
     parse_number,
     parse_string,

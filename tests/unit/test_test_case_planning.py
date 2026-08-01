@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 
 import pytest
+from pydantic import ValidationError as PydanticValidationError
 
 from app.core.exceptions import ConfigurationError
 from app.modules.test_case_generator.engine import build_coverage, summarise_cases
@@ -179,7 +180,7 @@ class TestPlan:
 # ---------------------------------------------------------------------------
 
 
-class TestPriority_:
+class TestPriorityDerivation:
     def test_a_quiet_process_keeps_every_base_priority(self, test_case_config):
         plan = build_plan(QUIET_CONTEXT, list(TEST_TYPE_ORDER), 8, test_case_config)
 
@@ -338,7 +339,7 @@ class TestRequestValidation:
         assert context.user_roles == ["Sales clerk", "Shipping clerk"]
 
     def test_a_short_process_description_is_rejected(self):
-        with pytest.raises(Exception):
+        with pytest.raises(PydanticValidationError):
             ProcessContextSchema(
                 sap_product="SAP S/4HANA",
                 sap_module="SD",

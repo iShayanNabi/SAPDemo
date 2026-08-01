@@ -159,7 +159,7 @@ class QuestionBank:
     _fingerprints: dict[str, str] = field(default_factory=dict, repr=False)
 
     @classmethod
-    def from_schema(cls, schema: QuestionBankSchema) -> "QuestionBank":
+    def from_schema(cls, schema: QuestionBankSchema) -> QuestionBank:
         """Build the indexed bank from a validated payload."""
         bank = cls(
             bank_version=schema.bank_version,

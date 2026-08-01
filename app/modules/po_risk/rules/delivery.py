@@ -10,8 +10,8 @@ correctly maintained document, so their confidence is 1.0.
 
 from __future__ import annotations
 
-from app.schemas.common import Severity
 from app.modules.po_risk.rules.base import BaseRule, RuleContext, RuleFinding
+from app.schemas.common import Severity
 
 
 class LateDeliveryRule(BaseRule):

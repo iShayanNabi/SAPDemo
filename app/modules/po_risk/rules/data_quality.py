@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from app.schemas.common import Severity
 from app.modules.po_risk.field_definitions import FIELD_BY_NAME
 from app.modules.po_risk.rules.base import BaseRule, RuleContext, RuleFinding
+from app.schemas.common import Severity
 
 
 class QuantityAnomalyRule(BaseRule):

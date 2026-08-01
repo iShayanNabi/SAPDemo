@@ -7,6 +7,7 @@ severity gets.
 
 from __future__ import annotations
 
+import html
 from typing import Any
 
 import pandas as pd
@@ -28,6 +29,29 @@ ORIGIN_LABELS = {
     "forecast": "Forecast output",
     "demo_data": "Demo data",
 }
+
+
+def escape_html(value: Any, *, default: str = "") -> str:
+    """Escape a value for interpolation into an ``unsafe_allow_html`` string.
+
+    Streamlit renders markdown safely by default; ``unsafe_allow_html=True``
+    switches that off for the whole string, including any value substituted into
+    it. Most of the badges in this app interpolate a fixed vocabulary - a
+    severity, a band - and are safe by construction. Some do not: a contract
+    citation prints the *section heading it found in the uploaded document*, and
+    a document is untrusted input by this project's own rule.
+
+    A clause heading reading ``<img src=x onerror=...>`` is not a hypothetical
+    file - it is a one-line edit to a PDF somebody emails to a reviewer, and it
+    lands in the reviewer's browser next to a page number that makes it look
+    like a finding. Escape anything that came from a file, a model or a user
+    before it goes into an HTML string; leave the markup this module writes
+    itself alone.
+    """
+    if value is None:
+        return default
+    text = str(value)
+    return html.escape(text, quote=True) if text else default
 
 
 def format_currency(value: Any, currency: str = "EUR") -> str:

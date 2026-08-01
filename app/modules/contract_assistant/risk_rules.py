@@ -15,9 +15,10 @@ No rule may hardcode a limit.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Any, Callable
+from typing import Any
 
 from app.core.logging import get_logger
 from app.core.security import contains_injection_markers

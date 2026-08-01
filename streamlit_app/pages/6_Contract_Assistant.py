@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
 from streamlit_app.components.ui import (  # noqa: E402
     disclaimer,
+    escape_html,
     origin_badge,
     severity_badge,
     show_error,
@@ -168,16 +169,23 @@ def _band_chip(band: str | None, score: float) -> str:
     colour = BAND_COLORS.get((band or "").lower(), "#666666")
     return (
         f"<span style='background:{colour};color:#fff;padding:3px 10px;border-radius:12px;"
-        f"font-size:0.85rem;'>{(band or 'unknown').upper()} &middot; {score:g}/100</span>"
+        f"font-size:0.85rem;'>{escape_html(band or 'unknown').upper()} "
+        f"&middot; {score:g}/100</span>"
     )
 
 
 def _reference_caption(record: dict[str, Any]) -> str:
+    """Build the "page 3 - "Term and termination" - confidence 0.82" caption.
+
+    The section heading comes out of the uploaded document, and this string is
+    rendered with ``unsafe_allow_html=True``, so it is escaped. A contract is
+    untrusted input; a heading is just a line of text somebody chose.
+    """
     parts = []
     if record.get("page_number"):
-        parts.append(f"page {record['page_number']}")
+        parts.append(f"page {escape_html(record['page_number'])}")
     if record.get("section_heading"):
-        parts.append(f"“{record['section_heading']}”")
+        parts.append(f"“{escape_html(record['section_heading'])}”")
     if record.get("confidence") is not None:
         parts.append(f"confidence {_confidence(record['confidence'])}")
     return " &middot; ".join(parts) if parts else "no source reference"

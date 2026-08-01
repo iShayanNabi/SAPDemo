@@ -44,7 +44,6 @@ from app.schemas.interview_coach import (
     PerformanceBand,
     PerformanceDashboardSchema,
     QuestionDifficulty,
-    ScoreDimension,
     ScoreOverTimePointSchema,
     SessionListItemSchema,
     SessionStatus,

@@ -28,7 +28,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -111,7 +111,7 @@ def build_test_case_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full suite payload as JSON."""
     document = {
         "report_type": "sap_test_case_suite",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": test_case_disclaimer(payload),
         **payload,
     }
@@ -359,7 +359,7 @@ def _pdf_text(payload: dict[str, Any]) -> str:
     lines.append(f"SAP product:      {context.get('sap_product', '')}")
     lines.append(f"SAP module:       {context.get('sap_module', '')}")
     lines.append(f"Business process: {context.get('business_process', '')}")
-    lines.append(f"Generated at:     {datetime.now(timezone.utc).isoformat(timespec='seconds')}")
+    lines.append(f"Generated at:     {datetime.now(UTC).isoformat(timespec='seconds')}")
     lines.append("")
     lines.append(
         f"Test cases: {summary.get('test_case_count', 0)}   "

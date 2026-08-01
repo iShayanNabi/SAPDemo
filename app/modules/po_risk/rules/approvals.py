@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from app.schemas.common import Severity
 from app.modules.po_risk.rules.base import BaseRule, RuleContext, RuleFinding
+from app.schemas.common import Severity
 
 
 class HighValueWithoutApprovalRule(BaseRule):

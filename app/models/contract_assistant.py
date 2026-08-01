@@ -118,16 +118,16 @@ class Contract(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    pages: Mapped[list["ContractPage"]] = relationship(
+    pages: Mapped[list[ContractPage]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    clauses: Mapped[list["ContractClause"]] = relationship(
+    clauses: Mapped[list[ContractClause]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    risks: Mapped[list["ContractRisk"]] = relationship(
+    risks: Mapped[list[ContractRisk]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    obligations: Mapped[list["ContractObligation"]] = relationship(
+    obligations: Mapped[list[ContractObligation]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
 

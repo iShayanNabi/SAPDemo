@@ -586,10 +586,9 @@ def test_the_generator_and_the_api_share_one_calculation_path(
     API returned proves the two agree, so a baseline recorded by the generator
     is a statement about what the API will actually serve.
     """
+    import scripts.generate_supplier_risk_sample_data as generator
     from app.modules.supplier_risk import service
     from app.modules.supplier_risk.engine import run_risk_assessment
-
-    import scripts.generate_supplier_risk_sample_data as generator
 
     # Neither has its own copy: both hold the identical function object.
     assert generator.run_risk_assessment is run_risk_assessment

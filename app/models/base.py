@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import DateTime, MetaData, TypeDecorator
@@ -22,7 +22,7 @@ NAMING_CONVENTION = {
 
 def utc_now() -> datetime:
     """Timezone aware ``now`` used as the default for timestamp columns."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class UtcDateTime(TypeDecorator[datetime]):
@@ -56,16 +56,16 @@ class UtcDateTime(TypeDecorator[datetime]):
         if value.tzinfo is None:
             # A naive value reaching the database is assumed to be UTC, which is
             # what every writer in this project produces (`utc_now`).
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
 
     def process_result_value(self, value: Any, dialect: Dialect) -> datetime | None:
         """Return every timestamp as an aware UTC value."""
         if value is None:
             return None
         if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
 
 
 class Base(DeclarativeBase):

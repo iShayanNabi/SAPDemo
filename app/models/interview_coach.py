@@ -87,7 +87,7 @@ class InterviewSession(Base, TimestampMixin):
         UtcDateTime(), nullable=True, index=True
     )
 
-    answers: Mapped[list["InterviewAnswer"]] = relationship(
+    answers: Mapped[list[InterviewAnswer]] = relationship(
         back_populates="session",
         cascade="all, delete-orphan",
         passive_deletes=True,

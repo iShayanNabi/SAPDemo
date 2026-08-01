@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.logging import get_logger
@@ -145,7 +145,7 @@ def build_blueprint_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full blueprint payload as JSON."""
     document = {
         "report_type": "sap_implementation_blueprint",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": blueprint_disclaimer(payload),
         **payload,
     }
@@ -169,7 +169,7 @@ def build_blueprint_markdown_report(payload: dict[str, Any]) -> bytes:
         "",
         f"> **Proposed blueprint - requires review.** {blueprint_disclaimer(payload)}",
         "",
-        f"*Generated at {datetime.now(timezone.utc).isoformat(timespec='seconds')} · "
+        f"*Generated at {datetime.now(UTC).isoformat(timespec='seconds')} · "
         f"configuration v{blueprint.get('config_version', '')} · "
         f"engine v{blueprint.get('engine_version', '')} · "
         f"saved version {blueprint.get('current_version', 0)}*",
@@ -369,7 +369,7 @@ def build_blueprint_docx_report(payload: dict[str, Any]) -> bytes:
 
     meta = document.add_paragraph()
     meta.add_run(
-        f"Generated at {datetime.now(timezone.utc).isoformat(timespec='seconds')} · "
+        f"Generated at {datetime.now(UTC).isoformat(timespec='seconds')} · "
         f"configuration v{blueprint.get('config_version', '')} · "
         f"engine v{blueprint.get('engine_version', '')} · "
         f"saved version {blueprint.get('current_version', 0)}"
@@ -528,7 +528,7 @@ def _pdf_text(payload: dict[str, Any]) -> str:
     lines.append(f"Company:      {project.get('company', '')}")
     lines.append(f"Industry:     {project.get('industry', '')}")
     lines.append(f"SAP product:  {project.get('sap_product', '')}")
-    lines.append(f"Generated at: {datetime.now(timezone.utc).isoformat(timespec='seconds')}")
+    lines.append(f"Generated at: {datetime.now(UTC).isoformat(timespec='seconds')}")
     lines.append(f"Saved version: {blueprint.get('current_version', 0)}")
     lines.append("")
     lines.append(

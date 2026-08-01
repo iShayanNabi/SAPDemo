@@ -12,8 +12,8 @@ detail (stack traces, file paths, provider payloads) stays in the logs.
 from __future__ import annotations
 
 import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -63,13 +63,25 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# CORS. The origin list comes from CORS_ORIGINS and defaults to the local
+# Next.js and Streamlit ports. Credentials are only allowed for a *named* list -
+# see Settings.cors_allow_credentials for why a wildcard must not carry them.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    expose_headers=["X-Request-ID", "Content-Disposition"],
+    max_age=600,
 )
+
+if settings.cors_allows_any_origin and settings.environment != "local":
+    logger.warning(
+        "CORS_ORIGINS is '*' with ENVIRONMENT=%s. Credentials are disabled for "
+        "cross-origin requests. Name the front end's origins before going public.",
+        settings.environment,
+    )
 
 
 @app.middleware("http")
