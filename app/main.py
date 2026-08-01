@@ -12,19 +12,25 @@ detail (stack traces, file paths, provider payloads) stays in the logs.
 from __future__ import annotations
 
 import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.openapi import API_DESCRIPTION, OPENAPI_TAGS, customise_openapi
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.context import reset_request_id, set_request_id
 from app.core.exceptions import AppError
 from app.core.logging import configure_logging, get_logger
 from app.models.session import init_db
+from app.schemas.common import ApiResponse
 
 configure_logging()
 logger = get_logger(__name__)
@@ -48,34 +54,104 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description=(
-        "Local API for the SAP AI Application Lab. Module 1: Purchase Order Risk Checker.\n\n"
-        "Risk findings are produced by deterministic Python rules. AI is optional and only "
-        "rewrites those findings in business language; it never decides risk. No module in this "
-        "lab connects to a live SAP system."
-    ),
+    summary="Ten SAP-focused AI applications, running locally on fictional data.",
+    description=API_DESCRIPTION,
+    openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    swagger_ui_parameters={
+        # 130 endpoints across eleven tags: collapsed is the only readable
+        # starting point, and a filter box is what makes it navigable.
+        "docExpansion": "none",
+        "filter": True,
+        "displayRequestDuration": True,
+        "tryItOutEnabled": True,
+    },
 )
 
+
+def custom_openapi() -> dict[str, object]:
+    """Return the OpenAPI document, with the parts FastAPI cannot infer added.
+
+    Cached on the app the way FastAPI's own implementation does, so the document
+    is built once rather than on every ``/docs`` load.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        summary=app.summary,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+    )
+    app.openapi_schema = customise_openapi(schema)
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi  # type: ignore[method-assign]
+
+# CORS. The origin list comes from CORS_ORIGINS and defaults to the local
+# Next.js and Streamlit ports. Credentials are only allowed for a *named* list -
+# see Settings.cors_allow_credentials for why a wildcard must not carry them.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    expose_headers=["X-Request-ID", "Content-Disposition"],
+    max_age=600,
 )
+
+if settings.cors_allows_any_origin and settings.environment != "local":
+    logger.warning(
+        "CORS_ORIGINS is '*' with ENVIRONMENT=%s. Credentials are disabled for "
+        "cross-origin requests. Name the front end's origins before going public.",
+        settings.environment,
+    )
 
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):  # type: ignore[no-untyped-def]
-    """Attach a request id to every response for log correlation."""
+    """Attach a request id to every response for log correlation.
+
+    The id goes three places: ``request.state`` for the exception handlers, a
+    context variable so :class:`~app.schemas.common.ResponseMeta` can put the
+    same value inside the envelope, and the ``X-Request-ID`` header.
+    """
     request_id = uuid.uuid4().hex[:12]
     request.state.request_id = request_id
-    response = await call_next(request)
+    token = set_request_id(request_id)
+    try:
+        response = await call_next(request)
+    finally:
+        reset_request_id(token)
     response.headers["X-Request-ID"] = request_id
     return response
+
+
+def _error_response(
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    details: dict[str, object],
+    request_id: str | None,
+) -> JSONResponse:
+    """Render an error in exactly the envelope a success uses.
+
+    Built from :class:`~app.schemas.common.ApiResponse` rather than a hand
+    written dict. Hand written was how ``meta.timestamp`` came to exist on every
+    success and on no failure: a client that renders "received at" from the
+    envelope worked until the first error.
+    """
+    payload = ApiResponse[None].fail(
+        code, message, details=details, request_id=request_id
+    ).model_dump(mode="json")
+    return JSONResponse(status_code=status_code, content=payload)
 
 
 @app.exception_handler(AppError)
@@ -83,14 +159,32 @@ async def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     """Translate an expected application error into the response envelope."""
     request_id = getattr(request.state, "request_id", None)
     logger.warning("%s on %s: %s", exc.code, request.url.path, exc.message)
-    return JSONResponse(
+    return _error_response(
         status_code=exc.http_status,
-        content={
-            "success": False,
-            "data": None,
-            "error": exc.to_dict(),
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        request_id=request_id,
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def handle_http_exception(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    """Return Starlette's own errors (404, 405, ...) in the shared envelope.
+
+    Without this, a mistyped URL returned ``{"detail": "Not Found"}`` - a second
+    error shape a front end would have to special-case, produced by the one
+    request every client makes by accident.
+    """
+    codes = {404: "not_found", 405: "method_not_allowed", 401: "unauthorized", 403: "forbidden"}
+    return _error_response(
+        status_code=exc.status_code,
+        code=codes.get(exc.status_code, "http_error"),
+        message=str(exc.detail) if exc.detail else "The request could not be completed.",
+        details={},
+        request_id=getattr(request.state, "request_id", None),
     )
 
 
@@ -99,19 +193,12 @@ async def handle_validation_error(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """Return FastAPI validation problems in the shared envelope."""
-    request_id = getattr(request.state, "request_id", None)
-    return JSONResponse(
+    return _error_response(
         status_code=422,
-        content={
-            "success": False,
-            "data": None,
-            "error": {
-                "code": "request_validation_error",
-                "message": "The request could not be validated.",
-                "details": {"errors": exc.errors()[:10]},
-            },
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code="request_validation_error",
+        message="The request could not be validated.",
+        details={"errors": jsonable_encoder(exc.errors()[:10])},
+        request_id=getattr(request.state, "request_id", None),
     )
 
 
@@ -124,84 +211,83 @@ async def handle_unexpected_error(request: Request, exc: Exception) -> JSONRespo
     """
     request_id = getattr(request.state, "request_id", None)
     logger.exception("Unhandled error on %s (request_id=%s)", request.url.path, request_id)
-    return JSONResponse(
+    return _error_response(
         status_code=500,
-        content={
-            "success": False,
-            "data": None,
-            "error": {
-                "code": "internal_error",
-                "message": "An unexpected error occurred. Check the server log for details.",
-                "details": {"request_id": request_id},
-            },
-            "meta": {"request_id": request_id, "api_version": "v1"},
-        },
+        code="internal_error",
+        message="An unexpected error occurred. Check the server log for details.",
+        details={},
+        request_id=request_id,
     )
 
 
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 
 
+#: The ten modules, in the order the README and the UI present them. This list
+#: is what ``GET /`` serves and what the module-count test asserts against, so a
+#: module cannot be finished without appearing here.
+MODULES: list[dict[str, str]] = [
+    {"id": "po_risk", "number": "1", "name": "Purchase Order Risk Checker", "path": "/po-risk"},
+    {"id": "spend_analytics", "number": "2", "name": "Spend Analytics Dashboard", "path": "/spend"},
+    {
+        "id": "supplier_recommendation",
+        "number": "3",
+        "name": "Supplier Recommendation Engine",
+        "path": "/supplier-recommendations",
+    },
+    {"id": "invoice_validator", "number": "4", "name": "Invoice Validator", "path": "/invoices"},
+    {
+        "id": "supplier_risk_copilot",
+        "number": "5",
+        "name": "Supplier Risk Copilot",
+        "path": "/supplier-risk",
+    },
+    {"id": "contract_assistant", "number": "6", "name": "Contract Assistant", "path": "/contracts"},
+    {"id": "inventory_predictor", "number": "7", "name": "Inventory Predictor", "path": "/inventory"},
+    {
+        "id": "test_case_generator",
+        "number": "8",
+        "name": "SAP Test Case Generator",
+        "path": "/test-cases",
+    },
+    {
+        "id": "blueprint_generator",
+        "number": "9",
+        "name": "SAP Blueprint Generator",
+        "path": "/blueprints",
+    },
+    {"id": "interview_coach", "number": "10", "name": "SAP Interview Coach", "path": "/interviews"},
+]
+
+
 @app.get("/", tags=["System"], summary="API index")
 def index() -> dict[str, object]:
-    """Return a small index of the available modules."""
+    """Return an index of the available modules and where to start.
+
+    The first call a new client makes. It answers "what is here", "where do I
+    read the contract" and "am I allowed to believe these numbers", which is
+    everything needed before the second call.
+    """
     return {
         "app": settings.app_name,
         "version": settings.app_version,
-        "docs": "/docs",
+        "api_version": "v1",
+        "docs": {"swagger": "/docs", "redoc": "/redoc", "openapi": "/openapi.json"},
+        "health": f"{settings.api_v1_prefix}/health",
+        "module_count": len(MODULES),
         "modules": [
             {
-                "id": "po_risk",
-                "name": "Purchase Order Risk Checker",
+                "id": module["id"],
+                "number": int(module["number"]),
+                "name": module["name"],
                 "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/po-risk",
-            },
-            {
-                "id": "spend_analytics",
-                "name": "Spend Analytics Dashboard",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/spend",
-            },
-            {
-                "id": "supplier_recommendation",
-                "name": "Supplier Recommendation Engine",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/supplier-recommendations",
-            },
-            {
-                "id": "invoice_validator",
-                "name": "Invoice Validator",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/invoices",
-            },
-            {
-                "id": "supplier_risk_copilot",
-                "name": "Supplier Risk Copilot",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/supplier-risk",
-            },
-            {
-                "id": "contract_assistant",
-                "name": "Contract Assistant",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/contracts",
-            },
-            {
-                "id": "inventory_predictor",
-                "name": "Inventory Predictor",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/inventory",
-            },
-            {
-                "id": "test_case_generator",
-                "name": "SAP Test Case Generator",
-                "status": "available",
-                "base_path": f"{settings.api_v1_prefix}/test-cases",
-            },
+                "base_path": f"{settings.api_v1_prefix}{module['path']}",
+            }
+            for module in MODULES
         ],
-        "planned_modules": ["blueprint_generator", "interview_coach"],
+        "ai_provider": settings.resolved_ai_provider(),
         "disclaimer": (
             "Demo application. Not connected to any SAP system; no output has been validated "
-            "in a live SAP environment."
+            "in a live SAP environment, and no figure here is a guarantee."
         ),
     }

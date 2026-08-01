@@ -31,6 +31,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.logging import get_logger
 from app.models.session import get_db
 from app.modules.blueprint_generator import service
@@ -82,7 +83,14 @@ EXPORT_EXTENSIONS = {
     ExportFormat.PDF: "pdf",
 }
 
-router = APIRouter(prefix="/blueprints", tags=["Blueprint Generator"])
+router = APIRouter(
+    prefix="/blueprints",
+    tags=["SAP Blueprint Generator"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------

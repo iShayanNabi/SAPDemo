@@ -23,16 +23,37 @@ _REPEATED_DOTS = re.compile(r"\.{2,}")
 _MAX_STEM_LENGTH = 80
 
 # Phrases commonly used to hijack an LLM through uploaded content.
+#
+# ``_FILLER`` is the reason these are written the way they are. The first
+# version required the words to be adjacent - ``disregard\s+(all\s+)?above`` -
+# so it matched "disregard all above rules" and missed "disregard **the** above
+# rules", which is how an English speaker actually writes it. A detector that a
+# determiner defeats is not a detector. The filler group allows the short
+# connecting words that carry no meaning here, and nothing else: the verb and
+# the object still have to be there, which is what keeps ordinary contract prose
+# ("the parties shall disregard the preceding schedule") from matching.
+_FILLER = r"(?:\s+(?:all|any|the|these|those|my|your|our))*"
+
 _INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(r"(?i)ignore\s+(all\s+)?(previous|prior|above)\s+instructions"),
-    re.compile(r"(?i)disregard\s+(all\s+)?(previous|prior|above)\s+(instructions|rules)"),
-    re.compile(r"(?i)forget\s+(everything|all\s+previous)"),
-    re.compile(r"(?i)you\s+are\s+now\s+(a|an)\s+"),
+    re.compile(rf"(?i)ignore{_FILLER}\s+(?:previous|prior|above|preceding|earlier)\s+"
+               r"(?:instructions?|rules?|prompts?|directions?)"),
+    re.compile(rf"(?i)disregard{_FILLER}\s+(?:previous|prior|above|preceding|earlier)\s+"
+               r"(?:instructions?|rules?|prompts?|directions?)"),
+    re.compile(rf"(?i)(?:ignore|disregard|override){_FILLER}\s+"
+               r"(?:system|previous|prior)\s+(?:prompt|message|instruction)s?"),
+    re.compile(r"(?i)forget\s+(?:everything|all\s+(?:previous|prior|of\s+the\s+above))"),
+    re.compile(r"(?i)you\s+are\s+now\s+(?:a|an|the)\s+"),
     re.compile(r"(?i)\bsystem\s*prompt\b"),
     re.compile(r"(?i)\bdeveloper\s+mode\b"),
-    re.compile(r"(?i)reveal\s+(your\s+)?(system\s+)?(prompt|instructions)"),
-    re.compile(r"(?i)print\s+(your\s+)?(api[_\s-]?key|secret|token)"),
-    re.compile(r"(?i)<\s*/?\s*(system|assistant|human)\s*>"),
+    re.compile(r"(?i)\bjailbreak\b"),
+    re.compile(rf"(?i)(?:reveal|show|repeat|output|print){_FILLER}\s+"
+               r"(?:system\s+)?(?:prompt|instructions?)"),
+    re.compile(rf"(?i)(?:print|reveal|output|send|email){_FILLER}\s+"
+               r"(?:api[_\s-]?key|secret|token|credentials?|password)"),
+    re.compile(r"(?i)<\s*/?\s*(?:system|assistant|human|user)\s*>"),
+    re.compile(r"(?i)\[\s*(?:system|assistant|inst)\s*\]"),
+    re.compile(r"(?i)\bnew\s+instructions?\s*:"),
+    re.compile(r"(?i)\bas\s+an\s+ai\s+(?:language\s+)?model\b"),
 )
 
 _INJECTION_PLACEHOLDER = "[filtered]"

@@ -93,7 +93,7 @@ class FieldRegistry:
         definition = self.by_name.get(name)
         return definition.label if definition else name
 
-    def extend(self, extra: tuple[FieldDefinition, ...]) -> "FieldRegistry":
+    def extend(self, extra: tuple[FieldDefinition, ...]) -> FieldRegistry:
         """Return a new registry with ``extra`` fields appended.
 
         Used by the spend module to reuse the purchase order contract and add
@@ -101,7 +101,7 @@ class FieldRegistry:
         """
         return FieldRegistry(self.definitions + extra)
 
-    def with_required(self, required: tuple[str, ...]) -> "FieldRegistry":
+    def with_required(self, required: tuple[str, ...]) -> FieldRegistry:
         """Return a copy where exactly ``required`` fields are mandatory.
 
         Two modules can share the same field definitions but disagree about

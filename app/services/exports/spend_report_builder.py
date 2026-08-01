@@ -17,7 +17,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -25,6 +25,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -107,7 +108,7 @@ def build_spend_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full spend analysis payload as JSON."""
     document = {
         "report_type": "sap_spend_analysis",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": spend_disclaimer(),
         **payload,
     }
@@ -138,13 +139,12 @@ def build_spend_xlsx_report(payload: dict[str, Any]) -> bytes:
     _transaction_sheet(workbook.create_sheet("Transactions"), payload.get("transactions", []))
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info(
         "Built spend XLSX report: %d transactions, %d opportunities",
         len(payload.get("transactions", [])), len(payload.get("opportunities", [])),
     )
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

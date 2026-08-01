@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin
 
 
 class ExportFormat(str, Enum):
@@ -81,7 +81,24 @@ class SpendFilterSchema(BaseModel):
 class SpendAnalyzeRequest(BaseModel):
     """Request body for ``POST /spend/analyze``."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {"upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246", "generate_ai_summary": True},
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "filters": {
+                        "date_from": "2026-01-01",
+                        "date_to": "2026-06-30",
+                        "category": ["Indirect materials"],
+                    },
+                    "top_n": 20,
+                    "generate_ai_summary": False,
+                },
+            ]
+        },
+    )
 
     upload_id: str = Field(min_length=8, max_length=64)
     column_mapping_overrides: dict[str, str] = Field(default_factory=dict)
@@ -151,7 +168,7 @@ class SavingsOpportunitySchema(BaseModel):
     gross_saving_base: float
     realization_factor: float
     estimated_saving_base: float
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     transaction_count: int
     supplier_count: int
     evidence: dict[str, Any] = Field(default_factory=dict)
@@ -218,7 +235,7 @@ class SpendAnalysisSummarySchema(BaseModel):
     """Compact analysis record used by the list endpoint."""
 
     analysis_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     base_currency: str
     total_spend: float
@@ -237,7 +254,7 @@ class SpendAnalysisDetailSchema(BaseModel):
 
     analysis_id: str
     upload_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     created_at: datetime
     completed_at: datetime | None = None
@@ -248,7 +265,7 @@ class SpendAnalysisDetailSchema(BaseModel):
     savings_engine_version: str
     applied_mapping: dict[str, str]
     unmapped_columns: list[str]
-    data_quality_issues: list[dict[str, Any]] = Field(default_factory=list)
+    data_quality_issues: list[DataQualityIssueSchema] = Field(default_factory=list)
 
     applied_filter: dict[str, Any] = Field(default_factory=dict)
     filter_options: dict[str, list[str]] = Field(default_factory=dict)
@@ -288,10 +305,17 @@ class SpendTransactionListResponse(BaseModel):
 
 
 class SpendOpportunityListResponse(BaseModel):
-    """Savings opportunities with their standing disclaimer."""
+    """Savings opportunities with their standing disclaimer.
+
+    ``limit`` and ``offset`` echo the window that was served. The endpoint has
+    always paged; without them a client holding 100 of 137 opportunities had no
+    way to tell that from holding all of them.
+    """
 
     analysis_id: str
     total: int
+    limit: int
+    offset: int
     total_estimated_saving_base: float
     base_currency: str
     disclaimer: str
@@ -317,7 +341,7 @@ class SavingsRuleInfoSchema(BaseModel):
     name: str
     enabled: bool
     description: str
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     realization_factor: float
     params: dict[str, Any] = Field(default_factory=dict)
 

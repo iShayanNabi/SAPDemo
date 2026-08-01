@@ -35,7 +35,6 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -45,7 +44,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class Blueprint(Base, TimestampMixin):
@@ -112,13 +111,13 @@ class Blueprint(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    sections: Mapped[list["BlueprintSection"]] = relationship(
+    sections: Mapped[list[BlueprintSection]] = relationship(
         back_populates="blueprint",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="BlueprintSection.position",
     )
-    versions: Mapped[list["BlueprintVersion"]] = relationship(
+    versions: Mapped[list[BlueprintVersion]] = relationship(
         back_populates="blueprint",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -157,7 +156,7 @@ class BlueprintSection(Base, TimestampMixin):
     comments: Mapped[str] = mapped_column(Text, default="")
     approved_by: Mapped[str | None] = mapped_column(String(120), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        UtcDateTime(), nullable=True
     )
 
     #: Required project fields the request left empty. Non-empty means the

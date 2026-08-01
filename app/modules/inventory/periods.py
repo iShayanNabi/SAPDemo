@@ -105,7 +105,7 @@ class PeriodGrid:
     origin: date
 
     @classmethod
-    def build(cls, frequency: str, first_date: date, config: InventoryConfig) -> "PeriodGrid":
+    def build(cls, frequency: str, first_date: date, config: InventoryConfig) -> PeriodGrid:
         """Build the grid a series of this frequency lives on."""
         spec = config.period.spec(frequency)
         return cls(

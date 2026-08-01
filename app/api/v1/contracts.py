@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -52,6 +53,7 @@ from app.services.exports.contract_report_builder import (
     build_contract_json_report,
     build_contract_xlsx_report,
 )
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
@@ -69,7 +71,14 @@ SAMPLE_MEDIA_TYPES = {
     "txt": "text/plain",
 }
 
-router = APIRouter(prefix="/contracts", tags=["Contract Assistant"])
+router = APIRouter(
+    prefix="/contracts",
+    tags=["Contract Assistant"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -92,13 +101,9 @@ async def upload(
     is accepted, reported as ``needs_ocr`` and explained - never silently
     analysed as an empty contract.
     """
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded document is empty.")
-    if len(content) > settings.max_document_bytes:
-        raise FileValidationError(
-            f"The document exceeds the {settings.max_document_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(
+        file, max_bytes=settings.max_document_bytes, what="document"
+    )
     return ApiResponse.ok(service.handle_upload(db, file.filename or "contract", content))
 
 

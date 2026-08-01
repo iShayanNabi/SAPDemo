@@ -18,9 +18,9 @@ from typing import Any
 import pandas as pd
 
 from app.core.logging import get_logger
-from app.schemas.common import Severity
 from app.modules.po_risk.rules import RULE_CLASSES, RuleContext, RuleFinding
 from app.modules.po_risk.thresholds import PoRiskConfig, get_rule_config
+from app.schemas.common import Severity
 
 logger = get_logger(__name__)
 

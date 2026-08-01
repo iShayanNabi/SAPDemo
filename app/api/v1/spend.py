@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -32,10 +33,18 @@ from app.schemas.spend import (
     SpendTransactionListResponse,
     SpendUploadResponse,
 )
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/spend", tags=["Spend Analytics Dashboard"])
+router = APIRouter(
+    prefix="/spend",
+    tags=["Spend Analytics Dashboard"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 DbSession = Annotated[Session, Depends(get_db)]
 
@@ -52,13 +61,7 @@ async def upload_file(
     file: Annotated[UploadFile, File(description="CSV, XLSX or JSON procurement transactions")],
 ) -> ApiResponse[SpendUploadResponse]:
     """Validate a spend file, store it and suggest a column mapping."""
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded file is empty.")
-    if len(content) > settings.max_upload_bytes:
-        raise FileValidationError(
-            f"The file exceeds the {settings.max_upload_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(file)
     return ApiResponse.ok(service.handle_upload(db, file.filename or "upload", content))
 
 
@@ -185,6 +188,8 @@ def list_opportunities(
         SpendOpportunityListResponse(
             analysis_id=analysis_id,
             total=total,
+            limit=limit,
+            offset=offset,
             total_estimated_saving_base=total_saving,
             base_currency=config.base_currency,
             disclaimer=config.reporting.opportunity_disclaimer,

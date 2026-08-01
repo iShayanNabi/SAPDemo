@@ -30,7 +30,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -40,7 +39,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class Contract(Base, TimestampMixin):
@@ -105,7 +104,7 @@ class Contract(Base, TimestampMixin):
     config_version: Mapped[str] = mapped_column(String(20), default="0.0.0")
     engine_version: Mapped[str] = mapped_column(String(20), default="0.0.0")
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    analyzed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    analyzed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     # -- optional AI narrative ------------------------------------------
     ai_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
@@ -119,16 +118,16 @@ class Contract(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    pages: Mapped[list["ContractPage"]] = relationship(
+    pages: Mapped[list[ContractPage]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    clauses: Mapped[list["ContractClause"]] = relationship(
+    clauses: Mapped[list[ContractClause]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    risks: Mapped[list["ContractRisk"]] = relationship(
+    risks: Mapped[list[ContractRisk]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
-    obligations: Mapped[list["ContractObligation"]] = relationship(
+    obligations: Mapped[list[ContractObligation]] = relationship(
         back_populates="contract", cascade="all, delete-orphan", passive_deletes=True
     )
 

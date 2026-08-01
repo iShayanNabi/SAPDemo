@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin
 
 
 class ExportFormat(str, Enum):
@@ -60,7 +60,7 @@ class SupplierUploadResponse(BaseModel):
     mapping_suggestions: list[ColumnSuggestionSchema]
     unmapped_columns: list[str]
     missing_required_fields: list[str]
-    data_quality_issues: list[dict[str, Any]] = Field(default_factory=list)
+    data_quality_issues: list[DataQualityIssueSchema] = Field(default_factory=list)
     parser_notes: list[str] = Field(default_factory=list)
 
 
@@ -182,7 +182,7 @@ class RecommendationDetailSchema(BaseModel):
 
     recommendation_id: str
     catalog_id: str
-    status: str
+    status: AnalysisStatus
     created_at: datetime
     completed_at: datetime | None = None
     duration_ms: int
@@ -210,7 +210,7 @@ class RecommendationSummarySchema(BaseModel):
 
     recommendation_id: str
     catalog_id: str
-    status: str
+    status: AnalysisStatus
     base_currency: str
     material: str | None = None
     total_supplier_count: int

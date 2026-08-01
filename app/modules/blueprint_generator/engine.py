@@ -25,8 +25,9 @@ complete" into "the executive summary was written against an earlier scope".
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from app.core.logging import get_logger
 from app.core.rounding import round_half_up

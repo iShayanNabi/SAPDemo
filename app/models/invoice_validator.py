@@ -19,7 +19,6 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -30,7 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, utc_now
+from app.models.base import Base, TimestampMixin, UtcDateTime, utc_now
 
 
 class InvoiceValidation(Base, TimestampMixin):
@@ -96,9 +95,9 @@ class InvoiceValidation(Base, TimestampMixin):
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
-    exceptions: Mapped[list["InvoiceException"]] = relationship(
+    exceptions: Mapped[list[InvoiceException]] = relationship(
         back_populates="validation", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -143,7 +142,7 @@ class InvoiceException(Base):
     ai_output_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utc_now, nullable=False
+        UtcDateTime(), default=utc_now, nullable=False
     )
 
     validation: Mapped[InvoiceValidation] = relationship(back_populates="exceptions")

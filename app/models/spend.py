@@ -24,7 +24,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -35,7 +34,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class SpendAnalysis(Base, TimestampMixin):
@@ -98,12 +97,12 @@ class SpendAnalysis(Base, TimestampMixin):
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
-    transactions: Mapped[list["SpendTransaction"]] = relationship(
+    transactions: Mapped[list[SpendTransaction]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
-    opportunities: Mapped[list["SpendOpportunity"]] = relationship(
+    opportunities: Mapped[list[SpendOpportunity]] = relationship(
         back_populates="analysis", cascade="all, delete-orphan", passive_deletes=True
     )
 

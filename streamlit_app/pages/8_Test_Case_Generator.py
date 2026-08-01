@@ -23,7 +23,12 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
-from streamlit_app.components.ui import disclaimer, origin_badge, show_error  # noqa: E402
+from streamlit_app.components.ui import (  # noqa: E402
+    disclaimer,
+    escape_html,
+    origin_badge,
+    show_error,
+)
 
 st.set_page_config(page_title="SAP Test Case Generator", page_icon="🧪", layout="wide")
 
@@ -480,7 +485,7 @@ case = by_id[selected_id]
 head_left, head_right = st.columns([3, 1])
 with head_left:
     st.markdown(
-        f"### {case['test_case_id']} {_priority_badge(case['priority'])}",
+        f"### {escape_html(case['test_case_id'])} {_priority_badge(case['priority'])}",
         unsafe_allow_html=True,
     )
     st.caption(
@@ -504,79 +509,78 @@ script_tab, execution_tab, actions_tab = st.tabs(
     ["Script", "Execution result", "Regenerate, duplicate, delete"]
 )
 
-with script_tab:
-    with st.form(f"tcg_script_{case['id']}"):
-        title = st.text_input("Title", value=case["title"])
-        objective = st.text_area("Objective", value=case["objective"], height=80)
-        col_p, col_d = st.columns(2)
-        with col_p:
-            preconditions_text = st.text_area(
-                "Preconditions (one per line)",
-                value="\n".join(case["preconditions"]),
-                height=140,
-            )
-        with col_d:
-            test_data_text = st.text_area(
-                "Test data (one per line)", value="\n".join(case["test_data"]), height=140
-            )
-
-        st.markdown("**Test steps** - the numbering is rewritten by the backend on save.")
-        steps_frame = st.data_editor(
-            pd.DataFrame(
-                [
-                    {
-                        "Step": step["step_number"],
-                        "Action": step["action"],
-                        "Step test data": step.get("test_data") or "",
-                        "Step expected result": step.get("expected_result") or "",
-                    }
-                    for step in case["steps"]
-                ]
-            ),
-            use_container_width=True,
-            hide_index=True,
-            num_rows="dynamic",
-            disabled=["Step"],
-            key=f"tcg_steps_{case['id']}",
+with script_tab, st.form(f"tcg_script_{case['id']}"):
+    title = st.text_input("Title", value=case["title"])
+    objective = st.text_area("Objective", value=case["objective"], height=80)
+    col_p, col_d = st.columns(2)
+    with col_p:
+        preconditions_text = st.text_area(
+            "Preconditions (one per line)",
+            value="\n".join(case["preconditions"]),
+            height=140,
         )
-        expected_result = st.text_area(
-            "Overall expected result", value=case["expected_result"], height=80
+    with col_d:
+        test_data_text = st.text_area(
+            "Test data (one per line)", value="\n".join(case["test_data"]), height=140
         )
-        owner = st.text_input("Owner", value=case["owner"])
-        comments = st.text_area("Comments", value=case["comments"], height=70)
 
-        if st.form_submit_button("Save this test case", type="primary"):
-            steps = [
+    st.markdown("**Test steps** - the numbering is rewritten by the backend on save.")
+    steps_frame = st.data_editor(
+        pd.DataFrame(
+            [
                 {
-                    "action": str(row["Action"]).strip(),
-                    "test_data": str(row["Step test data"]).strip() or None,
-                    "expected_result": str(row["Step expected result"]).strip() or None,
+                    "Step": step["step_number"],
+                    "Action": step["action"],
+                    "Step test data": step.get("test_data") or "",
+                    "Step expected result": step.get("expected_result") or "",
                 }
-                for _, row in steps_frame.iterrows()
-                if str(row["Action"]).strip()
+                for step in case["steps"]
             ]
-            if not steps:
-                st.error("A test case must keep at least one step.")
-            else:
-                try:
-                    client.test_case_update(
-                        case["id"],
-                        {
-                            "title": title,
-                            "objective": objective,
-                            "preconditions": _lines(preconditions_text),
-                            "test_data": _lines(test_data_text),
-                            "steps": steps,
-                            "expected_result": expected_result,
-                            "owner": owner,
-                            "comments": comments,
-                        },
-                    )
-                    st.success("Saved.")
-                    refresh()
-                    st.rerun()
-                except ApiError as error:
-                    show_error(error.message, error.details)
+        ),
+        use_container_width=True,
+        hide_index=True,
+        num_rows="dynamic",
+        disabled=["Step"],
+        key=f"tcg_steps_{case['id']}",
+    )
+    expected_result = st.text_area(
+        "Overall expected result", value=case["expected_result"], height=80
+    )
+    owner = st.text_input("Owner", value=case["owner"])
+    comments = st.text_area("Comments", value=case["comments"], height=70)
+
+    if st.form_submit_button("Save this test case", type="primary"):
+        steps = [
+            {
+                "action": str(row["Action"]).strip(),
+                "test_data": str(row["Step test data"]).strip() or None,
+                "expected_result": str(row["Step expected result"]).strip() or None,
+            }
+            for _, row in steps_frame.iterrows()
+            if str(row["Action"]).strip()
+        ]
+        if not steps:
+            st.error("A test case must keep at least one step.")
+        else:
+            try:
+                client.test_case_update(
+                    case["id"],
+                    {
+                        "title": title,
+                        "objective": objective,
+                        "preconditions": _lines(preconditions_text),
+                        "test_data": _lines(test_data_text),
+                        "steps": steps,
+                        "expected_result": expected_result,
+                        "owner": owner,
+                        "comments": comments,
+                    },
+                )
+                st.success("Saved.")
+                refresh()
+                st.rerun()
+            except ApiError as error:
+                show_error(error.message, error.details)
 
 with execution_tab:
     st.caption(

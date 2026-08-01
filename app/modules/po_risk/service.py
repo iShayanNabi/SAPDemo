@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
+from app.models.ordering import severity_rank
 from app.models.po_risk import PoAnalysis, PoFinding, PoRecord, UploadedFile
 from app.modules.po_risk.ai_narrative import NarrativeService
 from app.modules.po_risk.column_mapping import (
@@ -246,7 +247,7 @@ def _persist_analysis(
         estimated_exposure=summary["estimated_exposure_base"],
         risk_score=summary["risk_score"],
         duration_ms=duration_ms,
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
 
     if narrative is not None:
@@ -371,15 +372,15 @@ def list_findings(
         count_statement = count_statement.where(PoFinding.po_number == po_number)
 
     total = db.scalar(count_statement) or 0
-    severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    # Severity first, then the largest exposure. Ordered and paged in SQL: the
+    # previous version read every matching finding into memory to return 25 of
+    # them, which is fine for 131 demo rows and is not for a 200,000 line file.
+    statement = statement.order_by(
+        severity_rank(PoFinding.severity),
+        PoFinding.estimated_financial_exposure.desc().nullslast(),
+        PoFinding.id,
+    ).limit(limit).offset(offset)
     rows = db.scalars(statement).all()
-    rows = sorted(
-        rows,
-        key=lambda row: (
-            severity_order.get(row.severity, 9),
-            -float(row.estimated_financial_exposure or 0.0),
-        ),
-    )[offset : offset + limit]
     return total, [_to_finding_schema(row) for row in rows]
 
 
@@ -407,7 +408,7 @@ def export_analysis(
         "findings": findings_payload,
     }
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     if export_format is ExportFormat.XLSX:
         return (
             build_xlsx_report(payload),

@@ -19,7 +19,7 @@ without the original upload still being on disk.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -286,7 +286,7 @@ def _persist_analysis(
     contract.config_version = result.config_version
     contract.engine_version = result.engine_version
     contract.duration_ms = result.duration_ms
-    contract.analyzed_at = datetime.now(timezone.utc)
+    contract.analyzed_at = datetime.now(UTC)
 
     db.bulk_insert_mappings(
         ContractClause,

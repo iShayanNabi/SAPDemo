@@ -319,18 +319,7 @@ def test_category_weights_are_renormalised_over_available_categories(supplier_ri
 def test_overall_score_is_withheld_when_too_few_categories_have_data(supplier_risk_config):
     """The lab withholds an overall figure rather than computing it from a fragment."""
     sparse = make_risk_profile(
-        **{
-            name: None
-            for name in (
-                "quality_score", "defect_rate", "quality_incident_count", "credit_score",
-                "payment_default_count", "financial_distress_flag", "category_spend_share",
-                "single_source_material_count", "alternative_supplier_count", "contract_status",
-                "contract_expiration", "invoice_count", "invoice_exception_count",
-                "disputed_invoice_count", "compliance_finding_count", "certification_status",
-                "audit_status", "esg_score", "country", "capacity_utilization",
-                "lead_time_variability_days", "lead_time_days",
-            )
-        },
+        **dict.fromkeys(("quality_score", "defect_rate", "quality_incident_count", "credit_score", "payment_default_count", "financial_distress_flag", "category_spend_share", "single_source_material_count", "alternative_supplier_count", "contract_status", "contract_expiration", "invoice_count", "invoice_exception_count", "disputed_invoice_count", "compliance_finding_count", "certification_status", "audit_status", "esg_score", "country", "capacity_utilization", "lead_time_variability_days", "lead_time_days")),
         regions_served=[],
     )
 

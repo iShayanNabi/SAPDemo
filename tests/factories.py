@@ -191,7 +191,7 @@ def make_spend_rows(count: int, **overrides: Any) -> list[dict[str, Any]]:
     return rows
 
 
-def make_spend_frame(rows: list[dict[str, Any]], config: Any = None) -> "pd.DataFrame":
+def make_spend_frame(rows: list[dict[str, Any]], config: Any = None) -> pd.DataFrame:
     """Run spend rows through the real normaliser to get a canonical frame."""
     from app.modules.spend.field_definitions import CANONICAL_FIELDS as SPEND_FIELDS
     from app.modules.spend.normalizer import normalize_spend_dataframe

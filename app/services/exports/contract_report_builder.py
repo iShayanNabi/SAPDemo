@@ -20,7 +20,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -28,6 +28,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -113,7 +114,7 @@ def build_contract_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full contract payload as JSON."""
     document = {
         "report_type": "sap_contract_analysis",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": contract_disclaimer(),
         **payload,
     }
@@ -146,15 +147,14 @@ def build_contract_xlsx_report(payload: dict[str, Any]) -> bytes:
     _table_sheet(workbook.create_sheet("Risks"), payload.get("risks", []), RISK_COLUMNS)
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info(
         "Built contract XLSX: %d clauses, %d risks, %d obligations",
         len(payload.get("clauses", [])),
         len(payload.get("risks", [])),
         len(payload.get("obligations", [])),
     )
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

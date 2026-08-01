@@ -20,7 +20,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, IssueSeverity, OutputOrigin
 
 
 class ExportFormat(str, Enum):
@@ -62,21 +62,8 @@ class ColumnSuggestionSchema(BaseModel):
 
     source_column: str
     canonical_field: str
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     strategy: str
-
-
-class DataQualityIssueSchema(BaseModel):
-    """A non-fatal problem found while loading the file."""
-
-    field_name: str = Field(alias="field")
-    issue_type: str
-    message: str
-    affected_rows: int
-    sample_rows: list[int] = Field(default_factory=list)
-    severity: str = "warning"
-
-    model_config = ConfigDict(populate_by_name=True)
 
 
 class InventoryFieldDefinitionSchema(BaseModel):
@@ -116,6 +103,8 @@ class InventoryUploadResponse(BaseModel):
     dataset_id: str | None = None
     upload_id: str
     filename: str
+    file_extension: str = ""
+    size_bytes: int = 0
     row_count: int
     series_count: int = 0
     material_count: int = 0
@@ -414,7 +403,7 @@ class SeriesWarningSchema(BaseModel):
 
     code: str
     message: str
-    severity: str = "warning"
+    severity: IssueSeverity = IssueSeverity.WARNING
 
 
 class ForecastItemSummarySchema(BaseModel):
@@ -561,7 +550,7 @@ class ForecastDetailSchema(BaseModel):
 
     forecast_id: str
     dataset_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str | None = None
     config_version: str
     engine_version: str

@@ -105,7 +105,7 @@ class ClaritySettings(BaseModel):
                 "clarity.hard_average_sentence_words"
             )
 
-    def merged_with(self, overrides: dict[str, Any] | None) -> "ClaritySettings":
+    def merged_with(self, overrides: dict[str, Any] | None) -> ClaritySettings:
         """Return a copy with the mode's clarity overrides applied.
 
         A rapid-fire answer is not a short essay: the mode may narrow the length

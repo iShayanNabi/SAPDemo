@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -124,6 +124,8 @@ def handle_upload(db: Session, filename: str, content: bytes) -> InventoryUpload
     response = InventoryUploadResponse(
         upload_id=upload.id,
         filename=validated.original_filename,
+        file_extension=validated.extension,
+        size_bytes=validated.size_bytes,
         row_count=read_result.row_count,
         detected_columns=list(read_result.source_columns),
         suggested_mapping=dict(mapping_result.mapping),
@@ -400,7 +402,7 @@ def forecast(db: Session, request: ForecastRequest) -> ForecastDetailSchema:
         frequency_counts=dict(result.frequency_counts),
         warning_counts=dict(result.warning_counts),
         series_errors=list(result.series_errors),
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
     db.add(row)
     db.flush()
@@ -877,7 +879,7 @@ def export_forecast(
         "items": item_payloads,
     }
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     if export_format is ExportFormat.XLSX:
         content = build_inventory_xlsx_report(payload)
     elif export_format is ExportFormat.CSV:

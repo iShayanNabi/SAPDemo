@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -41,6 +42,7 @@ from app.schemas.supplier_risk import (
     SupplierRiskUploadResponse,
 )
 from app.services.ai.factory import describe_active_provider
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
@@ -57,7 +59,14 @@ SAMPLE_STEMS = {
     RiskDatasetKind.EVENTS: "sample_supplier_risk_events",
 }
 
-router = APIRouter(prefix="/supplier-risk", tags=["Supplier Risk Copilot"])
+router = APIRouter(
+    prefix="/supplier-risk",
+    tags=["Supplier Risk Copilot"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -81,13 +90,7 @@ async def upload(
     ``profiles`` starts a new dataset; ``events`` attaches the dated internal
     records that drive the risk trend and the copilot's citations.
     """
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded file is empty.")
-    if len(content) > settings.max_upload_bytes:
-        raise FileValidationError(
-            f"The file exceeds the {settings.max_upload_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(file)
     return ApiResponse.ok(
         service.handle_upload(db, file.filename or "upload", content, dataset, dataset_id)
     )

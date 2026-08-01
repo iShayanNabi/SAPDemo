@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.api.openapi import COMMON_ERROR_RESPONSES
 from app.core.config import settings
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
@@ -31,10 +32,18 @@ from app.schemas.po_risk import (
     UploadResponse,
 )
 from app.services.ai.factory import describe_active_provider
+from app.services.files.uploads import read_upload_within_limit
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/po-risk", tags=["Purchase Order Risk Checker"])
+router = APIRouter(
+    prefix="/po-risk",
+    tags=["Purchase Order Risk Checker"],
+    # The error shapes every route in this module can return, documented
+    # once so a generated client writes its error handling against the
+    # contract rather than against whatever it happened to hit first.
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 DbSession = Annotated[Session, Depends(get_db)]
 
@@ -45,13 +54,7 @@ async def upload_file(
     file: Annotated[UploadFile, File(description="CSV, XLSX or JSON purchase order export")],
 ) -> ApiResponse[UploadResponse]:
     """Validate a purchase order file, store it and suggest a column mapping."""
-    content = await file.read()
-    if not content:
-        raise FileValidationError("The uploaded file is empty.")
-    if len(content) > settings.max_upload_bytes:
-        raise FileValidationError(
-            f"The file exceeds the {settings.max_upload_bytes // (1024 * 1024)} MB limit."
-        )
+    content = await read_upload_within_limit(file)
     result = service.handle_upload(db, file.filename or "upload", content)
     return ApiResponse.ok(result)
 

@@ -23,13 +23,12 @@ import re
 from dataclasses import dataclass, field
 
 from app.core.logging import get_logger
+from app.modules.test_case_generator.thresholds import TestCaseGeneratorConfig
 from app.schemas.test_case_generator import (
-    TEST_TYPE_ORDER,
     ProcessContextSchema,
     TestPriority,
     TestType,
 )
-from app.modules.test_case_generator.thresholds import TestCaseGeneratorConfig
 
 logger = get_logger(__name__)
 
@@ -159,14 +158,14 @@ def allocate(
         return {}, []
 
     if count < len(ordered):
-        return {item: 1 for item in ordered[:count]}, ordered[count:]
+        return dict.fromkeys(ordered[:count], 1), ordered[count:]
 
     by_weight = sorted(
         ordered,
         key=lambda item: (-config.allocation.weight_for(item), ordered.index(item)),
     )
     base, remainder = divmod(count, len(ordered))
-    allocation = {item: base for item in ordered}
+    allocation = dict.fromkeys(ordered, base)
     for index in range(remainder):
         allocation[by_weight[index % len(by_weight)]] += 1
     return allocation, []

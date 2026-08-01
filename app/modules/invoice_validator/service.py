@@ -21,8 +21,9 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import date, datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable
+from datetime import UTC, date, datetime
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -30,6 +31,7 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.models.invoice_validator import InvoiceException, InvoiceValidation
+from app.models.ordering import severity_rank
 from app.models.po_risk import UploadedFile
 from app.modules.invoice_validator.ai_narrative import InvoiceNarrativeService
 from app.modules.invoice_validator.engine import ENGINE_VERSION, InvoiceValidationEngine
@@ -97,7 +99,6 @@ _DATASET_SPECS: dict[DatasetKind, tuple[FieldRegistry, tuple[str, ...], Callable
     ),
 }
 
-_SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
 # ---------------------------------------------------------------------------
@@ -298,7 +299,7 @@ def _persist_validation(
         estimated_exposure=summary["estimated_exposure_base"],
         exception_score=summary["exception_score"],
         duration_ms=duration_ms,
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
 
     if narrative is not None:
@@ -494,14 +495,13 @@ def list_exceptions(
         count_statement = _apply(count_statement, InvoiceException.po_number == po_number)
 
     total = db.scalar(count_statement) or 0
+    # Ordered and paged in SQL - see app/models/ordering.py for why.
+    statement = statement.order_by(
+        severity_rank(InvoiceException.severity),
+        InvoiceException.difference_amount.desc().nullslast(),
+        InvoiceException.id,
+    ).limit(limit).offset(offset)
     rows = db.scalars(statement).all()
-    rows = sorted(
-        rows,
-        key=lambda row: (
-            _SEVERITY_ORDER.get(row.severity, 9),
-            -float(row.difference_amount or 0.0),
-        ),
-    )[offset : offset + limit]
     return total, [_to_exception_schema(row) for row in rows]
 
 
@@ -511,12 +511,14 @@ def export_validation(
     """Build a downloadable report. Returns ``(content, filename, media_type)``."""
     validation = _require_validation(db, validation_id)
     exceptions = db.scalars(
-        select(InvoiceException).where(InvoiceException.validation_id == validation_id)
+        select(InvoiceException)
+        .where(InvoiceException.validation_id == validation_id)
+        .order_by(
+            severity_rank(InvoiceException.severity),
+            InvoiceException.difference_amount.desc().nullslast(),
+            InvoiceException.id,
+        )
     ).all()
-    exceptions = sorted(
-        exceptions,
-        key=lambda row: (_SEVERITY_ORDER.get(row.severity, 9), -float(row.difference_amount or 0.0)),
-    )
     exceptions_payload = [_to_exception_schema(row).model_dump(mode="json") for row in exceptions]
 
     payload: dict[str, Any] = {
@@ -536,7 +538,7 @@ def export_validation(
         "exceptions": exceptions_payload,
     }
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     if export_format is ExportFormat.XLSX:
         return (
             build_invoice_validator_xlsx_report(payload),

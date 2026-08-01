@@ -335,7 +335,7 @@ if analysis:
             severity_frame, x="Severity", y="Findings", color="Severity",
             color_discrete_map={k.capitalize(): v for k, v in SEVERITY_COLORS.items()},
         )
-        figure.update_layout(showlegend=False, height=340, margin=dict(t=10, b=10))
+        figure.update_layout(showlegend=False, height=340, margin={"t": 10, "b": 10})
         st.plotly_chart(figure, use_container_width=True)
 
     with chart_right:
@@ -346,7 +346,7 @@ if analysis:
                 [{"Category": key, "Findings": value} for key, value in category_counts.items()]
             ).sort_values("Findings", ascending=True)
             figure = px.bar(category_frame, x="Findings", y="Category", orientation="h")
-            figure.update_layout(height=340, margin=dict(t=10, b=10))
+            figure.update_layout(height=340, margin={"t": 10, "b": 10})
             st.plotly_chart(figure, use_container_width=True)
         else:
             st.info("No findings were raised for this dataset.")

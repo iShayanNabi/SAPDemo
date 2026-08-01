@@ -31,8 +31,9 @@ Two rules the module rests on:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from app.core.logging import get_logger
 from app.modules.blueprint_generator.planning import DerivedItem, SectionSlot, field_label

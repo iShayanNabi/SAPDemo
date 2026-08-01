@@ -71,7 +71,7 @@ class SpendFilter:
         date_from: date | None = None,
         date_to: date | None = None,
         values: dict[str, list[str]] | None = None,
-    ) -> "SpendFilter":
+    ) -> SpendFilter:
         """Build a filter, dropping empty selections."""
         cleaned = {
             name: [str(v) for v in selected if str(v).strip()]
@@ -110,7 +110,13 @@ def apply_filter(frame: pd.DataFrame, spend_filter: SpendFilter | None) -> pd.Da
         if not selected or name not in frame.columns:
             continue
         accepted = {str(value) for value in selected}
-        mask &= frame[name].map(lambda v: v is not None and str(v) in accepted)
+        # ``accepted`` is bound as a default argument rather than captured. The
+        # map runs eagerly, so late binding does not bite today - but the day
+        # this loop collects its masks instead of combining them in place, every
+        # column would silently be filtered by the *last* field's value set.
+        mask &= frame[name].map(
+            lambda v, accepted=accepted: v is not None and str(v) in accepted
+        )
 
     return frame[mask]
 

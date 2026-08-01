@@ -1,0 +1,22 @@
+{
+  "name": "sap-ai-lab-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example TypeScript client for the SAP AI Application Lab API. Copy it into your app and edit it; it is a reference, not a dependency.",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "demo": "ts-node src/examples.ts",
+    "generate:types": "openapi-typescript ../../docs/openapi.json -o src/schema.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "openapi-typescript": "^7.4.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

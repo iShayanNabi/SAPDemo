@@ -120,14 +120,19 @@ with sample_col:
         )
         for file_format in ("csv", "xlsx", "json"):
             try:
-                st.download_button(
-                    f"Download demo .{file_format}",
-                    data=client.inventory_sample_file(file_format),
-                    file_name=f"sample_inventory_history.{file_format}",
-                    key=f"inv_sample_{file_format}",
-                )
-            except ApiError:
-                pass
+                payload = client.inventory_sample_file(file_format)
+            except ApiError as error:
+                # Say which format is unavailable and why. A button that
+                # silently fails to appear looks like a page that is still
+                # loading, and the user waits for it.
+                st.caption(f"Demo .{file_format} is unavailable: {error.message}")
+                continue
+            st.download_button(
+                f"Download demo .{file_format}",
+                data=payload,
+                file_name=f"sample_inventory_history.{file_format}",
+                key=f"inv_sample_{file_format}",
+            )
     else:
         st.caption(
             "No demo dataset yet. Generate it with: "

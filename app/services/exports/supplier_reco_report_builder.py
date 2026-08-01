@@ -16,7 +16,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -24,6 +24,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -75,7 +76,7 @@ def build_supplier_reco_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full recommendation payload as JSON."""
     document = {
         "report_type": "sap_supplier_recommendation",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": supplier_reco_disclaimer(),
         **payload,
     }
@@ -103,12 +104,11 @@ def build_supplier_reco_xlsx_report(payload: dict[str, Any]) -> bytes:
     _breakdown_sheet(workbook.create_sheet("Score Breakdown"), payload.get("results", []))
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info(
         "Built supplier recommendation XLSX: %d ranked entries", len(payload.get("results", []))
     )
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

@@ -30,7 +30,6 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -40,7 +39,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class TestSuite(Base, TimestampMixin):
@@ -94,7 +93,7 @@ class TestSuite(Base, TimestampMixin):
     ai_estimated_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    test_cases: Mapped[list["TestCase"]] = relationship(
+    test_cases: Mapped[list[TestCase]] = relationship(
         back_populates="suite",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -142,11 +141,11 @@ class TestCase(Base, TimestampMixin):
     execution_is_stale: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     approved_by: Mapped[str | None] = mapped_column(String(120), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        UtcDateTime(), nullable=True
     )
     executed_by: Mapped[str | None] = mapped_column(String(120), nullable=True)
     executed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        UtcDateTime(), nullable=True
     )
 
     # -- provenance --------------------------------------------------------

@@ -6,8 +6,8 @@
 
 from __future__ import annotations
 
-from app.schemas.common import Severity
 from app.modules.po_risk.rules.base import BaseRule, RuleContext, RuleFinding
+from app.schemas.common import Severity
 
 
 class SupplierConcentrationRule(BaseRule):

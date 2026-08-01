@@ -27,7 +27,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -38,7 +37,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class SupplierRiskDataset(Base, TimestampMixin):
@@ -63,10 +62,10 @@ class SupplierRiskDataset(Base, TimestampMixin):
     supplier_count: Mapped[int] = mapped_column(Integer, default=0)
     event_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    records: Mapped[list["SupplierRiskRecord"]] = relationship(
+    records: Mapped[list[SupplierRiskRecord]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
-    assessments: Mapped[list["SupplierRiskAssessment"]] = relationship(
+    assessments: Mapped[list[SupplierRiskAssessment]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -141,10 +140,10 @@ class SupplierRiskAssessment(Base, TimestampMixin):
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     dataset: Mapped[SupplierRiskDataset] = relationship(back_populates="assessments")
-    profiles: Mapped[list["SupplierRiskProfileRow"]] = relationship(
+    profiles: Mapped[list[SupplierRiskProfileRow]] = relationship(
         back_populates="assessment", cascade="all, delete-orphan", passive_deletes=True
     )
 

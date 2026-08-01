@@ -26,7 +26,8 @@ somebody edits the document afterwards is not a version.
 from __future__ import annotations
 
 import difflib
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from app.core.logging import get_logger
 from app.schemas.blueprint import (

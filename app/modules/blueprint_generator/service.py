@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -112,7 +112,7 @@ WORKING_COPY_VERSION = 0
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _new_id() -> str:
@@ -471,7 +471,6 @@ def approve_section(
     heading that says "nothing was written here" would make the completeness
     figures describe a document that does not exist.
     """
-    config = get_blueprint_config()
     blueprint = _require_blueprint(db, blueprint_id)
     row = _require_section(db, blueprint.id, section_id)
 

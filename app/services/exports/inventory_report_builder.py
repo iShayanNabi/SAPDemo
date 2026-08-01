@@ -20,7 +20,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -28,6 +28,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.core.logging import get_logger
+from app.services.exports.workbook import workbook_to_bytes
 
 logger = get_logger(__name__)
 
@@ -130,7 +131,7 @@ def build_inventory_json_report(payload: dict[str, Any]) -> bytes:
     """Serialise the full forecast payload as JSON."""
     document = {
         "report_type": "sap_inventory_forecast",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "disclaimer": inventory_disclaimer(),
         **payload,
     }
@@ -160,10 +161,9 @@ def build_inventory_xlsx_report(payload: dict[str, Any]) -> bytes:
     _data_quality_sheet(workbook.create_sheet("Data Quality"), payload, items)
     _methodology_sheet(workbook.create_sheet("Methodology"), payload)
 
-    buffer = io.BytesIO()
-    workbook.save(buffer)
+    payload_bytes = workbook_to_bytes(workbook)
     logger.info("Built inventory forecast XLSX: %d materials", len(items))
-    return buffer.getvalue()
+    return payload_bytes
 
 
 # ---------------------------------------------------------------------------

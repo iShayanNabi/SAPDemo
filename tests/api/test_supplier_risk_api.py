@@ -160,6 +160,34 @@ def test_upload_without_the_supplier_id_is_not_analyzable(api_client):
     assert data["dataset_id"] is None
 
 
+def test_upload_reports_an_unparseable_number_instead_of_failing(api_client):
+    """A data quality issue is the *output* of an upload, not an error in it.
+
+    This 500'd. The shared normaliser publishes an issue under the key
+    ``field``; this module's response schema declared ``field_name`` with no
+    alias, so the first file containing an unparseable number raised a
+    ``ValidationError`` inside the route. Every bundled demo file is clean, so
+    506 green tests and five other modules never touched it. The schema now
+    lives once in ``app.schemas.common``.
+    """
+    content = b"LIFNR,NAME1,OTD,RISK_SCORE\n0000392900,Acme,95,not-a-number\n"
+    response = api_client.post(
+        "/api/v1/supplier-risk/upload",
+        files={"file": ("unparseable.csv", content, CSV_MIME)},
+        data={"dataset": "profiles"},
+    )
+
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    issues = data["data_quality_issues"]
+    assert issues, "the unparseable number was not reported at all"
+    issue = issues[0]
+    # The wire name is 'field' in every module that reports one.
+    assert issue["field"]
+    assert issue["severity"] in {"info", "warning", "error"}
+    assert issue["affected_rows"] >= 1
+
+
 def test_upload_events_attaches_to_the_dataset(api_client):
     dataset = _upload_profiles(api_client, [_profile_row(supplier_id="0000392001")])
     events = [

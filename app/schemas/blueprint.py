@@ -263,7 +263,7 @@ class UpdateBlueprintRequest(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=200)
     owner: str | None = Field(default=None, max_length=120)
     notes: list[str] | None = Field(default=None, max_length=40)
-    project: "BlueprintProjectSchema | None" = None
+    project: BlueprintProjectSchema | None = None
 
 
 class BlueprintItemInput(BaseModel):

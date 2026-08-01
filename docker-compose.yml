@@ -1,0 +1,136 @@
+# Development Docker Compose for the SAP AI Application Lab.
+#
+# Docker is OPTIONAL. The lab is meant to run from a virtualenv; this file
+# exists so the same runtime can be reproduced on another machine and so the
+# PostgreSQL path can be exercised without installing a database locally.
+#
+#   docker compose up api ui                      # SQLite, the default
+#   docker compose --profile postgres up          # + PostgreSQL
+#   docker compose --profile cache up             # + Redis (see the note below)
+#   docker compose --profile postgres --profile cache up
+#
+# Both optional services sit behind profiles, so `docker compose up` starts
+# nothing you did not ask for.
+#
+# Redis note: nothing in this project requires Redis today. Every analysis is
+# synchronous and finishes in seconds, the caches that exist are process-local
+# and small, and adding a broker would buy latency and an extra moving part for
+# no benefit. The service is here as a declared seam for the two things that
+# will genuinely need it on a public website - a Celery/RQ queue for long
+# uploads and a shared rate-limit counter across API replicas - and it is off
+# unless you ask for it.
+
+name: sap-ai-lab
+
+services:
+  # ---------------------------------------------------------------------
+  # FastAPI backend
+  # ---------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sap-ai-lab:latest
+    command: ["lab-api"]
+    environment:
+      ENVIRONMENT: local
+      LOG_LEVEL: INFO
+      # SQLite by default: the file lives on the named volume below, so the
+      # database survives `docker compose down` (but not `down -v`).
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/sap_ai_lab.db}
+      # Mock AI is the default and needs no key. Set these in a local .env to
+      # use a real provider; they are read from the environment, never baked in.
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      AI_ENABLED: ${AI_ENABLED:-true}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8501}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      # Uploads, exports and the SQLite file persist across container restarts.
+      - lab-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------
+  # Streamlit UI (temporary local interface)
+  # ---------------------------------------------------------------------
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sap-ai-lab:latest
+    command: ["lab-streamlit"]
+    environment:
+      # The UI talks to the API over HTTP only - no business logic is imported.
+      API_BASE_URL: http://api:8000
+      LOG_LEVEL: INFO
+    ports:
+      - "${UI_PORT:-8501}:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8501/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------
+  # Optional: PostgreSQL (profile "postgres")
+  # ---------------------------------------------------------------------
+  # Start with:
+  #   docker compose --profile postgres up
+  # and point the API at it:
+  #   DATABASE_URL=postgresql+psycopg://sap_lab:sap_lab@postgres:5432/sap_ai_lab
+  # Remember to uncomment psycopg in requirements.txt before building.
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sap_lab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sap_lab}
+      POSTGRES_DB: ${POSTGRES_DB:-sap_ai_lab}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - lab-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sap_lab} -d ${POSTGRES_DB:-sap_ai_lab}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------
+  # Optional: Redis (profile "cache") - not used by any module today
+  # ---------------------------------------------------------------------
+  redis:
+    profiles: ["cache"]
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - lab-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  lab-data:
+  lab-postgres:
+  lab-redis:

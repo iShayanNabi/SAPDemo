@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import OutputOrigin, Severity
+from app.schemas.common import AnalysisStatus, DataQualityIssueSchema, OutputOrigin, Severity
 
 
 class ExportFormat(str, Enum):
@@ -67,7 +67,24 @@ class UploadResponse(BaseModel):
 class AnalyzeRequest(BaseModel):
     """Body of ``POST /po-risk/analyze``."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "generate_ai_summary": True,
+                },
+                {
+                    "upload_id": "9f4c2a1e8b7d4f0aa1c3e5d7b9f10246",
+                    "column_mapping_overrides": {"VENDOR_NO": "supplier_id"},
+                    "enabled_rules": ["PO-R001", "PO-R009", "PO-R010"],
+                    "generate_ai_summary": False,
+                    "rewrite_findings": False,
+                },
+            ]
+        },
+    )
 
     upload_id: str = Field(min_length=1, max_length=36)
     column_mapping_overrides: dict[str, str] = Field(
@@ -83,17 +100,6 @@ class AnalyzeRequest(BaseModel):
     rewrite_findings: bool = Field(
         default=False, description="Also rewrite the top findings in business language."
     )
-
-
-class DataQualityIssueSchema(BaseModel):
-    """A non-fatal data problem detected during normalisation."""
-
-    field: str
-    issue_type: str
-    message: str
-    affected_rows: int
-    sample_rows: list[int] = Field(default_factory=list)
-    severity: str
 
 
 class FindingSchema(BaseModel):
@@ -112,7 +118,7 @@ class FindingSchema(BaseModel):
     explanation: str
     evidence: dict[str, Any]
     recommended_action: str
-    confidence_score: float
+    confidence_score: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     estimated_financial_exposure: float
     exposure_currency: str
     output_origin: OutputOrigin
@@ -172,7 +178,7 @@ class AnalysisSummarySchema(BaseModel):
 
     analysis_id: str
     upload_id: str
-    status: str
+    status: AnalysisStatus
     source_filename: str
     created_at: datetime
     completed_at: datetime | None
@@ -238,7 +244,7 @@ class RuleInfoSchema(BaseModel):
     category: str
     enabled: bool
     base_severity: Severity
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0, description="A 0.0-1.0 confidence score.")
     recommended_action: str
     params: dict[str, Any]
 

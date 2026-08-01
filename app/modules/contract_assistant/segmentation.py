@@ -22,8 +22,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from app.services.documents.base import ExtractedPage
 from app.modules.contract_assistant.thresholds import ContractAssistantConfig
+from app.services.documents.base import ExtractedPage
 
 #: Pages are joined with a newline so an offset never straddles two pages
 #: without a boundary character between them.

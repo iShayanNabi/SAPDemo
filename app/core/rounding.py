@@ -41,7 +41,7 @@ is only the published boundary that needs a stable policy.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import SupportsFloat
 
 __all__ = [

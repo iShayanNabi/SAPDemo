@@ -17,7 +17,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError as PydanticValidationError
+from pydantic import BaseModel, Field
+from pydantic import ValidationError as PydanticValidationError
 
 from app.core.exceptions import ConfigurationError
 from app.core.logging import get_logger
@@ -165,7 +166,7 @@ class InvoiceValidatorConfig(BaseModel):
             return False
         return needle in {value.strip().lower() for value in self.closed_po_status_values}
 
-    def with_tolerances(self, tolerances: Tolerances) -> "InvoiceValidatorConfig":
+    def with_tolerances(self, tolerances: Tolerances) -> InvoiceValidatorConfig:
         """Return a copy of this configuration with different tolerances applied.
 
         Used to honour per-run tolerance overrides without mutating the cached

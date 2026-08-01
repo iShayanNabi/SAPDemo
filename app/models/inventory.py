@@ -32,7 +32,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -42,7 +41,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, UtcDateTime
 
 
 class InventoryDatasetRow(Base, TimestampMixin):
@@ -69,10 +68,10 @@ class InventoryDatasetRow(Base, TimestampMixin):
     history_end: Mapped[date | None] = mapped_column(Date, nullable=True)
     frequency: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    records: Mapped[list["InventoryRecord"]] = relationship(
+    records: Mapped[list[InventoryRecord]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
-    forecasts: Mapped[list["InventoryForecast"]] = relationship(
+    forecasts: Mapped[list[InventoryForecast]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan", passive_deletes=True
     )
 
@@ -155,10 +154,10 @@ class InventoryForecast(Base, TimestampMixin):
     ai_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
     dataset: Mapped[InventoryDatasetRow] = relationship(back_populates="forecasts")
-    items: Mapped[list["InventoryForecastItem"]] = relationship(
+    items: Mapped[list[InventoryForecastItem]] = relationship(
         back_populates="forecast", cascade="all, delete-orphan", passive_deletes=True
     )
 

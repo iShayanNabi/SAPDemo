@@ -23,7 +23,6 @@ from app.core.exceptions import ValidationError
 from app.core.logging import get_logger
 from app.modules.supplier_reco.field_definitions import (
     CANONICAL_FIELDS,
-    LIST_FIELDS,
     REGISTRY,
 )
 from app.modules.supplier_reco.thresholds import SupplierRecoConfig

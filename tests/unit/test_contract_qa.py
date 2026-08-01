@@ -49,16 +49,16 @@ def analysis():
 
 
 def _ask(question: str, result, config, **overrides):
-    payload = dict(
-        config=config,
-        clauses=result.clauses,
-        key_dates=result.key_dates,
-        risks=[item.to_dict() for item in result.risks],
-        obligations=[item.to_dict() for item in result.obligations],
-        missing_clauses=[item.to_dict() for item in result.missing_clauses],
-        parties=[item.to_dict() for item in result.parties],
-        contract_title=result.contract_title,
-    )
+    payload = {
+        "config": config,
+        "clauses": result.clauses,
+        "key_dates": result.key_dates,
+        "risks": [item.to_dict() for item in result.risks],
+        "obligations": [item.to_dict() for item in result.obligations],
+        "missing_clauses": [item.to_dict() for item in result.missing_clauses],
+        "parties": [item.to_dict() for item in result.parties],
+        "contract_title": result.contract_title,
+    }
     payload.update(overrides)
     return answer_question(question, **payload)
 

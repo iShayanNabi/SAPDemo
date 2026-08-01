@@ -162,7 +162,6 @@ def test_ranking_orders_by_overall_score_descending(supplier_reco_config):
         make_supplier(supplier_id="POOR", unit_price=200.0, quality_score=65.0, esg_score=50.0, risk_score=58.0),
     ]
     result = run_recommendation(suppliers, make_requirement(), supplier_reco_config.default_weights, supplier_reco_config)
-    ranks = [(e.supplier_id, e.rank) for e in result.ranked]
     # Ranks are a strict 1..N sequence over the eligible set.
     eligible_ranks = sorted(e.rank for e in result.ranked if e.is_eligible)
     assert eligible_ranks == [1, 2, 3]

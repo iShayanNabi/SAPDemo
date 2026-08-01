@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -149,6 +149,8 @@ def handle_upload(
         upload_id=upload.id,
         dataset=dataset,
         filename=validated.original_filename,
+        file_extension=validated.extension,
+        size_bytes=validated.size_bytes,
         row_count=read_result.row_count,
         detected_columns=list(read_result.source_columns),
         suggested_mapping=dict(mapping_result.mapping),
@@ -435,7 +437,7 @@ def calculate(db: Session, request: CalculateRiskRequest) -> RiskAssessmentDetai
         contracts_expiring_count=result.contracts_expiring_count,
         limited_data_count=result.limited_data_count,
         rule_errors=list(result.rule_errors),
-        completed_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(UTC),
     )
     db.add(assessment)
     db.flush()
