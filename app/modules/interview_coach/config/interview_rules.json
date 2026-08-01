@@ -1,0 +1,327 @@
+{
+  "config_version": "1.0.0",
+  "description": "SAP Interview Coach. Every number this module reports - each dimension score, the overall score, the bands, the weak/strong thresholds and the study plan - is produced by deterministic Python from the values below. A language model is only ever asked for prose, and the prose arrives in its own fields. Editing this file changes the marking with no code change.",
+
+  "scoring": {
+    "description": "The explicit rubric. Concept coverage drives technical accuracy, completeness, business understanding and architecture; the shape of the answer drives clarity; known-wrong statements cost technical accuracy points only.",
+    "pass_score": 60.0,
+    "dimension_weights": {
+      "technical_accuracy": 0.3,
+      "completeness": 0.25,
+      "clarity": 0.15,
+      "business_understanding": 0.2,
+      "architecture": 0.1
+    },
+    "bands": {
+      "developing": 40.0,
+      "proficient": 60.0,
+      "strong": 80.0
+    },
+    "required_concept_miss_penalty": 8.0,
+    "max_required_concept_penalty": 24.0,
+    "max_incorrect_statement_penalty": 45.0,
+    "excerpt_chars": 140,
+    "non_answer_patterns": [
+      "^i (do not|don't) know$",
+      "^no idea$",
+      "^not sure$",
+      "^n/?a$",
+      "^skip$",
+      "^pass$",
+      "^no answer$",
+      "^i (do not|don't) know[.,! ].{0,30}$"
+    ],
+    "negation_cues": [
+      "not",
+      "no",
+      "never",
+      "cannot",
+      "can't",
+      "cant",
+      "doesn't",
+      "don't",
+      "isn't",
+      "aren't",
+      "won't",
+      "nor"
+    ],
+    "negation_window_words": 4,
+    "clarity": {
+      "description": "Clarity is measured from the shape of the answer, never from its vocabulary: a candidate who says the right things badly should lose clarity marks and keep their technical accuracy.",
+      "min_words": 12,
+      "ideal_min_words": 45,
+      "ideal_max_words": 220,
+      "max_words": 420,
+      "max_average_sentence_words": 28,
+      "hard_average_sentence_words": 55,
+      "structure_markers": [
+        "first",
+        "firstly",
+        "second",
+        "secondly",
+        "third",
+        "thirdly",
+        "then",
+        "next",
+        "after that",
+        "finally",
+        "for example",
+        "in practice",
+        "step 1",
+        "step 2",
+        "1.",
+        "2.",
+        "3.",
+        "- ",
+        "* "
+      ],
+      "structure_marker_target": 3,
+      "structure_base_score": 55.0,
+      "filler_phrases": [
+        "basically",
+        "you know",
+        "kind of",
+        "sort of",
+        "i guess",
+        "stuff like that",
+        "things like that",
+        "or whatever",
+        "blah blah"
+      ],
+      "filler_penalty_points": 6.0,
+      "max_filler_penalty": 24.0,
+      "component_weights": {
+        "length": 0.4,
+        "sentences": 0.3,
+        "structure": 0.3
+      }
+    }
+  },
+
+  "tracks": {
+    "sap_mm": {
+      "label": "SAP MM",
+      "description": "Materials management: master data, purchasing documents, release strategies, the document flow from requisition to payment, and inventory movements."
+    },
+    "sap_ariba": {
+      "label": "SAP Ariba",
+      "description": "Sourcing, contracts, guided buying, supplier management and how each of them lands back in the ERP."
+    },
+    "sap_s4hana": {
+      "label": "SAP S/4HANA",
+      "description": "What changed from ECC, the simplification items that touch procurement, embedded analytics, Fiori and conversion approaches."
+    },
+    "sap_business_network": {
+      "label": "SAP Business Network",
+      "description": "Trading partner onboarding, document exchange across the network, and the commercial and operational model behind it."
+    },
+    "sap_integration": {
+      "label": "SAP Integration",
+      "description": "IDocs, APIs, events, middleware, error handling and monitoring between SAP and everything else."
+    },
+    "sap_architecture": {
+      "label": "SAP Architecture",
+      "description": "Landscape design, deployment options, extensibility, data residency and the trade-offs an architect has to argue for."
+    },
+    "procurement": {
+      "label": "Procurement",
+      "description": "Category management, sourcing strategy, negotiation, supplier performance and the numbers a buyer is measured on."
+    },
+    "supply_chain": {
+      "label": "Supply chain",
+      "description": "Demand planning, inventory policy, lead times, service levels and the working capital they cost."
+    },
+    "sap_consulting": {
+      "label": "SAP consulting scenarios",
+      "description": "Requirements workshops, scope disputes, go-live pressure, stakeholder handling and the judgement calls a consultant is hired for."
+    }
+  },
+
+  "selection": {
+    "description": "Which questions a session is built from. The selection is seeded, so the same request always produces the same interview - a demo can be repeated and a test can assert on it.",
+    "default_seed": 20260801,
+    "max_questions_per_session": 25,
+    "prefer_distinct_topics": true,
+    "allow_difficulty_fallback": true
+  },
+
+  "modes": {
+    "practice": {
+      "label": "Practice",
+      "description": "Untimed practice across the difficulty range. Feedback is shown after every answer.",
+      "default_question_count": 5,
+      "time_limit_seconds": null,
+      "timer_enabled": false,
+      "difficulty_mix": ["foundational", "intermediate", "advanced"],
+      "dimension_weight_overrides": {}
+    },
+    "timed": {
+      "label": "Timed interview",
+      "description": "A full interview with a per-question time limit. The clock is recorded and reported; it never changes a score.",
+      "default_question_count": 8,
+      "time_limit_seconds": 180,
+      "timer_enabled": true,
+      "difficulty_mix": ["foundational", "intermediate", "advanced", "expert"],
+      "dimension_weight_overrides": {}
+    },
+    "technical": {
+      "label": "Technical interview",
+      "description": "Configuration, master data, document flow and troubleshooting depth. Technical accuracy carries the most weight.",
+      "default_question_count": 6,
+      "time_limit_seconds": 300,
+      "timer_enabled": false,
+      "difficulty_mix": ["intermediate", "advanced", "expert"],
+      "dimension_weight_overrides": {
+        "technical_accuracy": 0.4,
+        "completeness": 0.25,
+        "clarity": 0.1,
+        "business_understanding": 0.15,
+        "architecture": 0.1
+      }
+    },
+    "architecture": {
+      "label": "Architecture interview",
+      "description": "Landscape, integration patterns, deployment options and non-functional trade-offs. The architecture dimension is weighted heavily and every question in this mode carries architecture concepts.",
+      "default_question_count": 5,
+      "time_limit_seconds": 420,
+      "timer_enabled": false,
+      "difficulty_mix": ["advanced", "expert"],
+      "dimension_weight_overrides": {
+        "technical_accuracy": 0.25,
+        "completeness": 0.2,
+        "clarity": 0.1,
+        "business_understanding": 0.15,
+        "architecture": 0.3
+      }
+    },
+    "behavioral": {
+      "label": "Behavioral interview",
+      "description": "Stakeholder handling, delivery pressure and consulting judgement. Clarity and business understanding carry the most weight.",
+      "default_question_count": 5,
+      "time_limit_seconds": 240,
+      "timer_enabled": false,
+      "difficulty_mix": ["foundational", "intermediate", "advanced"],
+      "dimension_weight_overrides": {
+        "technical_accuracy": 0.15,
+        "completeness": 0.25,
+        "clarity": 0.3,
+        "business_understanding": 0.3
+      }
+    },
+    "rapid_fire": {
+      "label": "Rapid-fire questions",
+      "description": "Short definitional questions with a one-minute limit. A rapid-fire answer is not a short essay, so the clarity length band is narrower here.",
+      "default_question_count": 12,
+      "time_limit_seconds": 60,
+      "timer_enabled": true,
+      "difficulty_mix": ["foundational", "intermediate"],
+      "dimension_weight_overrides": {
+        "technical_accuracy": 0.35,
+        "completeness": 0.35,
+        "clarity": 0.1,
+        "business_understanding": 0.2
+      },
+      "clarity_overrides": {
+        "min_words": 6,
+        "ideal_min_words": 18,
+        "ideal_max_words": 90,
+        "max_words": 200,
+        "structure_marker_target": 1
+      }
+    }
+  },
+
+  "performance": {
+    "description": "How the dashboard decides what is weak, what is strong and what to study next.",
+    "min_answers_for_topic": 2,
+    "weak_area_threshold": 60.0,
+    "strong_area_threshold": 78.0,
+    "max_weak_areas": 5,
+    "max_strong_areas": 5,
+    "max_topics_reported": 40,
+    "max_score_over_time_points": 25,
+    "recent_session_limit": 5,
+    "default_session_window": 50,
+    "max_most_missed_concepts": 5
+  },
+
+  "study_plan": {
+    "description": "The recommended study plan is derived from the recorded answers - the weakest topics and the concepts most often missed on them. Nothing here is generated by a model.",
+    "max_items": 5,
+    "default_actions": [
+      "Re-read your notes on {topic} and write a five-sentence definition from memory.",
+      "Answer three more {topic} questions in practice mode and compare each answer with the reference answer.",
+      "Explain {topic} out loud to somebody who does not work in SAP, then note which part you had to look up."
+    ],
+    "track_actions": {
+      "sap_mm": [
+        "Walk the {topic} document flow end to end on paper: requisition, purchase order, goods receipt, invoice, payment - and name the document each step creates.",
+        "List the master data {topic} depends on and what breaks when each one is wrong."
+      ],
+      "sap_ariba": [
+        "Sketch how {topic} moves between Ariba and the ERP, naming what is replicated in each direction.",
+        "Write down which part of {topic} is configured in Ariba and which part is configured in the ERP."
+      ],
+      "sap_s4hana": [
+        "Note what changed in {topic} between ECC and S/4HANA, and why the change was made.",
+        "List the simplification items that touch {topic} and what each one asks a project to do."
+      ],
+      "sap_business_network": [
+        "Describe how a trading partner is onboarded for {topic} and what each side has to agree first.",
+        "Write down which documents cross the network for {topic} and in which direction."
+      ],
+      "sap_integration": [
+        "Draw the interface for {topic}: protocol, payload, error handling, monitoring and who is called when it fails.",
+        "Write down how {topic} behaves when the receiving system is unavailable."
+      ],
+      "sap_architecture": [
+        "Sketch the landscape for {topic} and mark every point where data crosses a system boundary.",
+        "Write two paragraphs on the trade-off {topic} forces, and what you would need to know to decide it."
+      ],
+      "procurement": [
+        "Write the business case for {topic} in five bullet points a category manager would recognise.",
+        "List the numbers a buyer would use to prove {topic} worked."
+      ],
+      "supply_chain": [
+        "Work {topic} through with real numbers: demand, lead time, safety stock and the resulting order date.",
+        "Name the trade-off {topic} makes between service level and working capital."
+      ],
+      "sap_consulting": [
+        "Rewrite your answer on {topic} using the situation, task, action, result structure.",
+        "Note one project where {topic} went badly and what you would do differently."
+      ]
+    },
+    "step_down_difficulty": true
+  },
+
+  "feedback": {
+    "description": "Size limits and wording for the deterministic feedback. A drafted answer that breaks one of these limits is repaired field by field and the repair is recorded, exactly as in modules 8 and 9.",
+    "max_strengths": 5,
+    "max_missing_concepts": 6,
+    "max_incorrect_statements": 5,
+    "max_topics_to_study": 5,
+    "max_improved_answer_chars": 3000,
+    "max_coaching_note_chars": 900,
+    "min_improved_answer_chars": 40,
+    "templates": {
+      "strength_concept": "Covered {label}.",
+      "strength_clarity": "The answer is well structured and easy to follow.",
+      "strength_length": "The answer is the right length for the question.",
+      "strength_none": "Nothing in this answer matched the marking scheme yet.",
+      "missing_concept": "{label}{hint}",
+      "improved_answer_intro": "A complete answer to this question covers the following.",
+      "improved_answer_missing_intro": "Your answer did not mention:",
+      "coaching_note_pass": "This answer would pass. Tighten the parts listed above and it would be a strong one.",
+      "coaching_note_borderline": "This answer is close. The missing concepts below are what separates it from a pass.",
+      "coaching_note_fail": "Work through the study topics below before answering this one again.",
+      "coaching_note_non_answer": "No answer was given, so nothing could be scored. Say what you do know, even partially - an interviewer can work with a partial answer and cannot work with silence.",
+      "follow_up_default": "Can you say more about the part of your answer you are least sure of?"
+    }
+  },
+
+  "reporting": {
+    "disclaimer": "This coach practises interview technique against a bundled, entirely fictional question bank. The scores come from the published rubric in this configuration file, not from a language model and not from any SAP certification scheme. Nothing here is an SAP qualification, and no answer has been reviewed by SAP.",
+    "ai_note": "Scores, bands, concept matching and the study plan are calculated by deterministic Python. When an AI provider is active it may rewrite the feedback prose and the improved sample answer; those fields carry their own origin label and never change a score.",
+    "scoring_note": "Concept matching is keyword based. A correct answer phrased in words the bank does not list will score lower than it deserves - the matched keyword is shown next to every concept so you can see exactly what was and was not credited."
+  }
+}

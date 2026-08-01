@@ -24,7 +24,7 @@ are required.**
 | 7 | **Inventory Predictor** | **Implemented** |
 | 8 | **SAP Test Case Generator** | **Implemented** |
 | 9 | **SAP Blueprint Generator** | **Implemented** |
-| 10 | SAP Interview Coach | Planned |
+| 10 | **SAP Interview Coach** | **Implemented** |
 
 Detailed progress: [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
 
@@ -781,6 +781,110 @@ approval that predates a later change.
 
 ---
 
+## Module 10 - SAP Interview Coach
+
+Practise SAP interview questions and get a structured, explainable score. Modules 8 and 9 were the
+ones where the AI output *is* the deliverable. Here the deliverable is a **score about a person**,
+which pushes the line back the other way: the rubric marks the answer and a model is only ever
+asked for the coaching prose around a verdict it cannot revisit.
+
+**Workflow:** pick tracks, mode, difficulty and a seed -> seeded question selection -> one question
+at a time, without its marking scheme -> answer -> rubric score plus feedback -> next question ->
+complete -> session summary -> performance dashboard across every session.
+
+### Tracks and modes
+
+Nine tracks - SAP MM · SAP Ariba · SAP S/4HANA · SAP Business Network · SAP integration · SAP
+architecture · Procurement · Supply chain · SAP consulting scenarios - and six modes: **practice**
+(untimed, mixed difficulty), **timed** (180s per question), **technical** (accuracy weighted
+highest), **architecture** (advanced and expert only, architecture weighted highest),
+**behavioral** (clarity and business understanding weighted highest) and **rapid-fire** (60s, and a
+narrower clarity length band, because a rapid-fire answer is not a short essay).
+
+Each mode's question count, time limit, difficulty mix and dimension weights live in
+`app/modules/interview_coach/config/interview_rules.json`.
+
+### The question bank
+
+104 fictional questions, each carrying a question id, track, topic, difficulty, the modes it is
+offered in, the expected concepts with their keyword lists and weights, the statements known to be
+wrong for it, suggested follow-ups and a reference answer.
+
+The generator refuses to write the bank unless **every reference answer scores full concept
+coverage against its own rubric**. A model answer that does not match its own keyword list is a
+bank bug that would show up as a candidate losing marks for saying exactly the right thing.
+
+### How an answer is scored
+
+| Dimension | Comes from |
+| --- | --- |
+| Technical accuracy | Coverage of the technical concepts, minus the cost of any known-wrong statement |
+| Completeness | Weighted coverage of every expected concept, minus missing *required* ones |
+| Clarity | The shape of the answer: length, sentence length, signposting, filler |
+| Business understanding | Coverage of the business concepts |
+| Architecture | Coverage of the architecture concepts - **reported blank, never zero, when the question carries none** |
+
+The overall score is the weighted mean of the dimensions that apply, and the weight of a dimension
+that does not apply is shared among the rest rather than counted as a zero. Every response also
+carries the strengths, the missing concepts, the incorrect statements with their corrections, an
+improved sample answer, a follow-up question **chosen for the highest-weighted concept the
+candidate missed**, and the topics to study.
+
+Three details worth knowing:
+
+- **Matching is keyword based, and the page says so.** The keyword that credited each concept is
+  shown next to it, because an answer phrased in words the bank does not list will score lower than
+  it deserves and a candidate is owed that fact.
+- **A phrase inside a negation is not the phrase.** "The goods receipt does not update stock"
+  contains the vocabulary and asserts the opposite, so a cue in the same clause within a few words
+  vetoes the hit.
+- **The clock never moves a score.** Time spent is recorded, reported and summarised; no dimension
+  is raised or lowered by it. A rubric marks what was said.
+
+### Sessions and the performance dashboard
+
+Every session stores the questions asked, the answers, the scores, the feedback, the time spent and
+the summary. The dashboard aggregates across sessions: average score, score by topic, by
+difficulty, by track and by dimension, score over time, weak areas, strong areas, a recommended
+study plan and the recent sessions.
+
+The study plan is derived from the data, never written: the topics it names are those averaging
+below the threshold, and the concepts it says to focus on are the ones those answers actually
+missed, counted. A topic needs more than one answer before it can be *called* a weakness, and a
+topic you are strong at never appears in the plan at all.
+
+### Every failure mode ends with a usable result
+
+| What went wrong | What happens |
+| --- | --- |
+| No API key, or `use_ai=false` | The templates write the feedback. **The scores are byte-for-byte identical** |
+| The provider is down, times out, or returns rubbish | Same, plus the error is reported on the answer |
+| The drafted coaching note is empty, or the sample answer is two words | Repaired field by field against the configured limits, with every repair recorded |
+| A model tries to congratulate you on a concept the rubric marked missing | Discarded - the strengths, missing concepts and corrections are findings, not prose |
+| The answer contains prompt-injection bait | Filtered before any provider is called, reported on the answer, and the answer is still marked normally |
+| A question's rubric is retuned after a score was given | The score is kept, flagged `scoring_is_stale` and counted separately |
+
+### Endpoints
+
+```text
+POST /api/v1/interviews/start                 start a session, serve question 1
+GET  /api/v1/interviews/{session_id}          the session, its answers and its summary
+POST /api/v1/interviews/{session_id}/answer   mark one answer, serve the next question
+POST /api/v1/interviews/{session_id}/complete close the session, return the summary
+GET  /api/v1/interviews/performance           the performance dashboard
+GET  /api/v1/interviews/catalog               tracks, modes, bands, the published rubric
+GET  /api/v1/interviews/questions             browse the bank (never with answer keys)
+GET  /api/v1/interviews/sessions              list sessions
+GET  /api/v1/interviews/bank/info             describe the bundled bank
+```
+
+> **Not a qualification.** The question bank is entirely fictional, the scores come from the rubric
+> published in this repository rather than from any SAP certification scheme, and no answer here has
+> been reviewed by SAP.
+
+
+---
+
 ## Deterministic rules vs AI
 
 This separation is the core design decision of the project.
@@ -792,11 +896,13 @@ This separation is the core design decision of the project.
 | Calculations, aggregation, ranking | ✅ | ❌ never |
 | Forecasting demand and projecting stock | ✅ | ❌ never |
 | Planning a test suite: identifiers, coverage, priorities, numbering | ✅ | ❌ never |
+| Marking an interview answer: every dimension, the band, the study plan | ✅ | ❌ never |
 | A blueprint's section list, organisational structure, interfaces, roles and versions | ✅ | ❌ never |
 | Rewriting a finding in business language | | ✅ |
 | Executive summary | | ✅ |
 | Drafting the wording of a test case | | ✅ |
 | Drafting the wording of a blueprint section | | ✅ |
+| Writing the coaching note and improved answer around a finished score | | ✅ |
 
 **Mock mode is the default.** With no API key the lab uses a deterministic mock provider that
 templates the real rule results into narrative text. Output is labelled `mock_ai`, so nobody
@@ -928,6 +1034,23 @@ Blueprint Generator works from - this module has no dataset either, its input is
   section list, the order, the identifiers, the statuses, the missing inputs, the derived items and
   the readiness figures. Drafted prose is deliberately not baselined.
 
+`python scripts/generate_interview_sample_data.py` produces the **question bank** the Interview
+Coach marks against - this module has no dataset either, its input is typed into an answer box:
+
+- **104 fictional interview questions** across nine tracks and four difficulties, each with its
+  expected concepts and keyword lists, the statements known to be wrong for it, suggested
+  follow-ups and a reference answer
+- the generator **marks every reference answer against its own rubric before writing the file** and
+  fails loudly if any of them does not achieve full concept coverage, because a model answer that
+  cannot satisfy its own keyword list is a bank bug rather than a scoring bug
+- **7 documented anchors** in
+  [`data/sample/INTERVIEW_SCENARIO_MANIFEST.md`](data/sample/INTERVIEW_SCENARIO_MANIFEST.md), each
+  scored four ways - the reference answer, a partial answer, an answer with a known-wrong statement
+  appended, and a configured non-answer
+- `expected_interview_baseline.json`, recorded with **AI switched off**, pinning every dimension
+  score and the rubric fingerprint of all 104 questions. The fingerprints are what let a stored
+  score report that the rubric behind it has since changed.
+
 
 ---
 
@@ -949,6 +1072,7 @@ app/
   modules/inventory/ field definitions, periods, normaliser, forecasting, accuracy, selection, projection, engine, service
   modules/test_case_generator/ planning, builder, ai drafting, engine, service
   modules/blueprint_generator/ planning, rendering, builder, ai drafting, engine, versioning, service
+  modules/interview_coach/ question bank, selection, scoring, builder, ai feedback, engine, performance, service
 streamlit_app/     temporary UI - calls the API over HTTP
 data/              sample/, uploads/, exports/
 tests/             unit/, api/, integration/
@@ -965,15 +1089,15 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (1,320 tests, ~115s)
-pytest tests/unit         # 742 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, blueprint skeletons, blueprint versioning, security, AI
-pytest tests/api          # 371 - endpoints against a temporary database
-pytest tests/integration  # 207 - full journeys over all nine sample datasets
+pytest                    # everything (1,448 tests, ~90s)
+pytest tests/unit         # 799 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, blueprint skeletons, blueprint versioning, interview rubric scoring, concept matching, clarity measurement, question selection, performance aggregation, security, AI
+pytest tests/api          # 408 - endpoints against a temporary database
+pytest tests/integration  # 241 - full journeys over all ten sample datasets
 ```
 
 The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract,
-inventory, test-case and blueprint manifests and assert that every documented condition is actually
-detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+inventory, test-case, blueprint and interview manifests and assert that every documented condition
+is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 

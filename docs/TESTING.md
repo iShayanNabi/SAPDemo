@@ -1,12 +1,12 @@
 # Testing
 
-**1,320 tests, about 115 seconds, no network and no API key.**
+**1,448 tests, about 90 seconds, no network and no API key.**
 
 ```bash
 pytest                              # everything
-pytest tests/unit                   # 666
-pytest tests/api                    # 314
-pytest tests/integration            # 185
+pytest tests/unit                   # 799
+pytest tests/api                    # 408
+pytest tests/integration            # 241
 pytest -k duplicate -v              # by name
 pytest tests/unit/test_rules.py::test_split_purchase_detected
 ```
@@ -17,7 +17,7 @@ pytest tests/unit/test_rules.py::test_split_purchase_detected
 
 | Layer | Count | Answers |
 | --- | --- | --- |
-| `tests/unit` | 666 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
+| `tests/unit` | 799 | Does each rule, metric, score and forecast produce the right number - and stay quiet on healthy data? Do eligibility, weighting, mapping, parsing, filtering, model selection, security and the AI abstraction behave? |
 | `tests/api` | 314 | Do the endpoints return the right status, envelope and payload, and reject bad input? |
 | `tests/integration` | 185 | Over the full demo datasets, is every documented anomaly, scenario and anchor actually detected, end to end through HTTP? |
 
@@ -345,5 +345,27 @@ def test_my_new_rule_ignores_clean_data(rule_config):
   correct and configurable. Whether an 8% contract-compliance saving is achievable in your
   organisation is a commercial question no test can answer.
 
-One caveat worth repeating: both of the worst bugs found so far passed every test at the time and
-only appeared when the API was driven by hand. Tests are necessary, not sufficient - run the thing.
+One caveat worth repeating: every one of the worst bugs found so far passed the whole suite at the
+time and only appeared when the API was driven by hand. Module 10 added two more to the list - a
+response that served the question just answered while every count in it was correct, and a study
+plan that recommended a topic scored 98 out of 100 while claiming it was below the threshold.
+Tests are necessary, not sufficient - run the thing.
+
+### Module 10 - SAP Interview Coach
+
+- `tests/unit/test_interview_scoring.py` (30) - concept matching including line breaks, plurals,
+  word boundaries and the negation window; every dimension; the incorrect-statement penalty landing
+  on technical accuracy alone; non-answers; the four clarity components; per-mode weights; a
+  configuration edit changing a score with no code change; follow-up selection.
+- `tests/unit/test_interview_selection.py` (27) - track allocation in caller order, the stable
+  seeded shuffle, difficulty spreading, distinct topics, session summaries, and the dashboard
+  including the two rules that came out of a real bug: a topic you are strong at never enters the
+  study plan, and every plan item's reason has to match that topic's real numbers.
+- `tests/api/test_interview_api.py` (37) - the five specified routes end to end, a pending question
+  never carrying its answer key, the served question advancing, scores identical with and without
+  AI, time reported but never scored, injection reported and still marked, a frozen completed
+  session, and the catalogue and browsing endpoints.
+- `tests/integration/test_interview_sample_data.py` (34) - the bank contract, **every reference
+  answer scoring full coverage against its own rubric**, the documented anchors against the
+  recorded baseline, structured validation and repair of five malformed provider payloads, and the
+  rubric-fingerprint staleness pair.

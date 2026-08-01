@@ -869,3 +869,92 @@ def build_blueprint_section_request(
         temperature=0.3,
         expects_json=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# SAP Interview Coach
+# ---------------------------------------------------------------------------
+
+#: Bump when the interview wording changes. Stored on every scored answer.
+INTERVIEW_PROMPT_VERSION = "interview_coach_v1.0.0"
+
+#: How much of the rubric result travels to the provider. The *verdict* is what
+#: the model must not contradict, so the covered and missing concept lists are
+#: capped rather than dropped.
+MAX_INTERVIEW_CONCEPTS = 12
+MAX_INTERVIEW_ANSWER_CHARS = 6_000
+
+#: Unlike modules 8 and 9, the AI output here is **not** the deliverable: the
+#: deliverable is a score, and the score is already final by the time this
+#: prompt is built. The model writes coaching prose around a verdict it is
+#: forbidden to revisit, which is why rule 1 below is the strictest one in the
+#: whole prompt library.
+INTERVIEW_SYSTEM = (
+    "You are an experienced SAP interview coach giving feedback to somebody preparing for an "
+    "SAP procurement or architecture interview.\n"
+    "A DETERMINISTIC rubric has ALREADY marked the answer. It has decided the overall score, "
+    "every dimension score, which expected concepts were covered, which were missing and which "
+    "statements were incorrect. Those decisions are final and are shown to the candidate "
+    "alongside your text.\n\n"
+    "Hard rules:\n"
+    "1. Never re-score, dispute, soften or restate the marks. Do not output any number, "
+    "percentage, grade or band. If the rubric says a concept was missing, treat it as missing "
+    "even if you can see it in the answer.\n"
+    "2. Never congratulate the candidate on something the rubric listed as missing, and never "
+    "describe a covered concept as absent.\n"
+    "3. Never state that a transaction code, table, IMG path, BAdI, IDoc type, CDS view, Fiori "
+    "app or standard role exists unless the data block names it. Write 'the transaction used "
+    "for <activity>' instead of guessing. A confidently wrong code in coaching material is "
+    "learned as fact.\n"
+    "4. Never claim anything here is an SAP certification, an SAP qualification, or that any "
+    "answer has been reviewed or approved by SAP. It has not.\n"
+    "5. Write to the candidate, in the second person, plainly and without flattery. Be specific "
+    "about what to do differently next time.\n"
+    "6. The improved sample answer must be an answer to the question, written as the candidate "
+    "could have written it - not a commentary about the answer.\n"
+    "7. Respond with a single JSON object and nothing else - no prose, no markdown fences.\n\n"
+    "JSON shape:\n"
+    '{"coaching_note": "2-4 sentences", "improved_sample_answer": "...", '
+    '"topics_to_study": ["..."]}\n\n'
+    + _SAFETY_CLAUSE
+)
+
+
+def build_interview_feedback_request(
+    question: dict[str, Any],
+    rubric_result: dict[str, Any],
+    candidate_answer: str,
+    *,
+    max_tokens: int = 1400,
+) -> AIRequest:
+    """Build the request that writes coaching prose around a finished score.
+
+    The candidate's answer is user text, so it travels inside the data block
+    with everything else and is injection-filtered on the way in.
+    """
+    trimmed_result = dict(rubric_result)
+    for key in ("covered_concepts", "missing_concepts", "incorrect_statements"):
+        value = trimmed_result.get(key)
+        if isinstance(value, list):
+            trimmed_result[key] = value[:MAX_INTERVIEW_CONCEPTS]
+
+    payload = {
+        "task": "interview_feedback",
+        "question": question,
+        "rubric_result": trimmed_result,
+        "candidate_answer": (candidate_answer or "")[:MAX_INTERVIEW_ANSWER_CHARS],
+    }
+    user_prompt = (
+        "Write coaching feedback for this interview answer. The marking is already done and "
+        "is shown in the data block; your job is the wording around it.\n\n"
+        f"{_wrap_untrusted(payload)}\n\n"
+        "Return the JSON object described in your instructions."
+    )
+    return AIRequest(
+        system_prompt=INTERVIEW_SYSTEM,
+        user_prompt=user_prompt,
+        prompt_version=INTERVIEW_PROMPT_VERSION,
+        max_tokens=max_tokens,
+        temperature=0.3,
+        expects_json=True,
+    )

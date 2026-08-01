@@ -16,6 +16,7 @@ from app.schemas.common import ApiResponse, HealthStatus
 from app.api.v1 import (
     blueprints,
     contracts,
+    interviews,
     inventory,
     invoice_validator,
     po_risk,
@@ -65,3 +66,4 @@ api_router.include_router(contracts.router)
 api_router.include_router(inventory.router)
 api_router.include_router(test_cases.router)
 api_router.include_router(blueprints.router)
+api_router.include_router(interviews.router)

@@ -24,7 +24,7 @@ Everything runs locally. **No SAP credentials, no paid APIs, no AI API key, no D
 | 7 | Inventory Predictor | **Implemented** |
 | 8 | SAP Test Case Generator | **Implemented** |
 | 9 | SAP Blueprint Generator | **Implemented** |
-| 10 | SAP Interview Coach | Planned |
+| 10 | SAP Interview Coach | **Implemented** |
 
 **Build one module at a time.** Do not start a module that was not explicitly requested.
 
@@ -64,7 +64,7 @@ app/
   services/      ai/  documents/  exports/  files/  tabular/
   modules/       po_risk/  spend/  supplier_reco/  invoice_validator/
                  supplier_risk/  contract_assistant/  inventory/
-                 test_case_generator/  blueprint_generator/
+                 test_case_generator/  blueprint_generator/  interview_coach/
 streamlit_app/   pages/  components/
 data/            sample/  uploads/  exports/
 tests/           unit/  api/  integration/
@@ -253,13 +253,14 @@ python scripts/generate_contract_sample_data.py
 python scripts/generate_inventory_sample_data.py
 python scripts/generate_test_case_sample_data.py
 python scripts/generate_blueprint_sample_data.py
+python scripts/generate_interview_sample_data.py
 
 # run
 uvicorn app.main:app --reload           # http://127.0.0.1:8000/docs
 streamlit run streamlit_app/Home.py     # http://localhost:8501
 
 # test
-pytest                                  # 1320 tests
+pytest                                  # 1448 tests
 pytest tests/unit tests/api tests/integration
 
 # migrations (scripts live in migrations/, per alembic.ini)
@@ -447,6 +448,82 @@ The same split decides how a version comparison matches: sections by **key** (ne
 insert one custom section at the top and a position-matched diff calls everything below it
 rewritten), items by **title** (never by identifier, which the renumbering moves).
 
+### When the deliverable is a judgement about a person, the model writes none of it
+
+Modules 8 and 9 moved the line so that AI writes the artefact and code writes its skeleton. Module
+10 moves it back, and the reason is worth keeping: the deliverable is a **score**, and a score that
+can move because a provider was slow, absent or in a different mood is not a score. So the rubric
+marks the answer, and a provider is only ever asked for the prose *around* a finished verdict.
+
+That ordering - score, then draft, then repair - is what makes "mock mode must produce
+deterministic scoring" true without qualification. It is true of every mode, because none of them
+is asked for a number, and it is enforced structurally rather than by prompt wording: the score
+exists before a provider is contacted and nothing a provider returns can reach it.
+
+Three consequences that generalise:
+
+- **The provider is shown labels, never the marking scheme.** It learns that a concept was missing,
+  not which keywords would have matched it. A model that knows the keyword list can write a sample
+  answer that games it.
+- **Statements of fact are not prose.** The strengths, the missing concepts and the corrections are
+  findings, and they are taken from the rubric result even when a provider returns its own. A model
+  that congratulates somebody on a concept the rubric marked missing is worse than no model.
+- **A question does not travel with its answer key.** While a question is unanswered the API
+  returns the question and its metadata; the expected concepts, the reference answer and the
+  known-wrong statements attach to the *answer*. Anything else is an open-book test calling itself
+  an interview.
+
+### A score is a verdict about a rubric
+
+Module 8 flagged an execution result whose script had changed; module 9 flagged an approval whose
+section had changed. The same pair appears again one level up: a stored score was computed against
+a *rubric*, and rubrics get retuned. Each answer records a `rubric_fingerprint` - a digest of only
+the marking-relevant fields, so fixing a typo in the question text does not invalidate anything -
+and reports `scoring_is_stale` when it no longer matches. Kept, flagged, counted separately, and
+surfaced on the session summary and the dashboard. **This is the third module in a row where the
+bug was a pair of fields rather than a wrong value; assume the fourth will have one too.**
+
+### Vocabulary matching needs three concessions and no more
+
+Keyword matching against free text is the whole basis of this module's marking, and it is wrong in
+both directions if any of these is missing:
+
+- **Whitespace inside a keyword matches any run of whitespace**, so a phrase survives a line break.
+  This is module 6's "a document is not a string" lesson in a smaller shape.
+- **A trailing `s` is optional**, so `release code` credits "release codes". A rubric that marks
+  somebody down for a plural is marking grammar.
+- **A negation cue vetoes a hit only within a few words, in the same clause.** Sentence-wide
+  vetoing looked right and was not: "what it does not do is reach the long tail" is a statement
+  *about* the long tail. Contrast markers - `without`, `rather than`, `instead of`, `unlike`,
+  `avoid` - are not negations and do not belong in the cue list at all.
+
+Matching still has a ceiling, so the module says so: the keyword that credited each concept is
+printed next to it, and the limitation is stated on the page rather than left for a user to infer
+from a score they disagree with.
+
+### The generator marks its own reference answers before it writes the file
+
+Module 3 learned to compute a baseline by reading the written file back through the real reader.
+Module 10 adds the step before it: the generator scores **every reference answer against its own
+rubric** and refuses to write the bank unless all of them achieve full concept coverage. A model
+answer that cannot satisfy its own keyword list is a *bank* bug, and its symptom - a candidate
+losing marks for writing exactly the right thing - would be blamed on the scoring engine forever.
+Four of the 104 questions failed this check on the first run.
+
+### A blank is not a zero, and a clock is not a rubric
+
+Two small rules that each prevented an invented number:
+
+- A question with no architecture concepts is **not scored on architecture**. The dimension comes
+  back `null` with `applicable: false`, and its weight is shared among the dimensions that do
+  apply rather than dragging the overall score down by a quarter. Likewise an unanswered question
+  is reported in `pending_count`, never averaged in as zero, and a topic nobody has answered has
+  `None` for an average.
+- **Time is recorded, reported and summarised; it never moves a score.** A timed mode means the
+  clock is shown, the overrun is counted and the summary says how many answers ran long. A rubric
+  marks what was said, and letting a stopwatch touch it would make the same answer worth different
+  marks on two different afternoons.
+
 
 ---
 
@@ -537,6 +614,23 @@ only appeared when the API was driven by hand:
     Fixed in this module rather than in shared code: `safe_project_text` drops the whole sentence
     containing a marker and says so in its place. **An injection marker is the lead-in to a
     payload, not the payload itself.**
+
+
+- Module 10: two more, both found by driving the API and reading one response top to bottom, and
+  both invisible to a green suite:
+
+  - the response to an answer served **the question that had just been answered** as the next one.
+    Every count in it was right - `remaining_questions`, `answered_count`, the whole summary - and
+    only the question was wrong. The cause was project-wide rather than local: `SessionLocal` is
+    built with `autoflush=False`, so the query for the next pending row never saw the status change
+    sitting in the session. A test asserting on counts cannot see this; the test that catches it
+    asserts the served question *changes*.
+  - the performance dashboard's study plan **recommended topics the candidate had scored 98 on**,
+    and printed "average 98.5, below the 60.0 point threshold for a weak area" next to the number
+    that disproved it. The fallback path ranked topics and took the lowest few with no threshold at
+    all, and each item's reason was chosen from *which list it arrived in* rather than from the
+    topic. Every field was individually correct; the pair was a lie. **Derive the sentence from the
+    data it describes, never from the branch that produced it.**
 
 
 After implementing a module, start the server and exercise the real endpoints before declaring it

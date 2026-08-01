@@ -335,6 +335,57 @@ by title, so inserting a section or renumbering items does not report everything
 
 ---
 
+### Module 10 - SAP Interview Coach
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/interviews/start` | Start a session and serve the first question |
+| GET | `/api/v1/interviews/{session_id}` | The session, every answer, the scores and the summary |
+| POST | `/api/v1/interviews/{session_id}/answer` | Mark one answer and serve the next question |
+| POST | `/api/v1/interviews/{session_id}/complete` | Close the session and return the final summary |
+| GET | `/api/v1/interviews/performance` | The performance dashboard across sessions |
+| GET | `/api/v1/interviews/catalog` | Tracks, modes, difficulties, bands and the published rubric |
+| GET | `/api/v1/interviews/questions` | Browse the bank (`track=`, `mode=`, `difficulty=`, `topic=`) |
+| GET | `/api/v1/interviews/sessions` | List sessions, newest first |
+| GET | `/api/v1/interviews/bank/info` | Describe the bundled fictional question bank |
+| GET | `/api/v1/interviews/ai-status` | Active AI provider (never a key) |
+
+The `start` body is `{tracks, mode?, difficulties?, question_count?, topics?, candidate_name?,
+session_name?, seed?}`. `tracks` is ordered on purpose: when fewer questions are asked for than
+tracks are listed, the tracks listed **first** keep their questions. The same `seed`, tracks, mode
+and difficulties always produce the same interview, so a demo can be repeated exactly.
+
+- **A pending question never carries its answer key.** While a question is unanswered the response
+  holds the question text, its track, topic, difficulty, time limit and
+  `expected_concept_count` - the number of concepts a complete answer covers, so a candidate knows
+  how much to say without being told what to say. The `answer_key` (expected concepts, reference
+  answer, known-wrong statements, follow-ups) is attached to the **answer** once it is submitted.
+- **Every number is rule-based.** `score.output_origin` is always `rule_based`. `use_ai` decides
+  only who writes the prose in `feedback`; the score is byte-for-byte identical either way, and
+  `feedback.output_origin` and `feedback.source` say which layer produced the wording.
+- **A dimension that does not apply is `null`, not `0`.** A question with no architecture concepts
+  reports `applicable: false` and `score: null` for architecture, and its weight is shared among
+  the dimensions that do apply.
+- **Every concept match says what matched it**: `matched_keyword` and an `excerpt` from the answer,
+  or `negated: true` when the phrase was present inside a negation and therefore not credited.
+- **Time is reported, never scored.** `seconds_spent`, `within_time_limit` and `over_by_seconds`
+  are recorded and summarised; no dimension moves because of them. The client supplies
+  `seconds_spent` (it is the only thing that knows when typing started); the server derives it from
+  when the question was served if it is omitted.
+- **A completed session is frozen.** Answering again returns `422`. While a session is in progress
+  a question may be answered again: `attempt_count` goes up and the new score replaces the old one.
+- **A retuned rubric is reported, not hidden.** Each answer stores the `rubric_fingerprint` it was
+  marked against; when the bank changes, the answer reports `scoring_is_stale` and the session and
+  dashboard count it in `stale_score_count`. The score is still included in every average.
+
+`GET /interviews/performance` accepts `track=` (repeatable), `mode=` and `session_limit=`, and
+returns the average score, breakdowns by dimension, topic, difficulty and track, score over time,
+weak areas, strong areas, a study plan and the recent sessions. The study plan only ever names
+topics averaging **below** the configured weak-area threshold, and each item's `reason` is derived
+from that topic's own numbers.
+
+---
+
 ## Health
 
 ```bash

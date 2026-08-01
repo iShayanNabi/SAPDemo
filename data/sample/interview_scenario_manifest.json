@@ -1,0 +1,685 @@
+{
+  "manifest": "Every question, scenario, company and reference answer in this bank is fictional. Nothing here is an SAP certification question, and no answer has been reviewed by SAP.",
+  "bank_version": "1.0.0",
+  "question_count": 104,
+  "by_track": {
+    "sap_mm": 12,
+    "sap_ariba": 12,
+    "sap_s4hana": 12,
+    "sap_business_network": 11,
+    "sap_integration": 12,
+    "sap_architecture": 11,
+    "procurement": 11,
+    "supply_chain": 11,
+    "sap_consulting": 12
+  },
+  "by_difficulty": {
+    "foundational": 13,
+    "intermediate": 35,
+    "advanced": 47,
+    "expert": 9
+  },
+  "by_mode": {
+    "practice": 104,
+    "timed": 100,
+    "technical": 67,
+    "architecture": 25,
+    "behavioral": 17,
+    "rapid_fire": 15
+  },
+  "topics": [
+    "API management",
+    "API styles",
+    "Account determination",
+    "Approval flows",
+    "Ariba and ERP integration",
+    "Ariba fundamentals",
+    "Ariba solution landscape",
+    "Authentication",
+    "Build versus configure",
+    "Bullwhip effect",
+    "Business partner",
+    "Catalogues",
+    "Category strategy",
+    "Central procurement",
+    "Clean core",
+    "Commercial model",
+    "Compliance",
+    "Consignment",
+    "Contract compliance",
+    "Contract lifecycle",
+    "Conversion preparation",
+    "Data migration pressure",
+    "Data model",
+    "Data residency",
+    "Deployment options",
+    "Disagreement",
+    "Disruption response",
+    "Distributed teams",
+    "Document exchange",
+    "ECC to S/4HANA changes",
+    "Embedded analytics",
+    "Enablement waves",
+    "Error recovery",
+    "Event-driven integration",
+    "Explaining constraints",
+    "Extensibility",
+    "File interfaces",
+    "Fiori",
+    "Flexible workflow",
+    "Forecast accuracy",
+    "Global template",
+    "Go-live pressure",
+    "Guided buying",
+    "IDoc basics",
+    "Integration platform",
+    "Integration principles",
+    "Integration topology",
+    "Interface monitoring",
+    "Interface troubleshooting",
+    "Inventory classification",
+    "Inventory movements",
+    "Inventory performance",
+    "Invoice automation",
+    "Invoice rules",
+    "Invoice verification",
+    "Knowledge transfer",
+    "Lead time management",
+    "MRP",
+    "Master data governance",
+    "Master data replication",
+    "Material master",
+    "Missed deadlines",
+    "Multi-ERP deployments",
+    "Negotiation",
+    "Network fundamentals",
+    "Network versus EDI",
+    "Order collaboration",
+    "Outline agreements",
+    "Payment collaboration",
+    "Procurement KPIs",
+    "Professional honesty",
+    "Purchasing documents",
+    "Release strategies",
+    "Reliability",
+    "Reorder point",
+    "Requirements workshops",
+    "Resilience",
+    "Safety stock",
+    "Sales and operations planning",
+    "Savings measurement",
+    "Scope management",
+    "Security architecture",
+    "Service and working capital",
+    "Side-by-side extensions",
+    "Sizing and performance",
+    "Source determination",
+    "Sourcing event design",
+    "Sourcing events",
+    "Stakeholder engagement",
+    "Standard versus custom",
+    "Subcontracting",
+    "Supplier enablement",
+    "Supplier management",
+    "Supplier risk",
+    "Sustainable sourcing",
+    "System landscape",
+    "Tail spend",
+    "Three-way match",
+    "Total cost of ownership",
+    "Transition approach",
+    "Troubleshooting",
+    "Universal Journal",
+    "Valuation",
+    "cXML"
+  ],
+  "expectations": [
+    {
+      "id": "IC-A01",
+      "condition": "Every reference answer covers every concept of its own rubric.",
+      "why": "The reference answer is the bank's own model answer. If it does not match its own keyword list, a candidate writing the perfect answer loses marks for it."
+    },
+    {
+      "id": "IC-A02",
+      "condition": "A reference answer scores strictly higher than a partial answer.",
+      "why": "A rubric that cannot separate a full answer from a vague one is not a rubric."
+    },
+    {
+      "id": "IC-A03",
+      "condition": "A configured non-answer scores zero on every dimension and is reported as a non-answer rather than as a very low answer.",
+      "why": "Silence and a wrong answer are different things and are coached differently."
+    },
+    {
+      "id": "IC-A04",
+      "condition": "Adding a known-wrong statement to a complete answer lowers technical accuracy and leaves completeness unchanged.",
+      "why": "Saying something incorrect does not make an answer less complete. Spreading the penalty would make the same mistake cost different amounts on different questions."
+    },
+    {
+      "id": "IC-A05",
+      "condition": "Scores are identical with use_ai=true (mock provider) and use_ai=false.",
+      "why": "The rubric scores; the provider only ever writes prose."
+    }
+  ],
+  "anchors": [
+    {
+      "question_id": "IQ-MM-003",
+      "mode": "technical"
+    },
+    {
+      "question_id": "IQ-IN-002",
+      "mode": "technical"
+    },
+    {
+      "question_id": "IQ-AC-002",
+      "mode": "architecture"
+    },
+    {
+      "question_id": "IQ-CO-002",
+      "mode": "behavioral"
+    },
+    {
+      "question_id": "IQ-SC-001",
+      "mode": "practice"
+    },
+    {
+      "question_id": "IQ-PR-003",
+      "mode": "practice"
+    },
+    {
+      "question_id": "IQ-BN-001",
+      "mode": "rapid_fire"
+    }
+  ],
+  "anchor_results": [
+    {
+      "question_id": "IQ-MM-003",
+      "mode": "technical",
+      "answer_kind": "reference",
+      "overall_score": 98.5,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 4,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 86.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-MM-003",
+      "mode": "technical",
+      "answer_kind": "partial",
+      "overall_score": 29.44,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 37.21,
+        "completeness": 20.57,
+        "clarity": 64.68,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-MM-003",
+      "mode": "technical",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-MM-003",
+      "mode": "technical",
+      "answer_kind": "incorrect",
+      "overall_score": 94.06,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 4,
+      "concepts_expected": 4,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 86.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-IN-002",
+      "mode": "technical",
+      "answer_kind": "reference",
+      "overall_score": 99.5,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 95.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-IN-002",
+      "mode": "technical",
+      "answer_kind": "partial",
+      "overall_score": 19.75,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 25.42,
+        "completeness": 4.55,
+        "clarity": 64.68,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-IN-002",
+      "mode": "technical",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-IN-002",
+      "mode": "technical",
+      "answer_kind": "incorrect",
+      "overall_score": 95.06,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 95.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-AC-002",
+      "mode": "architecture",
+      "answer_kind": "reference",
+      "overall_score": 97.54,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 75.39,
+        "business_understanding": 100.0,
+        "architecture": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-AC-002",
+      "mode": "architecture",
+      "answer_kind": "partial",
+      "overall_score": 19.97,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 50.0,
+        "completeness": 5.62,
+        "clarity": 63.47,
+        "business_understanding": 0.0,
+        "architecture": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-AC-002",
+      "mode": "architecture",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0,
+        "architecture": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-AC-002",
+      "mode": "architecture",
+      "answer_kind": "incorrect",
+      "overall_score": 95.93,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 84.28,
+        "business_understanding": 100.0,
+        "architecture": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-CO-002",
+      "mode": "behavioral",
+      "answer_kind": "reference",
+      "overall_score": 98.07,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 93.56,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-CO-002",
+      "mode": "behavioral",
+      "answer_kind": "partial",
+      "overall_score": 24.19,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 31.91,
+        "completeness": 0.0,
+        "clarity": 64.68,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-CO-002",
+      "mode": "behavioral",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-CO-002",
+      "mode": "behavioral",
+      "answer_kind": "incorrect",
+      "overall_score": 97.15,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 95.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-SC-001",
+      "mode": "practice",
+      "answer_kind": "reference",
+      "overall_score": 97.75,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 86.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-SC-001",
+      "mode": "practice",
+      "answer_kind": "partial",
+      "overall_score": 22.43,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 35.56,
+        "completeness": 0.0,
+        "clarity": 63.47,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-SC-001",
+      "mode": "practice",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-SC-001",
+      "mode": "practice",
+      "answer_kind": "incorrect",
+      "overall_score": 94.42,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 86.5,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-PR-003",
+      "mode": "practice",
+      "answer_kind": "reference",
+      "overall_score": 98.5,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 91.0,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-PR-003",
+      "mode": "practice",
+      "answer_kind": "partial",
+      "overall_score": 23.99,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 35.56,
+        "completeness": 5.62,
+        "clarity": 63.47,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-PR-003",
+      "mode": "practice",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 5,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-PR-003",
+      "mode": "practice",
+      "answer_kind": "incorrect",
+      "overall_score": 95.17,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 5,
+      "concepts_expected": 5,
+      "incorrect_statements": 1,
+      "dimensions": {
+        "technical_accuracy": 90.0,
+        "completeness": 100.0,
+        "clarity": 91.0,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-BN-001",
+      "mode": "rapid_fire",
+      "answer_kind": "reference",
+      "overall_score": 100.0,
+      "band": "strong",
+      "passed": true,
+      "non_answer": false,
+      "concepts_matched": 4,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 100.0,
+        "completeness": 100.0,
+        "clarity": 100.0,
+        "business_understanding": 100.0
+      }
+    },
+    {
+      "question_id": "IQ-BN-001",
+      "mode": "rapid_fire",
+      "answer_kind": "partial",
+      "overall_score": 28.23,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": false,
+      "concepts_matched": 1,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 36.36,
+        "completeness": 19.59,
+        "clarity": 86.5,
+        "business_understanding": 0.0
+      }
+    },
+    {
+      "question_id": "IQ-BN-001",
+      "mode": "rapid_fire",
+      "answer_kind": "non_answer",
+      "overall_score": 0.0,
+      "band": "needs_work",
+      "passed": false,
+      "non_answer": true,
+      "concepts_matched": 0,
+      "concepts_expected": 4,
+      "incorrect_statements": 0,
+      "dimensions": {
+        "technical_accuracy": 0.0,
+        "completeness": 0.0,
+        "clarity": 0.0,
+        "business_understanding": 0.0
+      }
+    }
+  ]
+}
