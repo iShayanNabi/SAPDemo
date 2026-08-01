@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.core.config import settings
+from app.core.demo import ensure_uploads_allowed
 from app.core.exceptions import FileValidationError
 from app.core.security import sanitize_filename, sha256_of_bytes
 
@@ -65,7 +66,10 @@ def validate_upload(filename: str, content: bytes) -> ValidatedUpload:
 
     Raises:
         FileValidationError: with a user-safe message for any rejection.
+        DemoModeError: if this is a public demonstration that refuses uploads.
     """
+    ensure_uploads_allowed("file")
+
     safe_filename = sanitize_filename(filename)
     extension = Path(safe_filename).suffix.lower()
 
@@ -119,7 +123,10 @@ def validate_document_upload(filename: str, content: bytes) -> ValidatedUpload:
 
     Raises:
         FileValidationError: with a user-safe message for any rejection.
+        DemoModeError: if this is a public demonstration that refuses uploads.
     """
+    ensure_uploads_allowed("document")
+
     safe_filename = sanitize_filename(filename)
     extension = Path(safe_filename).suffix.lower()
 

@@ -205,6 +205,18 @@ OPENAPI_TAGS: list[dict[str, Any]] = [
             "with an unanswered question."
         ),
     },
+    {
+        "name": "Demonstration",
+        "description": (
+            "Guided demonstrations over the bundled fictional data, and the switch that "
+            "makes this deployment safe to publish. `GET /api/v1/demo/status` reports "
+            "whether public demo mode is on - which forces the mock AI provider and refuses "
+            "uploads server-side - and `POST /api/v1/demo/load/{module}` hands a module the "
+            "sample file it would otherwise have received from an upload. No analysis "
+            "happens here: the load route calls the module's own upload handler and returns "
+            "the identifiers its analysis endpoint already expects."
+        ),
+    },
 ]
 
 #: The security scheme placeholder. Declared, referenced as optional, enforced

@@ -12,6 +12,7 @@ from sqlalchemy import text
 from app.api.v1 import (
     blueprints,
     contracts,
+    demo,
     interviews,
     inventory,
     invoice_validator,
@@ -109,3 +110,4 @@ api_router.include_router(inventory.router)
 api_router.include_router(test_cases.router)
 api_router.include_router(blueprints.router)
 api_router.include_router(interviews.router)
+api_router.include_router(demo.router)

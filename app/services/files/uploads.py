@@ -22,6 +22,7 @@ from __future__ import annotations
 from fastapi import UploadFile
 
 from app.core.config import settings
+from app.core.demo import ensure_uploads_allowed
 from app.core.exceptions import FileValidationError
 from app.core.logging import get_logger
 
@@ -53,7 +54,13 @@ async def read_upload_within_limit(
         FileValidationError: if the payload is empty or exceeds the limit. The
             message names the limit in MB, because "too large" without a number
             tells a user nothing about what to do next.
+        DemoModeError: if this is a public demonstration that refuses uploads.
+            Checked *before the first chunk is read*, for the same reason the
+            size limit is checked per chunk rather than at the end: a refusal
+            that first accepts 25 MB is not a refusal.
     """
+    ensure_uploads_allowed(what)
+
     limit = settings.max_upload_bytes if max_bytes is None else max_bytes
     chunks: list[bytes] = []
     total = 0

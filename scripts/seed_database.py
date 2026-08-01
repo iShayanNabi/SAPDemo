@@ -426,6 +426,15 @@ def main() -> int:
     parser.add_argument(
         "--yes", action="store_true", help="Do not ask before adding to a non-empty database."
     )
+    parser.add_argument(
+        "--if-empty",
+        action="store_true",
+        help=(
+            "Do nothing, successfully, when the database already holds analyses. This is "
+            "what a container start uses: seeding must happen on a fresh volume and must "
+            "not happen on a restart."
+        ),
+    )
     args = parser.parse_args()
 
     if args.list:
@@ -450,6 +459,13 @@ def main() -> int:
         print("Run: alembic upgrade head    (or: python scripts/reset_demo.py --yes)")
         return 2
 
+    if already and args.if_empty:
+        # Exit 0, not 1: on a restart this is the expected outcome, and a
+        # container start script that treats "already seeded" as a failure
+        # either stops booting or teaches everybody to ignore its exit code.
+        print(f"The database already holds {already} analysis record(s); nothing to seed.")
+        return 0
+
     if already and not args.yes:
         print(f"The database already holds {already} analysis record(s).")
         if not sys.stdin.isatty():
@@ -463,12 +479,17 @@ def main() -> int:
     # Imported here so `--list` and `--help` stay instant.
     from fastapi.testclient import TestClient
 
+    from app.core.demo import trusted_ingest
     from app.main import app
 
     selected = args.modules or list(SEEDERS)
     failures: list[str] = []
 
-    with TestClient(app) as client:
+    # These uploads carry bytes read from data/sample/, not from a request, so
+    # they are permitted even while public demo mode is refusing client
+    # uploads. Without this the demo hostname would come up with an empty
+    # database and no way to fill it.
+    with TestClient(app) as client, trusted_ingest():
         health = client.get(f"{V1}/health")
         if health.status_code != 200:
             print(f"The API did not start cleanly (HTTP {health.status_code}).")

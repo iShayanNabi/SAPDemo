@@ -129,6 +129,38 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
     api_base_url: str = "http://127.0.0.1:8000"
 
+    # ------------------------------------------------------------------
+    # Public demonstration mode
+    # ------------------------------------------------------------------
+    # Everything here is off by default, so a developer's checkout behaves
+    # exactly as it did before this mode existed. Turning ``DEMO_MODE`` on is
+    # what makes the lab safe to put behind a public hostname: it forces the
+    # mock AI provider, refuses uploads, and tells every page to say so.
+    #
+    # The individual switches are only consulted while ``demo_mode`` is true.
+    # That is deliberate - a half-applied demo configuration should not be able
+    # to disable uploads on somebody's laptop.
+    demo_mode: bool = False
+    #: Whether a visitor may upload their own file while demo mode is on.
+    #: False is the point of the mode: the demo runs on bundled fictional data.
+    demo_allow_uploads: bool = False
+    #: Force the mock AI provider regardless of any key that happens to be set.
+    demo_use_mock_ai: bool = True
+    #: Load the bundled demonstration records when the database holds none.
+    demo_seed_on_empty: bool = True
+    #: Wipe and reload on every start. Off: a restart must not destroy data.
+    demo_reset_on_start: bool = False
+
+    # ------------------------------------------------------------------
+    # Public site identity (used by documentation, the banner and exports)
+    # ------------------------------------------------------------------
+    # Blank by default. Nothing here is a secret and nothing here is required;
+    # they exist so no hostname or address has to be hardcoded in a page.
+    public_site_name: str = "SAPDemo"
+    public_site_url: str = ""
+    public_demo_url: str = ""
+    public_contact_email: str = ""
+
     @field_validator("data_dir", "upload_dir", "export_dir", "sample_dir")
     @classmethod
     def _resolve_path(cls, value: Path) -> Path:
@@ -203,13 +235,32 @@ class Settings(BaseSettings):
             return "azure_document_intelligence"
         return "none"
 
+    @property
+    def uploads_enabled(self) -> bool:
+        """Whether a caller may upload their own file.
+
+        True everywhere except a public demonstration that has not explicitly
+        opted back in. Read this rather than ``demo_mode`` directly: a route
+        wants to know "may this upload happen", not "which mode are we in".
+        """
+        if not self.demo_mode:
+            return True
+        return self.demo_allow_uploads
+
     def resolved_ai_provider(self) -> AIProviderName:
         """Return the provider that will actually be used.
 
         Falls back to ``mock`` whenever AI is disabled or the configured
         provider has no API key. This is what makes the whole project runnable
         with no keys at all.
+
+        Demo mode is checked *first* and wins outright. A public demonstration
+        that quietly started billing an Anthropic key because one was present
+        in the environment would be a bill and a data-egress path nobody
+        chose, so the mode does not consult the keys at all.
         """
+        if self.demo_mode and self.demo_use_mock_ai:
+            return "mock"
         if not self.ai_enabled:
             return "mock"
         if self.ai_provider == "anthropic" and self.anthropic_api_key:
