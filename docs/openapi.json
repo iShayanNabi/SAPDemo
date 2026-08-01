@@ -3353,6 +3353,42 @@
         "title": "ApiResponse[dict[str, Any]]",
         "type": "object"
       },
+      "ApiResponse_dict_str__object__": {
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "success": {
+            "default": true,
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "title": "ApiResponse[dict[str, object]]",
+        "type": "object"
+      },
       "ApiResponse_list_FieldDefinitionSchema__": {
         "properties": {
           "data": {
@@ -9244,6 +9280,19 @@
           "context"
         ],
         "title": "GenerateTestCasesRequest",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
         "type": "object"
       },
       "HealthStatus": {
@@ -20627,6 +20676,46 @@
         "title": "ValidationDetailSchema",
         "type": "object"
       },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
       "ValidationListResponse": {
         "description": "Paginated list of validations.",
         "properties": {
@@ -21997,6 +22086,38 @@
           }
         },
         "summary": "API index",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/api/v1/auth-status": {
+      "get": {
+        "description": "Report how authentication is configured, and who the caller resolved to.\n\nThere is no authentication today - every request resolves to the local demo\nprincipal, which holds every role. This endpoint exists so that is a stated\nfact a front-end developer can read rather than something they infer from\nrequests happening to succeed, and so the seam is visible in the API itself.\n\nSee ``docs/API_AUTHENTICATION_PLAN.md`` for the model this will grow into.",
+        "operationId": "auth_status_api_v1_auth_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_dict_str__object__"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Authentication configuration",
         "tags": [
           "System"
         ]
@@ -27682,7 +27803,7 @@
     },
     "/api/v1/health": {
       "get": {
-        "description": "Report application, database and AI provider status.",
+        "description": "Report application, database and AI provider status.\n\nNeeds no credential and never will: this is what a container healthcheck,\na load balancer and an uptime monitor poll, and none of them can log in.\n``status`` is ``ok`` or ``degraded`` - degraded means the API is up but the\ndatabase is not answering, which is a different action from \"down\".",
         "operationId": "health_api_v1_health_get",
         "responses": {
           "200": {
@@ -27696,7 +27817,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Health",
+        "summary": "Health check",
         "tags": [
           "System"
         ]

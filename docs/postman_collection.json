@@ -23,7 +23,7 @@
       "description": "Health, the module index and the OpenAPI document. `GET /api/v1/health` reports the database and the resolved AI provider and needs no credential - it is what a container healthcheck polls.",
       "item": [
         {
-          "name": "Health",
+          "name": "Health check",
           "request": {
             "method": "GET",
             "header": [
@@ -47,7 +47,36 @@
               "query": [],
               "variable": []
             },
-            "description": "Report application, database and AI provider status."
+            "description": "Report application, database and AI provider status.\n\nNeeds no credential and never will: this is what a container healthcheck,\na load balancer and an uptime monitor poll, and none of them can log in.\n``status`` is ``ok`` or ``degraded`` - degraded means the API is up but the\ndatabase is not answering, which is a different action from \"down\"."
+          },
+          "response": []
+        },
+        {
+          "name": "Authentication configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "disabled": true,
+                "description": "Not required today. See docs/API_AUTHENTICATION_PLAN.md."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth-status"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Report how authentication is configured, and who the caller resolved to.\n\nThere is no authentication today - every request resolves to the local demo\nprincipal, which holds every role. This endpoint exists so that is a stated\nfact a front-end developer can read rather than something they infer from\nrequests happening to succeed, and so the seam is visible in the API itself.\n\nSee ``docs/API_AUTHENTICATION_PLAN.md`` for the model this will grow into."
           },
           "response": []
         },

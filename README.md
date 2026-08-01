@@ -32,9 +32,11 @@ Detailed progress: [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.
 
 ## Quick start
 
+**Python 3.12 or newer is required.** Check with `python3 --version`.
+
 ```bash
 # 1. Create and activate a virtual environment
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
 # 2. Install dependencies
@@ -43,12 +45,18 @@ pip install -r requirements.txt
 # 3. Check the installation
 python scripts/verify_setup.py
 
-# 4. Start the API (terminal 1)
+# 4. Load the demo data so every page has something to show (optional)
+python scripts/seed_database.py
+
+# 5. Start the API (terminal 1)
 uvicorn app.main:app --reload       # http://127.0.0.1:8000/docs
 
-# 5. Start the UI (terminal 2)
+# 6. Start the UI (terminal 2)
 streamlit run streamlit_app/Home.py # http://localhost:8501
 ```
+
+Then follow [Complete demonstration](#complete-demonstration) below to drive all ten modules
+start to finish.
 
 **No data generation step is needed.** The fictional demo datasets are committed to the repository,
 so a fresh clone can run `verify_setup.py`, `pytest` and the app straight away. The generator
@@ -57,6 +65,162 @@ if you change a generator itself - see [Sample data](#sample-data).
 
 Platform-specific instructions (macOS, Windows, Linux) are in
 [`docs/LOCAL_SETUP.md`](docs/LOCAL_SETUP.md).
+
+---
+
+## Complete demonstration
+
+Fifteen minutes, start to finish, touching all ten modules. Everything below runs on a fresh
+clone with **no SAP system, no API key and no Docker**, against the fictional datasets committed
+in `data/sample/`.
+
+### 0. Set up (once)
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/verify_setup.py          # exits 0 when everything is ready
+```
+
+### 1. Start from a clean database
+
+```bash
+python scripts/reset_demo.py --yes      # drops every table, re-applies the migrations
+python scripts/seed_database.py         # loads all ten modules with the demo data
+```
+
+`seed_database.py` drives the real HTTP API in-process, so if it succeeds, the demo works. It
+prints what each module produced:
+
+```text
+  1. Purchase Order Risk Checker             ok   131 findings over 1238 lines  (3.6s)
+  2. Spend Analytics Dashboard               ok   44,940,173 EUR of spend, 45 opportunities  (4.1s)
+  3. Supplier Recommendation Engine          ok   55 suppliers, 30 eligible for MAT-1000  (0.3s)
+  4. Invoice Validator                       ok   17 exceptions over 420 invoices  (0.4s)
+  5. Supplier Risk Copilot                   ok   55 suppliers scored  (0.4s)
+  6. Contract Assistant                      ok   3 contracts analysed  (0.6s)
+  7. Inventory Predictor                     ok   15 materials forecast, 10 predicted shortages  (0.3s)
+  8. SAP Test Case Generator                 ok   12 test cases in 'Procure to Pay - demo suite'  (0.1s)
+  9. SAP Blueprint Generator                 ok   30 sections in 'Nordwind S/4HANA blueprint - demo'  (0.2s)
+  10. SAP Interview Coach                    ok   1 session, 5 answers scored  (0.5s)
+```
+
+### 2. Start both processes
+
+```bash
+uvicorn app.main:app --reload           # terminal 1 - http://127.0.0.1:8000/docs
+streamlit run streamlit_app/Home.py     # terminal 2 - http://localhost:8501
+```
+
+Check the API is up before anything else:
+
+```bash
+curl -s http://127.0.0.1:8000/api/v1/health
+# {"success":true,"data":{"status":"ok","database_connected":true,"ai_provider":"mock",
+#  "ai_is_mock":true,...},"error":null,"meta":{...}}
+```
+
+`ai_is_mock: true` is the normal state. The mock provider is deterministic, so every narrative
+below is reproducible.
+
+### 3. Walk one module end to end on the command line
+
+Module 1, the whole journey, with nothing but `curl`:
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+
+# a. Download the bundled demo dataset (1,238 purchase order lines)
+curl -s "$API/po-risk/sample?format=csv" -o /tmp/po.csv
+
+# b. Upload it. The response suggests a column mapping; it does not demand one.
+UPLOAD=$(curl -s -F "file=@/tmp/po.csv" "$API/po-risk/upload" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin)['data']['upload_id'])")
+
+# c. Analyse it
+ANALYSIS=$(curl -s -X POST "$API/po-risk/analyze" \
+  -H 'Content-Type: application/json' \
+  -d "{\"upload_id\": \"$UPLOAD\", \"generate_ai_summary\": true}" |
+  python3 -c "import json,sys; print(json.load(sys.stdin)['data']['analysis_id'])")
+
+# d. Read the most serious findings
+curl -s "$API/po-risk/analyses/$ANALYSIS/findings?severity=critical&limit=3" |
+  python3 -m json.tool | head -40
+
+# e. Download the report
+curl -s -OJ "$API/po-risk/analyses/$ANALYSIS/export?format=xlsx"
+```
+
+Expect **131 findings over 1,238 lines**, 21 of them critical. Every one names the rule that
+raised it, the evidence, and the threshold it crossed.
+
+### 4. Do the same from TypeScript
+
+```bash
+cd examples/typescript-client
+npm install
+npm run demo            # health -> sample -> upload -> analyse -> poll -> findings -> export -> copilot
+```
+
+That is the reference for a future website: the same seven calls, with the error handling, the
+paging and the download filename all done properly. See
+[`examples/typescript-client/README.md`](examples/typescript-client/README.md).
+
+### 5. Walk the ten modules in the UI
+
+Open <http://localhost:8501>. Each page loads its demo data from the API - the seed above means
+every one has something to show immediately.
+
+| Page | What to try | What to look for |
+| --- | --- | --- |
+| **1. PO Risk Checker** | Upload the demo CSV, run the analysis | 131 findings; every one shows its rule, evidence and threshold |
+| **2. Spend Analytics** | Run the analysis, click a supplier in the chart | The drill-down total equals the figure you clicked |
+| **3. Supplier Recommendations** | Ask for MAT-1000, 100 units, plant 1010 | 30 eligible of 55; each excluded supplier says why |
+| **4. Invoice Validator** | Upload invoices, POs and goods receipts, validate | 17 exceptions; each names the two documents that disagree |
+| **5. Supplier Risk Copilot** | Score the portfolio, then ask "why is 0000390001 risky?" | The answer cites the records it came from |
+| **6. Contract Assistant** | Upload `sample_contract_msa_nordwind.pdf`, analyse | Every clause carries a page number and an excerpt |
+| **7. Inventory Predictor** | Forecast 6 periods from 2026-07-01 | 15 materials; each says which model was chosen and why |
+| **8. Test Case Generator** | Generate a suite, edit a step, then look at the approval | Editing the script clears the approval it had earned |
+| **9. Blueprint Generator** | Generate, approve the summary, then edit the scope | The approval is kept *and* flagged as stale |
+| **10. Interview Coach** | Answer three questions, then open the dashboard | The study plan quotes the same averages the dashboard shows |
+
+### 6. Try the things that are meant to fail
+
+The honest behaviour is easier to see than the correct behaviour:
+
+```bash
+# A PDF posted to a spreadsheet endpoint - two allow lists, deliberately separate
+curl -s -F "file=@data/sample/sample_contract_msa_nordwind.pdf" "$API/spend/upload" | python3 -m json.tool
+# -> 400 file_validation_error, naming the types it does accept
+
+# A file with an unreadable number - reported, not fatal
+printf 'LIFNR,NAME1,OTD,RISK_SCORE\n0000392900,Acme,95,not-a-number\n' > /tmp/bad.csv
+curl -s -F "file=@/tmp/bad.csv" -F "dataset=profiles" "$API/supplier-risk/upload" |
+  python3 -m json.tool | grep -A5 data_quality
+# -> 200, with the problem described row by row
+
+# A question the loaded data cannot answer
+curl -s -X POST "$API/supplier-risk/chat" -H 'Content-Type: application/json' \
+  -d '{"question": "What is this supplier'"'"'s share price?"}' | python3 -m json.tool
+# -> data_available: false, and a reason. Not a guess.
+```
+
+In the UI, upload
+[`data/sample/sample_contract_hostile_calder.pdf`](data/sample/) to the Contract Assistant. It is a
+contract with prompt-injection bait written into its text. The page flags it, analyses it as data,
+and the sentence the bait was trying to get printed does not appear anywhere in the result.
+
+### 7. Check everything yourself
+
+```bash
+python scripts/check_quality.py     # lint, secret scan, dependency audit, full test suite
+```
+
+### 8. Reset
+
+```bash
+python scripts/reset_demo.py --yes --seed    # back to step 2
+```
 
 ---
 
@@ -1089,15 +1253,58 @@ Business logic never lives in a Streamlit page. See
 ## Testing
 
 ```bash
-pytest                    # everything (1,448 tests, ~90s)
-pytest tests/unit         # 799 - rules, metrics, savings, scoring, eligibility, risk categories, copilot intents, tolerances, mapping, parsing, document extraction, clause extraction, date parsing, question answering, forecasting models, accuracy metrics, model selection, reorder policy, prompt-injection resistance, test-case planning, drafting recovery, blueprint skeletons, blueprint versioning, interview rubric scoring, concept matching, clarity measurement, question selection, performance aggregation, security, AI
-pytest tests/api          # 408 - endpoints against a temporary database
-pytest tests/integration  # 241 - full journeys over all ten sample datasets
+pytest                    # everything (1,627 tests, ~3 min)
+pytest tests/unit         # 800 - rules, metrics, scoring, forecasting, rubric marking, parsing, rounding
+pytest tests/api          # 409 - every endpoint against a temporary database
+pytest tests/integration  # 300 - the ten sample datasets, the migrations, the deployment files, the docs
+pytest tests/e2e          # 118 - one journey per module, plus the cross-module contracts
+pytest -m "not slow"      # skip the suites that process a full dataset
 ```
 
-The integration suites read the anomaly, scenario, supplier, invoice, supplier-risk, contract,
-inventory, test-case, blueprint and interview manifests and assert that every documented condition
-is actually detected. Details in [`docs/TESTING.md`](docs/TESTING.md).
+Four suites, four questions:
+
+| Suite | Asks |
+| --- | --- |
+| `tests/unit` | Does this rule, metric or model do the right arithmetic? |
+| `tests/api` | Does this endpoint behave - status codes, validation, persistence? |
+| `tests/integration` | Does the engine find everything the sample manifest says is there? |
+| `tests/e2e` | Does the *journey* work, and do the ten modules agree with each other? |
+
+`tests/e2e` is where the cross-cutting contracts live, and most of them read the generated OpenAPI
+document, so a new module is covered the moment it registers a route:
+
+- **`test_module_workflows.py`** - one test per module, walking the documented path from the first
+  call to the downloaded report, against the bundled demo data.
+- **`test_cross_module_contract.py`** - one envelope, one error shape, one pagination contract, one
+  severity vocabulary, one analysis-status vocabulary, bounded confidence scores.
+- **`test_security_contract.py`** - content sniffing, the two allow lists, size limits, traversal
+  containment, key redaction, prompt injection, AI timeouts, CORS.
+- **`test_performance_contract.py`** - statements per page, `LIMIT` reaching the database, no row
+  served twice while paging, the vectorised and per-cell readers agreeing cell by cell.
+- **`test_openapi_contract.py`** - every endpoint described, every error documented, the Postman
+  collection current.
+- **`test_auth_seams.py`** - nothing is refused today, *and* the permission machinery really runs.
+
+The integration suites read the ten manifests and assert that every documented anomaly is actually
+detected, which is what makes the sample data a regression test rather than decoration. Details in
+[`docs/TESTING.md`](docs/TESTING.md).
+
+### Quality gates
+
+```bash
+python scripts/check_quality.py            # all four
+python scripts/check_quality.py --fast     # skip the dependency audit (offline)
+```
+
+| Gate | Tool |
+| --- | --- |
+| Lint | `ruff check` - passes clean |
+| Secrets | a scan of every tracked file for credential-shaped strings |
+| Dependencies | `pip-audit` - no known vulnerabilities |
+| Tests | the full suite |
+
+`ruff format` is deliberately not part of the gate; `pyproject.toml` explains why next to the
+configuration.
 
 ---
 
@@ -1117,6 +1324,14 @@ by an endpoint or written to a log.
 | `ALLOWED_DOCUMENT_EXTENSIONS` | `.pdf,.docx,.txt,.md` | Document allow list, separate from the tabular one |
 | `OCR_PROVIDER` | `none` | `none`, `local`, `aws_textract` or `azure_document_intelligence` |
 | `API_BASE_URL` | `http://127.0.0.1:8000` | Where Streamlit finds the API |
+| `CORS_ORIGINS` | localhost:3000, :8501 | Comma separated. `*` disables credentials automatically |
+| `ENVIRONMENT` | `local` | `local`, `test`, `staging` or `production` |
+| `LOG_LEVEL` / `LOG_JSON` | `INFO` / `false` | Set `LOG_JSON=true` for a log aggregator |
+| `MAX_ROWS_PER_UPLOAD` | 200,000 | Rejected by the reader, before any analysis runs |
+| `AI_TIMEOUT_SECONDS` / `AI_MAX_RETRIES` | 30 / 2 | An AI failure never fails an analysis |
+
+The full annotated list is in [`.env.example`](.env.example). Nothing outside
+`app/core/config.py` reads `os.environ`.
 
 Switching to PostgreSQL is a one-line change:
 
@@ -1129,11 +1344,136 @@ alembic upgrade head
 
 ## Security
 
-Uploaded documents are treated as untrusted data throughout: file-type and size validation with a
-magic-byte check, filename sanitisation, path-traversal protection on every read and write,
-request validation with Pydantic, safe error messages that never leak paths or stack traces, and
-prompt-injection filtering before any content reaches a model. Instructions found inside an
-uploaded file are never executed.
+Every uploaded file is untrusted input, and the whole design follows from that.
+
+| Concern | What is done |
+| --- | --- |
+| File type | Extension allow-list **plus** a magic-byte check - a `.csv` that is really a ZIP is refused |
+| Two allow lists | Tabular (`.csv/.xlsx/.json`) and documents (`.pdf/.docx/.txt/.md`) are separate, so growing one cannot widen the other |
+| Size | Enforced **while reading**, not after buffering - an oversized POST costs one chunk, not its whole size |
+| Row count | 200,000 rows, refused by the reader before any analysis starts |
+| Filenames | Sanitised: no directories, no `..`, no unicode tricks, no control characters |
+| Paths | Every read and write resolves through a containment check |
+| Secrets | Environment only. Never in source, never in a response, never in a log - a redacting log filter is the backstop |
+| Errors | Safe messages: no paths, no stack traces, no provider payloads. The detail is in the log against a request id |
+| CORS | Named origins. A `*` origin automatically disables credentials |
+| Prompt injection | Filtered before any content reaches a model, and the module that *prints* untrusted text drops the whole sentence around a marker |
+| Rendering | Text from a document is HTML-escaped before it reaches the UI |
+| AI | Timeouts, a retry ceiling, and a failure that degrades to the deterministic result rather than failing the analysis |
+| Dependencies | `pip-audit` in the quality gate; currently clean |
+
+**Instructions found inside an uploaded file are never executed.** The hostile demo contract
+(`data/sample/sample_contract_hostile_calder.pdf`) exists to prove it, and there is a test
+asserting the payload it carries never appears in a response.
+
+### What is deliberately absent
+
+**There is no authentication.** Every caller can read every analysis and every uploaded file. That
+is correct for a local lab and unacceptable for anything reachable from a network. The seams are
+built (`app/core/auth.py`, `GET /api/v1/auth-status`) and the plan is written
+([`docs/API_AUTHENTICATION_PLAN.md`](docs/API_AUTHENTICATION_PLAN.md)), but nothing is enforced.
+
+Also absent, and deliberately: rate limiting, upload quotas, virus scanning, and background job
+processing. See [`docs/DEPLOYMENT_OPTIONS.md`](docs/DEPLOYMENT_OPTIONS.md).
+
+---
+
+## Docker
+
+**Docker is optional.** The lab is meant to run from a virtualenv, and the documentation is
+written around that. The image exists so the runtime can be reproduced elsewhere.
+
+```bash
+docker compose up api ui                 # SQLite, the default
+docker compose --profile postgres up     # + PostgreSQL
+docker compose --profile cache up        # + Redis (unused today; see below)
+```
+
+- The API is on <http://localhost:8000>, the UI on <http://localhost:8501>.
+- One image, three commands: `lab-api`, `lab-streamlit`, `lab-migrate`.
+- Two stages, a non-root user, Alembic migrations applied on start, and a healthcheck against
+  `/api/v1/health`.
+- `lab-data` is a named volume, so uploads, exports and the SQLite file survive
+  `docker compose down` (but not `down -v`).
+- The optional services sit behind profiles, so `docker compose up` starts nothing you did not
+  ask for. **Nothing in this project uses Redis** - it is declared for the day a job queue or a
+  shared rate-limit counter needs one, and it is off until then.
+
+API keys are read from your shell (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`), never written into the
+compose file, and `.dockerignore` keeps `.env` out of the build context.
+
+---
+
+## Deployment
+
+Four paths, in order of effort: a local virtualenv, Docker Compose, a single VM, a container
+platform. Which one is appropriate depends mostly on one question - is it reachable by somebody
+who is not you?
+
+**If yes, authentication comes first.** Everything else is tuning.
+
+[`docs/DEPLOYMENT_OPTIONS.md`](docs/DEPLOYMENT_OPTIONS.md) covers all four, plus PostgreSQL, the
+AI provider decision, the full configuration reference and a pre-launch checklist.
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause and fix |
+| --- | --- |
+| `ModuleNotFoundError` on any import | The virtualenv is not active. `source .venv/bin/activate` |
+| `python: command not found` | Use `python3.12`. Check with `python3 --version` - 3.12 or newer |
+| `verify_setup.py` reports missing packages | `pip install -r requirements.txt` |
+| Streamlit says "API not reachable" | The backend is not running. `uvicorn app.main:app --reload` in another terminal |
+| Every page is empty | Nothing is loaded yet. `python scripts/seed_database.py` |
+| "The sample dataset has not been generated yet" | `data/sample/` was deleted. Re-run the matching `scripts/generate_*_sample_data.py` |
+| Upload rejected: "File type '.pdf' is not supported" | Correct behaviour. Modules 1-5 and 7 take spreadsheets; only module 6 takes documents |
+| Upload rejected: "does not look like a valid .csv" | The extension does not match the contents. A `.csv` that is really a workbook is refused |
+| Contract reports `needs_ocr: true` | The PDF is a scan with no text layer. Set `OCR_PROVIDER`, or use a text-based PDF |
+| Analysis is slow on a large file | Analyses are synchronous and CPU-bound. The limit is 200,000 rows; see the background-worker seam in the integration doc |
+| `alembic upgrade head` says "already at head" but tables are missing | `alembic_version` survived a manual delete. `python scripts/reset_demo.py --yes` |
+| Tests fail after editing `data/sample/` | The baselines no longer match. Re-run the generator, which rewrites `expected_*_baseline.json` |
+| Port 8000 or 8501 already in use | `uvicorn app.main:app --port 8001`, or `streamlit run ... --server.port 8502` |
+| `ai_is_mock: true` and you configured a key | The provider name must be set too: `AI_PROVIDER=anthropic` *and* `ANTHROPIC_API_KEY=...` |
+| XLSX export fails with a timezone error | Fixed - every workbook is normalised before saving. If it recurs, a builder is bypassing `workbook_to_bytes` |
+
+Still stuck? Every error response carries `meta.request_id`, which is also the `X-Request-ID`
+header and appears in the server log. Search the log for it.
+
+---
+
+## Architecture
+
+Six layers, and the rule is that nothing ever calls upward:
+
+```text
+Presentation   streamlit_app/          HTTP only, zero business logic
+API            app/api/v1/             routes, status codes, wiring
+Module logic   app/modules/<name>/     rules, metrics, engines, orchestration
+Shared         app/services/           tabular/ files/ documents/ exports/ ai/
+Data           app/models/ app/schemas/
+Core           app/core/               config, logging, exceptions, security, auth
+```
+
+The separation is enforced rather than encouraged: a Streamlit page cannot import a rule, so it
+cannot quietly become the place logic lives. Deleting `streamlit_app/` breaks no test.
+
+Three decisions the whole project is organised around:
+
+**Code computes, AI explains.** Every number - every score, saving, ranking, exception, forecast
+and mark - comes from ordinary Python. A model is asked for language, never for a value, and its
+output lands in separate fields labelled `ai_generated` or `mock_ai`. Modules 8 and 9 move the
+line, not erase it: there the AI writes the artefact, and code writes its skeleton first.
+
+**Thresholds live in JSON.** Every rule reads its numbers from
+`app/modules/<module>/config/*.json`, validated by Pydantic on load. Each module has a test proving
+a configuration edit changes the outcome with no code change.
+
+**Every output says where it came from.** `rule_based`, `forecast`, `ai_generated`, `mock_ai` or
+`demo_data`, on every value a user sees.
+
+Full detail, including the data flow of one analysis and where a new module goes:
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
@@ -1145,8 +1485,22 @@ uploaded file are never executed.
 | [`docs/LOCAL_SETUP.md`](docs/LOCAL_SETUP.md) | macOS, Windows and Linux setup |
 | [`docs/TESTING.md`](docs/TESTING.md) | Test strategy and how to add a rule test |
 | [`docs/API_OVERVIEW.md`](docs/API_OVERVIEW.md) | Endpoints, envelope, examples |
-| [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) | What is done, what is next |
-| [`docs/FUTURE_WEBSITE_INTEGRATION.md`](docs/FUTURE_WEBSITE_INTEGRATION.md) | Replacing Streamlit with React/Next.js |
-| [`data/sample/ANOMALY_MANIFEST.md`](data/sample/ANOMALY_MANIFEST.md) | Documented PO risk anomalies |
-| [`data/sample/SPEND_SCENARIO_MANIFEST.md`](data/sample/SPEND_SCENARIO_MANIFEST.md) | Documented spend scenarios |
-| [`data/sample/SUPPLIER_SCENARIO_MANIFEST.md`](data/sample/SUPPLIER_SCENARIO_MANIFEST.md) | Documented supplier anchors and the canonical requirement |
+| [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) | What each module does and what it cost to build |
+| [`docs/FINAL_BUILD_REPORT.md`](docs/FINAL_BUILD_REPORT.md) | The Phase 5 report: inventories, test results, limitations, next steps |
+| [`docs/FUTURE_WEBSITE_INTEGRATION.md`](docs/FUTURE_WEBSITE_INTEGRATION.md) | Replacing Streamlit with React/Next.js, with TypeScript examples |
+| [`docs/API_AUTHENTICATION_PLAN.md`](docs/API_AUTHENTICATION_PLAN.md) | JWT, users, organisations, workspaces, RBAC, tenant isolation |
+| [`docs/DEPLOYMENT_OPTIONS.md`](docs/DEPLOYMENT_OPTIONS.md) | Four deployment paths, PostgreSQL, Redis, the pre-launch checklist |
+| [`examples/typescript-client/`](examples/typescript-client/) | A runnable TypeScript client and the seven calls a front end needs |
+| [`docs/openapi.json`](docs/openapi.json) | The API contract, committed so a change is a diff |
+| [`docs/postman_collection.json`](docs/postman_collection.json) | 133 requests in eleven folders, generated |
+| [`data/sample/*_MANIFEST.md`](data/sample/) | What every deliberate anomaly in each demo dataset is |
+
+---
+
+## A standing caveat
+
+This is demo software built to learn and to demonstrate. Every dataset in it is fictional and was
+written for this lab. **No module connects to an SAP system, nothing here has been validated in a
+live SAP environment, and every savings figure is a model under stated assumptions rather than a
+guaranteed result.** The software labels all of that on every screen and in every export; anything
+built on top of it should keep doing so.
