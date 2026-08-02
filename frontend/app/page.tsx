@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ContactCta } from '@/components/ContactCta';
 import { DemoCta } from '@/components/DemoCta';
 import { ModuleGrid } from '@/components/ModuleCard';
 import { Callout, Card, ClaimList, Container, Section, TextLink } from '@/components/ui';
@@ -31,6 +32,7 @@ export default function HomePage() {
           </p>
           <div className="mt-9 flex flex-wrap gap-4">
             <DemoCta />
+            <ContactCta variant="secondary" />
             <a
               href="/tools"
               className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-base font-semibold text-slate-900 ring-1 ring-slate-300 transition-colors hover:bg-slate-50 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-700"

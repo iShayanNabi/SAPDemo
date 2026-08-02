@@ -6,7 +6,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Demonstration disclaimer',
   description:
-    'What the SAPDemo interactive demonstration is, what data it uses, what it does not do, and what you must not enter into it.',
+    'What the Procurement Intelligence Demo interactive demonstration is, what data it uses, what it does not do, and what you must not enter into it.',
   alternates: { canonical: '/demo-disclaimer' },
 };
 

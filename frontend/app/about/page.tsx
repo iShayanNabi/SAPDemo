@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
+import { RepositoryLink } from '@/components/RepositoryLink';
 import { Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
-import { siteConfig } from '@/lib/site';
+import { hasRepository, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'What SAPDemo is, why it was built, and the principles it follows: deterministic calculation, labelled output origins, documented fictional data, and honest statements of what has not been done.',
+    'What Procurement Intelligence Demo is, why it was built, and the principles it follows: deterministic calculation, labelled output origins, documented fictional data, and honest statements of what has not been done.',
   alternates: { canonical: '/about' },
 };
 
@@ -127,18 +128,23 @@ export default function AboutPage() {
 
         <Section title="The source">
           <p className="max-w-3xl text-slate-700 dark:text-slate-300">
-            The whole project is open for inspection at{' '}
-            <a
-              href={siteConfig.repositoryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
-            >
-              {siteConfig.repositoryUrl.replace('https://', '')}
-            </a>
-            , including every rule, threshold, sample-data generator and manifest. If a number in
-            the demonstration looks wrong, the code that produced it is readable. See also{' '}
-            <TextLink href="/architecture">architecture</TextLink> and{' '}
+            {hasRepository ? (
+              <>
+                The whole project is open for inspection at <RepositoryLink />, including every
+                rule, threshold, sample-data generator and manifest. If a number in the
+                demonstration looks wrong, the code that produced it is readable.{' '}
+              </>
+            ) : (
+              <>
+                The source repository is private. Every rule, threshold, sample-data generator and
+                manifest exists and is documented, and a walkthrough of the code behind any number
+                in the demonstration can be arranged -{' '}
+                <TextLink href="/contact">ask</TextLink>. What the platform does and does not
+                calculate is described here rather than left to be inferred from a repository you
+                cannot open.{' '}
+              </>
+            )}
+            See also <TextLink href="/architecture">architecture</TextLink> and{' '}
             <TextLink href="/how-it-works">how it works</TextLink>.
           </p>
         </Section>

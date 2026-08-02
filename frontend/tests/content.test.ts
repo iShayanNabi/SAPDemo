@@ -136,14 +136,38 @@ describe('site configuration', () => {
     expect(siteConfig.demoUrl).not.toMatch(/\.(com|net|io|dev|app)\b(?!.*localhost)/);
   });
 
-  it('points the repository link at the current canonical repository', () => {
-    expect(siteConfig.repositoryUrl).toContain('iShayanNabi/SAPDemo');
-    expect(siteConfig.repositoryUrl).not.toContain('Chacho-Project');
+  it('publishes the product under the parent brand, and never as the internal name', () => {
+    expect(siteConfig.name).toBe('Procurement Intelligence Demo');
+    expect(siteConfig.parentBrand).toBe('Solve AI Hub');
+    expect(siteConfig.fullName).toBe('Procurement Intelligence Demo by Solve AI Hub');
+    // SAPDemo is the repository, the package and the image tags. It is not a
+    // public label, and nothing a visitor reads may carry it.
+    for (const value of [
+      siteConfig.name,
+      siteConfig.parentBrand,
+      siteConfig.fullName,
+      siteConfig.title,
+      siteConfig.description,
+      siteConfig.shortDescription,
+      TRADEMARK_NOTICE,
+    ]) {
+      expect(value).not.toMatch(/SAPDemo/);
+    }
+  });
+
+  it('has no public repository configured, so every source link is hidden', () => {
+    // The repository is private. `null` rather than `''` is the point: an empty
+    // string is a renderable href.
+    expect(siteConfig.repositoryUrl).toBeNull();
+  });
+
+  it('uses the one official public contact address', () => {
+    expect(siteConfig.contactEmail).toBe('solveaihub@gmail.com');
   });
 
   it('builds a mailto link with an encoded subject', () => {
     expect(mailto('A subject with spaces')).toBe(
-      `mailto:${siteConfig.contactEmail}?subject=A%20subject%20with%20spaces`,
+      'mailto:solveaihub@gmail.com?subject=A%20subject%20with%20spaces',
     );
   });
 
@@ -152,6 +176,10 @@ describe('site configuration', () => {
       expect(String(value)).not.toMatch(/sk-[A-Za-z0-9-]{16,}/);
       expect(String(value)).not.toMatch(/(password|secret|token)=/i);
     }
+  });
+
+  it('links the services page by default, so an unset variable cannot hide it', () => {
+    expect(siteConfig.servicesPageEnabled).toBe(true);
   });
 });
 
@@ -170,7 +198,15 @@ describe('site configuration', () => {
  * because `undefined` is the one input the old operator handled correctly.
  */
 describe('site configuration built from a blank environment', () => {
-  const BLANK_CASES = ['', '   '] as const;
+  /**
+   * The three ways a value arrives unconfigured.
+   *
+   * `undefined` is the only one the old `??` handled, which is why a test that
+   * stubbed only `undefined` passed throughout that bug's entire lifetime.
+   * Docker supplies the other two: `${PUBLIC_X:-}` is a defined empty string,
+   * and a hand-edited environment file supplies the space.
+   */
+  const ABSENT_CASES = [undefined, '', '   '] as const;
 
   /**
    * Returns the freshly-evaluated module, not just its config. `siteConfig` is
@@ -178,16 +214,20 @@ describe('site configuration built from a blank environment', () => {
    * of this file closes over the *unstubbed* config - asserting on that one
    * would pass no matter what these stubs say.
    */
-  async function moduleWith(value: string) {
+  async function moduleWith(value: string | undefined) {
     vi.resetModules();
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', value);
-    vi.stubEnv('NEXT_PUBLIC_DEMO_URL', value);
-    vi.stubEnv('NEXT_PUBLIC_CONTACT_EMAIL', value);
-    vi.stubEnv('NEXT_PUBLIC_REPOSITORY_URL', value);
+    for (const name of [
+      'NEXT_PUBLIC_SITE_URL',
+      'NEXT_PUBLIC_DEMO_URL',
+      'NEXT_PUBLIC_CONTACT_EMAIL',
+      'NEXT_PUBLIC_REPOSITORY_URL',
+    ]) {
+      vi.stubEnv(name, value);
+    }
     return import('@/lib/site');
   }
 
-  async function configWith(value: string) {
+  async function configWith(value: string | undefined) {
     return (await moduleWith(value)).siteConfig;
   }
 
@@ -196,14 +236,14 @@ describe('site configuration built from a blank environment', () => {
     vi.resetModules();
   });
 
-  it.each(BLANK_CASES)('falls back to a usable site URL when it is %o', async (value) => {
+  it.each(ABSENT_CASES)('falls back to a usable site URL when it is %o', async (value) => {
     const config = await configWith(value);
     // `new URL('')` throws, and `app/layout.tsx` calls exactly that on this
     // value - so a blank here fails the whole build, not just one page.
     expect(() => new URL(config.url)).not.toThrow();
   });
 
-  it.each(BLANK_CASES)('falls back to a usable demo URL when it is %o', async (value) => {
+  it.each(ABSENT_CASES)('falls back to a usable demo URL when it is %o', async (value) => {
     const config = await configWith(value);
     // An empty href is not a broken link a browser reports; it silently
     // reloads the page the visitor is already on.
@@ -211,17 +251,55 @@ describe('site configuration built from a blank environment', () => {
     expect(() => new URL(config.demoUrl)).not.toThrow();
   });
 
-  it.each(BLANK_CASES)('keeps a contact recipient when it is %o', async (value) => {
+  it.each(ABSENT_CASES)(
+    'falls back to the official contact address when it is %o',
+    async (value) => {
+      const site = await moduleWith(value);
+      expect(site.siteConfig.contactEmail).toBe('solveaihub@gmail.com');
+      // A recipientless `mailto:?subject=...` opens an empty compose window, so
+      // the failure reaches the visitor rather than the operator.
+      expect(site.mailto('Hello')).not.toMatch(/^mailto:\?/);
+      expect(site.mailto('Hello')).toBe('mailto:solveaihub@gmail.com?subject=Hello');
+    },
+  );
+
+  it.each(ABSENT_CASES)('reports no repository at all when it is %o', async (value) => {
     const site = await moduleWith(value);
-    expect(site.siteConfig.contactEmail).toContain('@');
-    // A recipientless `mailto:?subject=...` opens an empty compose window, so
-    // the failure reaches the visitor rather than the operator.
-    expect(site.mailto('Hello')).not.toMatch(/^mailto:\?/);
+    // `null`, never `''`. An empty string would render `href=""`, which is a
+    // working anchor that reloads the current page - the failure this whole
+    // arrangement exists to prevent.
+    expect(site.siteConfig.repositoryUrl).toBeNull();
+    expect(site.hasRepository).toBe(false);
+    expect(site.repositoryLabel()).toBeNull();
   });
 
-  it.each(BLANK_CASES)('keeps the repository link when it is %o', async (value) => {
-    const config = await configWith(value);
-    expect(config.repositoryUrl).toContain('iShayanNabi/SAPDemo');
+  it('honours a configured contact address, and trims it', async () => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_CONTACT_EMAIL', '  someone@example.org  ');
+    const { siteConfig: config } = await import('@/lib/site');
+    expect(config.contactEmail).toBe('someone@example.org');
+  });
+
+  it('brings the repository back when a valid URL is configured, and trims it', async () => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_REPOSITORY_URL', '  https://github.com/example/repo  ');
+    const site = await import('@/lib/site');
+    expect(site.siteConfig.repositoryUrl).toBe('https://github.com/example/repo');
+    expect(site.hasRepository).toBe(true);
+    expect(site.repositoryLabel()).toBe('github.com/example/repo');
+  });
+
+  it.each([
+    ['no scheme', 'github.com/example/repo'],
+    ['a relative path', '/example/repo'],
+    ['a non-web scheme', 'javascript:alert(1)'],
+    ['a shell fragment', '${PUBLIC_REPOSITORY_URL}'],
+  ])('treats %s as no repository rather than rendering it', async (_label, value) => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_REPOSITORY_URL', value);
+    const site = await import('@/lib/site');
+    expect(site.siteConfig.repositoryUrl).toBeNull();
+    expect(site.hasRepository).toBe(false);
   });
 
   it('still honours a real value, and trims it', async () => {
@@ -229,6 +307,22 @@ describe('site configuration built from a blank environment', () => {
     vi.stubEnv('NEXT_PUBLIC_DEMO_URL', '  https://demo.example.com  ');
     const { siteConfig: config } = await import('@/lib/site');
     expect(config.demoUrl).toBe('https://demo.example.com');
+  });
+
+  it.each([
+    ['false', false],
+    ['0', false],
+    ['no', false],
+    ['off', false],
+    ['FALSE', false],
+    ['true', true],
+    ['', true],
+    ['   ', true],
+  ])('reads SERVICES_PAGE_ENABLED=%o as %o', async (value, expected) => {
+    vi.resetModules();
+    vi.stubEnv('SERVICES_PAGE_ENABLED', value);
+    const { siteConfig: config } = await import('@/lib/site');
+    expect(config.servicesPageEnabled).toBe(expected);
   });
 });
 

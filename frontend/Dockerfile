@@ -39,14 +39,21 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_SITE_URL=""
 ARG NEXT_PUBLIC_DEMO_URL=""
 ARG NEXT_PUBLIC_CONTACT_EMAIL=""
+# Left blank on purpose: the repository is private, and every source link on
+# the site is hidden by exactly this value being absent. Supplying a valid
+# https:// URL brings them back with no other change.
 ARG NEXT_PUBLIC_REPOSITORY_URL=""
 ARG NEXT_PUBLIC_LOCATION_LABEL=""
+# Not a NEXT_PUBLIC_ value: it is read while the pages are rendered, never in
+# the browser. Blank means enabled.
+ARG SERVICES_PAGE_ENABLED=""
 
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
     NEXT_PUBLIC_DEMO_URL=${NEXT_PUBLIC_DEMO_URL} \
     NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL} \
     NEXT_PUBLIC_REPOSITORY_URL=${NEXT_PUBLIC_REPOSITORY_URL} \
-    NEXT_PUBLIC_LOCATION_LABEL=${NEXT_PUBLIC_LOCATION_LABEL}
+    NEXT_PUBLIC_LOCATION_LABEL=${NEXT_PUBLIC_LOCATION_LABEL} \
+    SERVICES_PAGE_ENABLED=${SERVICES_PAGE_ENABLED}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

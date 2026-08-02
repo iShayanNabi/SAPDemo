@@ -16,6 +16,10 @@ import ModulePage from '@/app/tools/[slug]/page';
 import { Nav } from '@/components/Nav';
 import { Footer } from '@/components/Footer';
 import { modules } from '@/content/modules';
+import { DESKTOP_ONLY, MOBILE_ONLY, getNavItems } from '@/lib/navigation';
+import { siteConfig } from '@/lib/site';
+
+const navItems = getNavItems(siteConfig.servicesPageEnabled);
 
 /**
  * axe-core run against the real rendered markup.
@@ -74,7 +78,7 @@ describe('accessibility', () => {
   it('the navigation and footer have no axe violations', async () => {
     const { container } = render(
       <>
-        <Nav />
+        <Nav items={navItems} />
         <Footer />
       </>,
     );
@@ -104,10 +108,18 @@ describe('responsive layout primitives', () => {
     expect(grid?.className).toContain('lg:grid-cols-3');
   });
 
-  it('the primary navigation collapses below the large breakpoint', () => {
-    const { container } = render(<Nav />);
-    expect(container.querySelector('nav[aria-label="Primary"]')?.parentElement?.innerHTML).toContain(
-      'lg:hidden',
-    );
+  /**
+   * Reads the shared constant rather than naming a breakpoint, because the
+   * breakpoint moved once already: eight links, a demo button and the contact
+   * call to action do not fit a 1024px window, so the horizontal navigation
+   * now appears at `xl`. A test hardcoding `lg:hidden` would have to be edited
+   * every time that judgement changes, which is how it ends up asserting a
+   * breakpoint the component stopped using.
+   */
+  it('the primary navigation collapses below the desktop breakpoint', () => {
+    const { container } = render(<Nav items={navItems} />);
+    const header = container.querySelector('nav[aria-label="Primary"]')?.parentElement;
+    expect(header?.innerHTML).toContain(MOBILE_ONLY);
+    expect(container.querySelector('nav[aria-label="Primary"]')?.className).toBe(DESKTOP_ONLY);
   });
 });

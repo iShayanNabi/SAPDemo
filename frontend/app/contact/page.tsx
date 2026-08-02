@@ -6,7 +6,7 @@ import { mailto, siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Contact',
   description:
-    'How to get in touch about SAPDemo: consulting enquiries, questions about the platform, and access to the interactive demonstration.',
+    'How to get in touch about Procurement Intelligence Demo: consulting enquiries, questions about the platform, and access to the interactive demonstration.',
   alternates: { canonical: '/contact' },
 };
 
@@ -19,7 +19,7 @@ const reasons = [
   },
   {
     title: 'A question about the platform',
-    body: 'How a module calculates something, why a result looks the way it does, or how the deployment is put together. The source is public, so a specific question usually has a specific answer.',
+    body: 'How a module calculates something, why a result looks the way it does, or how the deployment is put together. Every threshold and weight is configuration rather than hidden behaviour, so a specific question usually has a specific answer.',
     subject: `${siteConfig.name} — question about the platform`,
     action: 'Email a question',
   },

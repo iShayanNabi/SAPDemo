@@ -13,7 +13,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools',
     '/how-it-works',
     '/architecture',
-    '/services',
+    // Follows the same switch the navigation and the footer read, so a page
+    // that is not linked anywhere is not advertised to a crawler either.
+    ...(siteConfig.servicesPageEnabled ? ['/services'] : []),
     '/about',
     '/contact',
     '/demo-disclaimer',

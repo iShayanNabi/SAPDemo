@@ -6,7 +6,7 @@ import { origins } from '@/content/origins';
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'How SAPDemo separates deterministic calculation from AI-generated text, how data moves from an uploaded file to a labelled result, and what each of the five result origins means.',
+    'How Procurement Intelligence Demo separates deterministic calculation from AI-generated text, how data moves from an uploaded file to a labelled result, and what each of the five result origins means.',
   alternates: { canonical: '/how-it-works' },
 };
 

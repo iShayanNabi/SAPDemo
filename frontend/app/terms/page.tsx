@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
+import { RepositoryLink } from '@/components/RepositoryLink';
 import { Callout, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
-import { mailto, siteConfig } from '@/lib/site';
+import { hasRepository, mailto, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Terms and disclaimer',
   description:
-    'Terms of use and disclaimer for the SAPDemo website and interactive demonstration. A placeholder statement pending formal terms.',
+    'Terms of use and disclaimer for the Procurement Intelligence Demo website and interactive demonstration. A placeholder statement pending formal terms.',
   alternates: { canonical: '/terms' },
 };
 
@@ -90,17 +91,19 @@ export default function TermsPage() {
 
         <Section title="Intellectual property">
           <p className="max-w-3xl text-slate-700 dark:text-slate-300">
-            The source code and the fictional datasets are the work of this project and are
-            published at{' '}
-            <a
-              href={siteConfig.repositoryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
-            >
-              {siteConfig.repositoryUrl.replace('https://', '')}
-            </a>
-            . Refer to the licence in that repository for what you may do with them.
+            {hasRepository ? (
+              <>
+                The source code and the fictional datasets are the work of this project and are
+                published at <RepositoryLink />. Refer to the licence in that repository for what
+                you may do with them.
+              </>
+            ) : (
+              <>
+                The source code and the fictional datasets are the work of this project and are
+                not published. No licence to copy, redistribute or reuse them is granted by this
+                site, and the pages here are provided for reading rather than reproduction.
+              </>
+            )}
           </p>
         </Section>
 

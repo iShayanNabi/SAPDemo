@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { Footer } from '@/components/Footer';
-import { Nav, navLinks } from '@/components/Nav';
+import { Nav } from '@/components/Nav';
 import { DemoCta } from '@/components/DemoCta';
 import { ModuleGrid } from '@/components/ModuleCard';
 import AboutPage from '@/app/about/page';
@@ -17,7 +17,15 @@ import TermsPage from '@/app/terms/page';
 import ToolsPage from '@/app/tools/page';
 import ModulePage from '@/app/tools/[slug]/page';
 import { modules } from '@/content/modules';
+import { getNavItems } from '@/lib/navigation';
 import { siteConfig } from '@/lib/site';
+
+/**
+ * The navigation the deployed site renders. `Nav` takes its items as a prop,
+ * so a test that invented its own list would assert nothing about what the
+ * layout actually passes down.
+ */
+const navItems = getNavItems(siteConfig.servicesPageEnabled);
 
 const pages = [
   ['home', HomePage],
@@ -85,22 +93,40 @@ describe('the ten module detail pages', () => {
 
 describe('navigation', () => {
   it('renders every primary link once, in a nav landmark', () => {
-    render(<Nav />);
+    render(<Nav items={navItems} />);
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    for (const link of navLinks) {
+    for (const link of navItems) {
       expect(within(nav).getByRole('link', { name: link.label })).toBeTruthy();
     }
   });
 
-  it('marks the current page with aria-current', () => {
-    // The setup file stubs usePathname to '/', so no primary link is current.
-    render(<Nav />);
+  it('keeps the six public destinations visible', () => {
+    render(<Nav items={navItems} />);
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(nav).queryByRole('link', { current: 'page' })).toBeNull();
+    for (const [label, href] of [
+      ['Home', '/'],
+      ['Tools', '/tools'],
+      ['Services', '/services'],
+      ['How it works', '/how-it-works'],
+      ['Architecture', '/architecture'],
+      ['Contact', '/contact'],
+    ] as const) {
+      const link = within(nav).getByRole('link', { name: label });
+      expect(link.getAttribute('href'), label).toBe(href);
+    }
+  });
+
+  it('marks the current page with aria-current', () => {
+    // The setup file stubs usePathname to '/', so Home - and only Home - is
+    // the current page.
+    render(<Nav items={navItems} />);
+    const nav = screen.getByRole('navigation', { name: 'Primary' });
+    const current = within(nav).getAllByRole('link', { current: 'page' });
+    expect(current.map((link) => link.getAttribute('href'))).toEqual(['/']);
   });
 
   it('exposes the mobile menu button state to assistive technology', () => {
-    render(<Nav />);
+    render(<Nav items={navItems} />);
     const toggle = screen.getByRole('button', { name: /open menu/i });
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(toggle.getAttribute('aria-controls')).toBe('mobile-navigation');
@@ -141,17 +167,14 @@ describe('the demo call to action', () => {
 });
 
 describe('the footer', () => {
-  it('carries project, contact, privacy, disclaimer and GitHub links', () => {
+  it('carries project, contact, privacy and disclaimer links', () => {
     render(<Footer />);
     expect(screen.getByRole('link', { name: /platform overview/i })).toBeTruthy();
     expect(screen.getByRole('link', { name: siteConfig.contactEmail })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /consulting services/i })).toBeTruthy();
     expect(screen.getByRole('link', { name: /^privacy$/i })).toBeTruthy();
     expect(screen.getByRole('link', { name: /terms and disclaimer/i })).toBeTruthy();
     expect(screen.getByRole('link', { name: /demonstration disclaimer/i })).toBeTruthy();
-
-    const github = screen.getByRole('link', { name: /source on github/i });
-    expect(github.getAttribute('href')).toBe(siteConfig.repositoryUrl);
-    expect(github.getAttribute('href')).toContain('iShayanNabi/SAPDemo');
   });
 
   it('states the trademark and demonstration position on every page', () => {
