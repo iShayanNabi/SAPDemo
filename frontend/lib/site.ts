@@ -132,9 +132,17 @@ export const siteConfig = {
   /**
    * The single public contact address, used by every `mailto:` on the site.
    *
-   * Contact is a `mailto:` link, deliberately. A public contact form needs an
-   * endpoint that accepts unauthenticated writes from the internet, and this
-   * project is not adding one - see docs/DEMO_SECURITY_CHECKLIST.md.
+   * This is the fallback channel and it is never removed. A contact form exists
+   * behind `CONTACT_FORM_ENABLED`, which defaults to *off*: when it is off, or
+   * on but incompletely configured, every page falls back to these `mailto:`
+   * links and the endpoint returns 404. See `lib/contact/config.ts` for the
+   * readiness check and docs/DEMO_SECURITY_CHECKLIST.md for what the endpoint
+   * has to satisfy before it accepts an unauthenticated write.
+   *
+   * Note this is the *public* address shown on the page. The mailbox the form
+   * delivers to is `CONTACT_RECIPIENT_EMAIL`, read server-side only - they are
+   * usually the same address, but one is compiled into the browser bundle and
+   * the other must never be.
    */
   contactEmail: fromEnv(process.env.NEXT_PUBLIC_CONTACT_EMAIL, 'solveaihub@gmail.com'),
 

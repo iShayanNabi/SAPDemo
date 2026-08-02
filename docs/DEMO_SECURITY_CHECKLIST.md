@@ -21,6 +21,7 @@ Who this protects against, and who it does not:
 | An unexpected AI bill or data egress | Provider forced to mock; no key configured |
 | A malicious document | Untrusted-text handling, no OCR configured, uploads off anyway |
 | Casual discovery of the demonstration | Cloudflare Access with an explicit allow list |
+| Abuse of the contact form | Off by default; Turnstile verified server-side, fails closed; two rate-limit buckets; nothing stored |
 
 | **Not** protected against | Why |
 | --- | --- |
@@ -72,6 +73,18 @@ list.
       screenshot, a chat or a recorded terminal
 - [ ] `python scripts/check_quality.py` passes its secret scan
 - [ ] No `.dump`, `.sql.gz` or `backups/` path is tracked by git
+- [ ] `SMTP_APP_PASSWORD` is a Gmail **App Password**, not the account password,
+      and exists only in `.env.selfhosted`
+- [ ] `TURNSTILE_SECRET_KEY` is the secret key, not the site key, and is set as
+      a **runtime** variable — never a build argument, which Docker records in
+      the image history
+- [ ] `CONTACT_RATE_LIMIT_SECRET` is generated (`openssl rand -hex 32`) rather
+      than left at any example value
+- [ ] No contact variable has been given a `NEXT_PUBLIC_` prefix. Only
+      `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is public, and it is a site key
+- [ ] The deployed bundle contains no secret:
+      `docker compose -f docker-compose.selfhosted.yml run --rm --entrypoint sh website -c
+      "grep -rl 'TURNSTILE_SECRET\|SMTP_APP_PASSWORD' .next/static || echo clean"`
 
 ```bash
 git ls-files | grep -E '^\.env|\.dump$|^backups/|node_modules' || echo "clean"
@@ -148,6 +161,50 @@ Then try to break it:
       API is not reachable through the demonstration hostname at all
 - [ ] Open a second browser profile and confirm the history views show only that
       session's records
+
+---
+
+## 5a. The contact form
+
+Skip this section entirely when `CONTACT_FORM_ENABLED` is false — the page shows
+`mailto:` links and `/api/contact` returns 404, which is the shipped default and
+needs no further checking.
+
+When it **is** on, this is the only endpoint on the public site that accepts an
+unauthenticated write, so check it by hand rather than by reading the config:
+
+- [ ] The contact page renders the form **and** the Turnstile widget. A form
+      without a widget means the site key is missing from the *build*, and the
+      page must not be left in that state
+- [ ] The privacy page describes the form. If it still says "There is no contact
+      form on this site", the flag and the page disagree and one of them is lying
+- [ ] Submitting with the widget untouched is refused
+- [ ] A message actually arrives in `CONTACT_RECIPIENT_EMAIL`, and its
+      `Reply-To` is the address that was typed
+- [ ] The delivered email contains no IP address and no Turnstile token
+- [ ] Submitting more than `CONTACT_RATE_LIMIT_MAX` times within
+      `CONTACT_RATE_LIMIT_WINDOW_SECONDS` returns 429 with a `Retry-After`
+- [ ] Repeated submissions carrying a **failed** challenge do not consume the
+      allowance of the email address they name. The email bucket is charged
+      only after Turnstile passes, so a stranger cannot lock somebody else out
+- [ ] `TURNSTILE_EXPECTED_HOSTNAMES` and `TURNSTILE_EXPECTED_ACTION` are set.
+      The site key is public, so without these a token solved on an attacker's
+      own page under the same key verifies here
+- [ ] `docker compose logs website | grep '\[contact\]'` shows outcome codes
+      only — no message body, no visitor address, no IP, no token
+- [ ] Forging a submission bypasses nothing:
+
+```bash
+curl -sS -X POST https://[DOMAIN]/api/contact \
+  -H 'content-type: application/json' \
+  -d '{"name":"x","email":"a@b.co","subject":"s","message":"'"$(printf 'y%.0s' {1..30})"'","turnstileToken":"forged"}'
+# expect 403 and a generic message - the token is verified with Cloudflare
+# server-side, so one invented here cannot pass
+```
+
+- [ ] Temporarily unset `TURNSTILE_SECRET_KEY` and restart: the endpoint returns
+      **404** and the page reverts to `mailto:`. It must never serve a form with
+      no challenge behind it. Restore the key afterwards
 
 ---
 

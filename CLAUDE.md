@@ -642,6 +642,85 @@ sentence, a page other than the one deliberately documenting it. **Precision is 
 survive; a test that cries wolf is removed by the next person in a hurry.**
 
 
+### A feature flag that can be half-set is a feature flag with an unsafe state
+
+When a feature needs several variables, *requested* and *available* are two
+different questions and only the second one may be asked. The contact form needs
+eight; `CONTACT_FORM_ENABLED=true` with the Turnstile secret missing is not
+"mostly on", it is a form with no anti-spam check - worse than either the on
+state or the off state. So `readContactConfig()` is all-or-nothing, and the page,
+the policy and the endpoint all read one `isContactFormAvailable()`. Missing
+anything means the pre-feature behaviour, the operator sees which variable is
+absent, and the browser is told only "Not found".
+
+**A page making a factual claim about a feature must read the same flag the
+feature does, at request time.** The privacy page said "there is no contact form
+on this site" and was pre-rendered at build time, so switching the form on would
+have served a policy denying it existed. Assert the pair in both directions: the
+claim present when off, *and* gone when on. Asserting only the first catches
+stale documentation and misses the false statement, which is the worse one.
+
+### Order security checks by who controls the input
+
+Two rate-limit buckets, deliberately charged at different points. The client
+address is a fact about the connection, so it is charged on every attempt,
+before the expensive outbound call. The email address is *a string the submitter
+typed*, so charging it before the challenge is solved lets anyone enter a third
+party's address, send junk tokens until the bucket fills, and lock that person
+out - an unauthenticated denial of service against someone else, paid for with
+nothing but the attacker's own quota.
+
+The general rule: **a limit keyed on attacker-supplied identity must sit behind
+proof of work, or it becomes a weapon against the identity it names.** A test for
+this has to prove the ordering, not the outcome - drive failed challenges naming
+a victim, then confirm the victim still gets through.
+
+### A public key proves the token is genuine, not that it is yours
+
+A Turnstile `success: true` only says the token was really solved. The site key
+is readable in the page source, so anyone can host the same widget, have a real
+challenge solved on their own page and replay the token. Pin the reported
+`hostname` and `action` as well. The same shape applies to any third-party
+verification: check what the response says about *where* and *what for*, not just
+that it succeeded.
+
+Both pins are configuration, never a `NODE_ENV` branch - an environment-dependent
+branch in security-critical code is one mis-set variable away from being live in
+the wrong place.
+
+### Garbage collection is not enforcement
+
+Correctness that filters at read time does not need a sweep on every write. The
+rate limiter swept all buckets per request and sorted them at its ceiling, which
+made an endpoint an attacker triggers O(n) in the number of tracked buckets. Move
+reclamation onto an interval and evict in insertion order.
+
+Bound both dimensions: the number of buckets *and* the entries within one. A
+bucket that is already blocking needs no further evidence, so appending on every
+retry lets one attacker grow a single array without limit - the limiter becoming
+the memory exhaustion it was added to prevent. Enforce a ceiling *after* the
+request's own entries are added, or the map sits permanently over it.
+
+### `parseInt` succeeds on input a human meant differently
+
+`Number.parseInt` stops at the first character it does not understand and reports
+success on the prefix, so `3.5` becomes `3` and `587x` becomes port `587` - a
+silent reinterpretation of something an operator typed deliberately, with the
+value actually running not being the one in their environment file. Test
+`/^\d+$/` before parsing and fall back otherwise. Applies wherever an environment
+variable becomes a number.
+
+### Test the import graph, not the text of the file
+
+A single import of a config module from a `'use client'` component compiles every
+secret it reads into the browser bundle, and **Next.js does not error on this** -
+it bundles it, and the page looks perfect. Guard it by parsing `import`/`require`
+statements with comments stripped, never by searching raw text: the files
+documenting the boundary name the forbidden module in the comment explaining why
+they must not import it, so a substring search fails on prose and gets deleted by
+the next person in a hurry. Give the guard its own guard - assert the string is
+present in the file while absent from its parsed imports.
+
 ---
 
 ## Lesson worth carrying forward

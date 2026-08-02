@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Callout, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { isContactFormAvailable } from '@/lib/contact/config';
 import { ACCESS_NOTICE, POLICY_LAST_UPDATED, UPLOAD_NOTICE, mailto, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -9,7 +10,20 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 };
 
+/**
+ * Rendered per request so the policy describes the deployment it is served
+ * from.
+ *
+ * This page makes a factual claim about whether a submission endpoint exists,
+ * and `CONTACT_FORM_ENABLED` decides the answer at run time. Statically
+ * pre-rendering it would freeze that claim at build time, so an operator could
+ * switch the form on and leave a privacy policy behind saying there isn't one.
+ */
+export const dynamic = 'force-dynamic';
+
 export default function PrivacyPage() {
+  const formEnabled = isContactFormAvailable();
+
   return (
     <>
       <PageHeader
@@ -44,7 +58,9 @@ export default function PrivacyPage() {
               variant="plain"
               items={[
                 'This public marketing website is accessible to anyone, requires no login and asks for no account.',
-                'Its pages are compiled at build time. No page calls the platform API from your browser, and there is no contact form, comment system or other submission endpoint on it.',
+                formEnabled
+                  ? 'No page calls the platform API from your browser. The contact form is the only place on this site that accepts anything you submit; there is no comment system or other submission endpoint, and what the form does with a message is set out under “Contacting the project” below.'
+                  : 'Its pages are compiled at build time. No page calls the platform API from your browser, and there is no contact form, comment system or other submission endpoint on it.',
                 'It embeds no advertising network, no third-party analytics and no social widgets, and sets no advertising or tracking cookies of its own.',
                 'Cloudflare sits in front of the site and terminates the connection. Cloudflare operates its own logging, caching and protection, and may use cookies or similar technologies as part of that; what it retains is governed by Cloudflare’s own documentation and policies rather than by this project.',
                 'Ordinary operational logging exists as it does for any web server - address, timestamp, path, response status, user agent - and is used to operate, secure and troubleshoot the service rather than to build a profile of you.',
@@ -88,24 +104,69 @@ export default function PrivacyPage() {
           </div>
         </Section>
 
-        <Section title="Contacting the project by email">
+        <Section title={formEnabled ? 'Contacting the project' : 'Contacting the project by email'}>
           <div className="max-w-3xl space-y-4 text-slate-700 dark:text-slate-300">
-            <p>
-              There is no contact form on this site. Contact is by email, to{' '}
-              <a
-                href={mailto(`${siteConfig.name} — privacy`)}
-                className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
-              >
-                {siteConfig.contactEmail}
-              </a>
-              , which means nothing is posted to or stored by this website when you get in touch.
-            </p>
-            <p>
-              A message you send arrives in an ordinary mailbox and is read by a person. It is not
-              loaded into this platform, not stored in its database and not sent to an AI provider.
-              It does pass through and rest with the email providers involved on both sides, whose
-              own retention and processing this project does not control and does not claim to.
-            </p>
+            {formEnabled ? (
+              <>
+                <p>
+                  There are two ways to get in touch, and both reach the same mailbox: the{' '}
+                  <TextLink href="/contact">contact form</TextLink>, or email directly to{' '}
+                  <a
+                    href={mailto(`${siteConfig.name} — privacy`)}
+                    className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
+                  >
+                    {siteConfig.contactEmail}
+                  </a>
+                  .
+                </p>
+                <p>
+                  When you submit the form, the name, email address, subject and message you type
+                  are used for one thing: composing an email that is sent immediately to that
+                  mailbox. This website writes no copy of them - not to a database, not to a file,
+                  and not to its logs, which record only that a submission succeeded or failed and
+                  why.
+                </p>
+                <p>
+                  Two things are handled and then discarded rather than stored. Cloudflare Turnstile
+                  runs an anti-spam check, so your browser sends Cloudflare a token that this server
+                  verifies with Cloudflare and then drops. To limit how often the form can be used
+                  from one place, your network address and the email address you typed are each
+                  converted into an unreadable keyed fingerprint held in memory, which is used only
+                  for counting, is never written to disk or included in the email, and is lost when
+                  the server restarts. The address itself is not retained.
+                </p>
+                <p>
+                  What the form produces is an ordinary email. It is not loaded into this platform,
+                  not stored in its database and not sent to an AI provider. It does pass through
+                  Cloudflare, which fronts this site and performs the anti-spam check, and it is
+                  then handled by the email providers on both sides and delivered into a Gmail
+                  mailbox, where the message remains until it is deleted there. Cloudflare&rsquo;s
+                  and Google&rsquo;s own processing and retention are governed by their policies
+                  rather than by this project, which does not control them and does not claim to.
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  There is no contact form on this site. Contact is by email, to{' '}
+                  <a
+                    href={mailto(`${siteConfig.name} — privacy`)}
+                    className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
+                  >
+                    {siteConfig.contactEmail}
+                  </a>
+                  , which means nothing is posted to or stored by this website when you get in
+                  touch.
+                </p>
+                <p>
+                  A message you send arrives in an ordinary mailbox and is read by a person. It is
+                  not loaded into this platform, not stored in its database and not sent to an AI
+                  provider. It does pass through and rest with the email providers involved on both
+                  sides, whose own retention and processing this project does not control and does
+                  not claim to.
+                </p>
+              </>
+            )}
             <p>
               Contact information you send voluntarily is not sold, and is not passed to anyone for
               advertising or marketing purposes.

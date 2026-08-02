@@ -1483,6 +1483,13 @@ declared `internal: true`, and the website is not on it at all, because it never
 For local inspection, `docker-compose.debug.yml` binds the website, the demonstration and
 (optionally) the API to `127.0.0.1` only. The database is deliberately absent from that overlay.
 
+The website's contact page is `mailto:` links by default. A real contact form exists behind
+`CONTACT_FORM_ENABLED`, which is **off** unless SMTP credentials, a Cloudflare Turnstile secret and
+a rate-limit key are all present — anything less and the page falls back to `mailto:` while
+`/api/contact` returns 404, so there is no state in which a form renders without an anti-spam check
+behind it. Submissions are emailed and never stored. See
+[`docs/PUBLIC_DEMO_DEPLOYMENT.md`](docs/PUBLIC_DEMO_DEPLOYMENT.md#the-contact-form).
+
 | Script | Does |
 | --- | --- |
 | `start_selfhosted.sh` | Validate the environment, start, wait for health |

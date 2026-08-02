@@ -511,6 +511,39 @@ describe('the disclaimers that must stay visible', () => {
   });
 });
 
+/**
+ * Render inside a fully-configured contact deployment, then restore.
+ *
+ * Every variable `readContactConfig()` requires has to be present, because the
+ * readiness check is all-or-nothing by design - setting only the flag would
+ * exercise the fail-closed path and silently assert the wrong branch.
+ */
+function withContactFormEnabled(body: () => void): void {
+  const vars = {
+    CONTACT_FORM_ENABLED: 'true',
+    CONTACT_RECIPIENT_EMAIL: 'someone@example.com',
+    SMTP_HOST: 'smtp.example.com',
+    SMTP_PORT: '587',
+    SMTP_USER: 'someone@example.com',
+    SMTP_APP_PASSWORD: 'not-a-real-password',
+    TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
+    CONTACT_RATE_LIMIT_SECRET: 'test-secret',
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
+  };
+  const previous = new Map(
+    Object.keys(vars).map((key) => [key, process.env[key]] as const),
+  );
+  Object.assign(process.env, vars);
+  try {
+    body();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 describe('the official contact address survives this change', () => {
   it('is still the configured address, and still reachable from the legal pages', () => {
     expect(siteConfig.contactEmail).toBe('solveaihub@gmail.com');
@@ -524,18 +557,60 @@ describe('the official contact address survives this change', () => {
   });
 
   /**
-   * There is no contact form, no Turnstile widget and no submission endpoint in
-   * this codebase - contact is a `mailto:` by design. The privacy policy must
-   * therefore not describe any of them, which is the failure mode this test
-   * exists for: a policy that documents a feature the deployment does not have
-   * is worse than one that documents nothing.
+   * The privacy policy must describe the deployment it is served from, and the
+   * contact form is the one feature on this site that can be present or absent
+   * at run time. That makes a *pair* of failures possible, and only asserting
+   * one direction catches half of them:
+   *
+   * * the policy documents a form the deployment does not serve - the original
+   *   failure this test was written for;
+   * * the deployment serves a form the policy still denies exists - which is
+   *   the worse of the two, because it is a false statement about data
+   *   handling rather than a stale one.
+   *
+   * Both pages read the same `isContactFormAvailable()` the endpoint does, so
+   * stubbing the environment is what proves they cannot disagree with it.
    */
-  it('describes no contact form, captcha or submission endpoint that does not exist', () => {
-    const body = `${textOf(PrivacyPage)} ${textOf(TermsPage)}`;
-    expect(body).not.toMatch(/turnstile|recaptcha|captcha/i);
-    expect(body).not.toMatch(/when you submit the (contact )?form/i);
-    expect(body).not.toMatch(/the contact form (collects|stores|sends)/i);
-    // And it says positively what is true instead.
-    expect(textOf(PrivacyPage)).toMatch(/There is no contact form on this site/i);
+  describe('the privacy policy matches whether the form actually shipped', () => {
+    it('denies the form when it is off, and mentions no captcha', () => {
+      // The default. No CONTACT_FORM_ENABLED anywhere in the test environment.
+      const body = `${textOf(PrivacyPage)} ${textOf(TermsPage)}`;
+      expect(body).not.toMatch(/turnstile|recaptcha|captcha/i);
+      expect(body).not.toMatch(/when you submit the (contact )?form/i);
+      expect(body).not.toMatch(/the contact form (collects|stores|sends)/i);
+      expect(textOf(PrivacyPage)).toMatch(/There is no contact form on this site/i);
+      expect(textOf(ContactPage)).toMatch(/Why there is no contact form/i);
+    });
+
+    it('describes the form, and stops denying it, when it is fully configured', () => {
+      withContactFormEnabled(() => {
+        const privacy = textOf(PrivacyPage);
+
+        // The denial is gone - this is the assertion that catches a policy
+        // left behind by an operator switching the form on.
+        expect(privacy).not.toMatch(/There is no contact form on this site/i);
+        expect(textOf(ContactPage)).not.toMatch(/Why there is no contact form/i);
+
+        // And what replaced it states the things a reader has to be told.
+        expect(privacy).toMatch(/turnstile/i);
+        expect(privacy).toMatch(/when you submit the form/i);
+        expect(privacy).toMatch(/gmail/i);
+        expect(privacy).toMatch(/cloudflare/i);
+        // No storage claim, positively stated.
+        expect(privacy).toMatch(/writes no copy/i);
+      });
+    });
+
+    /**
+     * The policy promises the message is not stored and that the address is
+     * kept only as a keyed fingerprint. A policy that says so while the page
+     * quietly claims something softer is the same pair of fields disagreeing.
+     */
+    it('does not claim the raw address is retained', () => {
+      withContactFormEnabled(() => {
+        const privacy = textOf(PrivacyPage);
+        expect(privacy).toMatch(/not retained|never written to disk|lost when the server restarts/i);
+      });
+    });
   });
 });

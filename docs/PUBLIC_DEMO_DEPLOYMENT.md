@@ -210,6 +210,107 @@ README has the commands, and the same code produces the same answers.
 
 ---
 
+## The contact form
+
+The website's contact page is `mailto:` links by default, and the switches above
+have nothing to do with it - it belongs to the Next.js site, not the API. It is
+governed by its own flag, which is **off** unless every variable it needs is
+also set:
+
+| Variable | Where it is read | What it does |
+| --- | --- | --- |
+| `CONTACT_FORM_ENABLED` | Run time | `false` by default. Off means `mailto:` links and a 404 endpoint. |
+| `CONTACT_RECIPIENT_EMAIL` | Run time | The mailbox submissions are delivered to. |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` | Run time | Delivery. Default to `smtp.gmail.com`, `465` and `solveaihub@gmail.com`. |
+| `SMTP_APP_PASSWORD` | Run time | The Gmail **App Password**, never the account password. No default. |
+| `SMTP_SECURE` | Run time | `true`, matching implicit TLS on 465. Blank decides from the port. |
+| `SMTP_FROM` | Run time | Optional; defaults to `SMTP_USER`, the only `From` Gmail will not rewrite. |
+| `TURNSTILE_SECRET_KEY` | Run time | Verified with Cloudflare on every submission. |
+| `PUBLIC_TURNSTILE_SITE_KEY` | **Build** | The public widget key, compiled into the bundle. |
+| `TURNSTILE_EXPECTED_HOSTNAMES` | Run time | Hostnames a token may be solved on. Blank skips the check. |
+| `TURNSTILE_EXPECTED_ACTION` | Run time | The widget's declared action, `contact`. Blank skips the check. |
+| `CONTACT_RATE_LIMIT_MAX` | Run time | Submissions per window per bucket. Defaults to 5. |
+| `CONTACT_RATE_LIMIT_WINDOW_SECONDS` | Run time | Window length. Defaults to 3600. |
+| `CONTACT_RATE_LIMIT_SECRET` | Run time | HMAC key for the rate-limit bucket identifiers. |
+
+Two things follow from that build/run-time split, and both have bitten this
+project before in other variables:
+
+- **The site key needs `--build`, not a restart.** `NEXT_PUBLIC_*` values are
+  compiled in by `next build`, so changing the widget key means
+  `./scripts/start_selfhosted.sh --build`. Everything else takes effect on
+  `docker compose up -d`.
+- **The secret key must never become a build argument.** Docker records build
+  arguments in the image history, so a secret placed there is readable by anyone
+  who can pull the image. Only the *site* key appears under `build.args` in
+  `docker-compose.selfhosted.yml`; the rest are under `environment`.
+
+### It fails closed, and that is the whole design
+
+Setting `CONTACT_FORM_ENABLED=true` is not sufficient on its own. If any
+variable above is missing, the site behaves exactly as it does with the form off
+- `mailto:` links, and `/api/contact` returning 404 - and the server log names
+the missing variable:
+
+```
+[contact] outcome=misconfigured missing=TURNSTILE_SECRET_KEY
+```
+
+The browser is told only "Not found". There is deliberately no state in which a
+form renders without an anti-spam check behind it, and no `NODE_ENV` bypass:
+a missing secret, a `siteverify` timeout, a malformed response and a rejected
+token all mean the message is not delivered, in every environment.
+
+### Two rate-limit buckets, charged at different points
+
+The address bucket is charged on **every** attempt, before Turnstile, so probing
+the endpoint costs the same quota as using it and a flooder cannot make the
+server spend an outbound HTTPS round trip per request.
+
+The email bucket is charged **only after Turnstile passes**, and that ordering is
+a security property rather than a tidiness one. The email address is simply what
+somebody typed into the form. Charging it earlier would let anyone enter a third
+party's address, fire `CONTACT_RATE_LIMIT_MAX` requests carrying junk tokens, and
+lock that person out of the contact form for a whole window - an unauthenticated
+denial of service against someone else, costing the attacker nothing but their
+own IP quota.
+
+### The site key is public, so a `success` is not enough
+
+Cloudflare confirms a token is genuine. It does not, on its own, confirm the
+token came from *this* form: the site key is readable in the page source, so
+anyone can host the same widget, have a real challenge solved on their page, and
+replay the token here. `TURNSTILE_EXPECTED_HOSTNAMES` and
+`TURNSTILE_EXPECTED_ACTION` are what make the confirmation specific - Cloudflare
+reports where the token was solved and which action it was solved for, and a
+mismatch on either prevents delivery.
+
+Both are configuration rather than a `NODE_ENV` branch, for the same reason the
+verification itself is: an environment-dependent branch in security-critical code
+is one mis-set variable away from being live in the wrong place. Blank skips the
+pin (the local-development case, since the test keys report neither
+meaningfully); `success` is still required regardless.
+
+### Nothing a visitor submits is stored
+
+The message is composed in memory, handed to SMTP and dropped. There is no
+database row, no file and no log of its contents - the logs carry outcome codes
+only. The rate limiter holds keyed HMAC digests of the client address and the
+submitted email in process memory; the raw values are never written anywhere,
+and the counters reset on restart.
+
+That last point is a real limitation rather than a footnote: **the counters are
+per process and are not shared between replicas.** This is correct for the
+current single-instance deployment and would need shared state (Redis or
+equivalent) before scaling the website service out.
+
+For local development, Cloudflare publishes always-passing test credentials, so
+the form works without a Cloudflare account - see `frontend/.env.example`. The
+test secret accepts *any* token, including a forged one, so it must never reach
+a deployment.
+
+---
+
 ## Verifying
 
 ```bash

@@ -242,12 +242,71 @@ services:
         # Server-side only - it is read while the pages are rendered and never
         # reaches the browser. Blank means enabled.
         SERVICES_PAGE_ENABLED: ${SERVICES_PAGE_ENABLED:-true}
+        # The Turnstile *site* key only. It is public, and it is compiled into
+        # the bundle, so changing it needs `--build` rather than a restart. The
+        # matching secret is a runtime variable below and must never appear as
+        # a build argument, which would record it in the image history.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${PUBLIC_TURNSTILE_SITE_KEY:-}
     image: sapdemo-website:latest
     <<: *default-hardening
     environment:
       NODE_ENV: production
       PORT: "3000"
       HOSTNAME: 0.0.0.0
+      # ---------------------------------------------------------------------
+      # Contact form - off unless every one of these is supplied
+      # ---------------------------------------------------------------------
+      #
+      # Read at run time by the Next server, so changing any of them takes a
+      # `docker compose up -d` rather than a rebuild. None of them reaches the
+      # browser: they are not NEXT_PUBLIC_ values, and `lib/contact/config.ts`
+      # is imported only by server code.
+      #
+      # The default is off. With CONTACT_FORM_ENABLED unset the contact page
+      # keeps its mailto: links and /api/contact returns 404. Switching it on
+      # while any of the rest is missing fails closed to exactly the same
+      # thing, and logs which variable is absent - see `readContactConfig`.
+      CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-false}
+      # The mailbox submissions are delivered to. Server-side only, and
+      # deliberately separate from PUBLIC_CONTACT_EMAIL above, which is the
+      # address printed on the page and compiled into the bundle.
+      CONTACT_RECIPIENT_EMAIL: ${CONTACT_RECIPIENT_EMAIL:-}
+      # Gmail. SMTP_APP_PASSWORD is an App Password
+      # (https://myaccount.google.com/apppasswords), never the account
+      # password, and it has no default: the form stays off until it is set.
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-solveaihub@gmail.com}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD:-}
+      # Optional. Blank means SMTP_FROM defaults to SMTP_USER, which is the
+      # only From Gmail will not rewrite.
+      SMTP_FROM: ${SMTP_FROM:-}
+      # Implicit TLS, matching port 465. Blank would decide from the port and
+      # select STARTTLS on 587; STARTTLS is required either way - see mailer.ts.
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      # Verified server-side against Cloudflare on every submission. No key
+      # means no delivery, in every environment - there is no bypass.
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      # The hostnames a token may legitimately have been solved on, and the
+      # action the widget declares. The site key is public, so anyone can embed
+      # this widget on their own page and replay a genuinely-solved token here;
+      # these two are what make Cloudflare's confirmation specific to this form
+      # on this site. Blank skips the check, which is the local-development
+      # case - a deployment should set both.
+      TURNSTILE_EXPECTED_HOSTNAMES: ${TURNSTILE_EXPECTED_HOSTNAMES:-solveaihub.com,www.solveaihub.com}
+      TURNSTILE_EXPECTED_ACTION: ${TURNSTILE_EXPECTED_ACTION:-contact}
+      # Submissions per window per bucket. Two buckets are counted separately:
+      # one keyed on the client address, checked before Turnstile; one on the
+      # submitted email address, checked only *after* a solved challenge, so
+      # nobody can exhaust a third party's allowance with forged tokens.
+      CONTACT_RATE_LIMIT_MAX: ${CONTACT_RATE_LIMIT_MAX:-5}
+      CONTACT_RATE_LIMIT_WINDOW_SECONDS: ${CONTACT_RATE_LIMIT_WINDOW_SECONDS:-3600}
+      # HMAC key for those bucket identifiers. It exists so the in-memory keys
+      # are not brute-forceable back to an address - an unkeyed SHA-256 of an
+      # IPv4 address is reversible in seconds. Any long random string; changing
+      # it resets the counters. Counters are per process and in memory only,
+      # so they also reset on restart and do not span replicas.
+      CONTACT_RATE_LIMIT_SECRET: ${CONTACT_RATE_LIMIT_SECRET:-}
     read_only: true
     tmpfs:
       # Next writes nothing at runtime except what Node needs scratch space for.
