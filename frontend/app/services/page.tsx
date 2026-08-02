@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { ContactCta } from '@/components/ContactCta';
 import { DemoCta } from '@/components/DemoCta';
+import { EmailCard } from '@/components/EmailCard';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
-import { hasRepository, mailto, siteConfig } from '@/lib/site';
+import { CONSULTING_CTA_HREF, CONSULTING_CTA_LABEL } from '@/lib/navigation';
+import { hasRepository, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Consulting services',
@@ -145,17 +147,28 @@ export default function ServicesPage() {
         </Section>
 
         <Section title="Get in touch">
-          <p className="max-w-3xl text-slate-700 dark:text-slate-300">
-            Email is the way to start.{' '}
-            <a
-              href={mailto(`${siteConfig.name} — consulting enquiry`)}
-              className="font-medium text-sky-700 underline underline-offset-4 dark:text-sky-400"
-            >
-              {siteConfig.contactEmail}
-            </a>
-            . A short description of the data you have and the question you want answered is
-            more useful than a specification.
-          </p>
+          <div className="max-w-3xl space-y-6">
+            <p className="text-slate-700 dark:text-slate-300">
+              A short description of the data you have and the question you want answered is more
+              useful than a specification.
+            </p>
+            {/*
+              An internal link, not a `mailto:`. It carries the topic with it -
+              `?service=consulting` opens the contact form with "Collaboration
+              or consulting" already chosen - so the visitor lands somewhere
+              that knows why they clicked, rather than in a blank compose
+              window. The address is still one card below for anyone who would
+              rather just write.
+            */}
+            <div>
+              <ContactCta href={CONSULTING_CTA_HREF}>{CONSULTING_CTA_LABEL}</ContactCta>
+            </div>
+            <EmailCard
+              title="Or email directly"
+              body="Straight to the same inbox, read by a person. Nothing to fill in first."
+              subject={`${siteConfig.name} — consulting enquiry`}
+            />
+          </div>
         </Section>
       </Container>
     </>

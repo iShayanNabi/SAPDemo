@@ -12,6 +12,8 @@
  * markup around it.
  */
 
+import { CONSULTING_SERVICE, SERVICE_QUERY_PARAM } from '@/lib/contact-topics';
+
 export interface NavItem {
   href: string;
   label: string;
@@ -39,6 +41,21 @@ export const MOBILE_ONLY = 'xl:hidden';
  */
 export const CONTACT_CTA_LABEL = 'Start a Conversation';
 export const CONTACT_CTA_HREF = '/contact';
+
+/**
+ * The consulting call to action, on the Services page.
+ *
+ * An internal link rather than a `mailto:`, for the reason `ContactCta`
+ * documents: a compose window opened from a marketing button gives the visitor
+ * a blank message and no idea what to write. This one carries the topic with
+ * it, so the contact form opens with "Collaboration or consulting" already
+ * chosen and the direct address still on the same page.
+ *
+ * The href is built from the mapping rather than written out, so renaming the
+ * service key cannot leave this link pointing at a value the form ignores.
+ */
+export const CONSULTING_CTA_LABEL = 'Start a consulting conversation';
+export const CONSULTING_CTA_HREF = `/contact?${SERVICE_QUERY_PARAM}=${CONSULTING_SERVICE}`;
 
 /**
  * Every item in the primary navigation, in order.

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
-import { Callout, Card, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { Suspense } from 'react';
+import { Callout, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { ContactForm } from '@/components/ContactForm';
 import { DemoCta } from '@/components/DemoCta';
+import { EMAIL_CARD_LABEL, EmailCard, emailCardLabel } from '@/components/EmailCard';
 import { isContactFormAvailable, turnstileSiteKey } from '@/lib/contact/config';
 import { mailto, siteConfig } from '@/lib/site';
 
@@ -24,24 +26,32 @@ export const metadata: Metadata = {
   alternates: { canonical: '/contact' },
 };
 
+/**
+ * The three things worth writing about, each a card that *is* the email action.
+ *
+ * `about` is the suffix on the accessible name. Three links reading "Email
+ * Solve AI Hub at solveaihub@gmail.com" would be three identical entries in a
+ * screen reader's link list, which is the same problem as three links called
+ * "click here".
+ */
 const reasons = [
   {
     title: 'Consulting enquiry',
     body: 'Procurement or supply-chain analysis, rule engines, document extraction, or drawing the line between calculation and language models in a system you are building.',
     subject: `${siteConfig.name} — consulting enquiry`,
-    action: 'Email about consulting',
+    about: 'a consulting enquiry',
   },
   {
     title: 'A question about the platform',
     body: 'How a module calculates something, why a result looks the way it does, or how the deployment is put together. Every threshold and weight is configuration rather than hidden behaviour, so a specific question usually has a specific answer.',
     subject: `${siteConfig.name} — question about the platform`,
-    action: 'Email a question',
+    about: 'a question about the platform',
   },
   {
     title: 'Access to the demonstration',
     body: 'The interactive demonstration sits behind Cloudflare Access, whose policy is an explicit allow list. If you have been asked to review it and cannot get in, this is the address to use.',
     subject: `${siteConfig.name} — demonstration access`,
-    action: 'Email about access',
+    about: 'access to the demonstration',
   },
 ] as const;
 
@@ -60,9 +70,16 @@ export default function ContactPage() {
             : 'Email is the only channel, and that is deliberate - see the note below about why there is no contact form.'
         }
       >
+        {/*
+          The address itself is the button. `aria-label` names the action -
+          an accessible name of "solveaihub@gmail.com" says what it is and not
+          what pressing it does - and the focus ring matches every other call to
+          action, because a keyboard user has to be able to see where they are.
+        */}
         <a
           href={mailto(`${siteConfig.name} enquiry`)}
-          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-sky-700"
+          aria-label={EMAIL_CARD_LABEL}
+          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
         >
           {siteConfig.contactEmail}
         </a>
@@ -73,22 +90,13 @@ export default function ContactPage() {
         <Section title="What are you writing about?">
           <ul className="grid gap-6 lg:grid-cols-3">
             {reasons.map((reason) => (
-              <li key={reason.title}>
-                <Card className="flex h-full flex-col">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {reason.title}
-                  </h3>
-                  <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {reason.body}
-                  </p>
-                  <a
-                    href={mailto(reason.subject)}
-                    className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 underline underline-offset-4 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300"
-                  >
-                    {reason.action}
-                    <span aria-hidden="true">→</span>
-                  </a>
-                </Card>
+              <li key={reason.title} className="h-full">
+                <EmailCard
+                  title={reason.title}
+                  body={reason.body}
+                  subject={reason.subject}
+                  ariaLabel={emailCardLabel(reason.about)}
+                />
               </li>
             ))}
           </ul>
@@ -101,7 +109,16 @@ export default function ContactPage() {
               this website - see <TextLink href="/privacy">the privacy page</TextLink> for what
               happens to it afterwards.
             </p>
-            <ContactForm siteKey={siteKey} />
+            {/*
+              `ContactForm` reads `?service=` to preselect a topic, and
+              `useSearchParams` requires a Suspense boundary for any page Next
+              might try to prerender. This page is `force-dynamic` so it never
+              is - the boundary is here anyway, because the failure without one
+              is a build error naming neither the hook nor the file.
+            */}
+            <Suspense fallback={null}>
+              <ContactForm siteKey={siteKey} />
+            </Suspense>
           </Section>
         ) : (
           <Section>
