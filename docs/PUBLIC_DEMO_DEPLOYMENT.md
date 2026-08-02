@@ -226,7 +226,8 @@ also set:
 | `SMTP_SECURE` | Run time | `true`, matching implicit TLS on 465. Blank decides from the port. |
 | `SMTP_FROM` | Run time | Optional; defaults to `SMTP_USER`, the only `From` Gmail will not rewrite. |
 | `TURNSTILE_SECRET_KEY` | Run time | Verified with Cloudflare on every submission. |
-| `PUBLIC_TURNSTILE_SITE_KEY` | **Build** | The public widget key, compiled into the bundle. |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | **Build** *and* run time | The public widget key. Compiled into the bundle by `next build`, and read again at run time by the server-side readiness gate. `PUBLIC_TURNSTILE_SITE_KEY` is the superseded spelling and is still accepted. |
+| `CONTACT_SITEVERIFY_TIMEOUT_MS` | Run time | How long the Cloudflare verification may take. Defaults to 5000. Never a build argument. |
 | `TURNSTILE_EXPECTED_HOSTNAMES` | Run time | Hostnames a token may be solved on. Blank skips the check. |
 | `TURNSTILE_EXPECTED_ACTION` | Run time | The widget's declared action, `contact`. Blank skips the check. |
 | `CONTACT_RATE_LIMIT_MAX` | Run time | Submissions per window per bucket. Defaults to 5. |
@@ -236,14 +237,22 @@ also set:
 Two things follow from that build/run-time split, and both have bitten this
 project before in other variables:
 
-- **The site key needs `--build`, not a restart.** `NEXT_PUBLIC_*` values are
-  compiled in by `next build`, so changing the widget key means
-  `./scripts/start_selfhosted.sh --build`. Everything else takes effect on
-  `docker compose up -d`.
+- **The site key is passed twice, and either one alone works.**
+  `NEXT_PUBLIC_*` values are compiled in by `next build`, so the build argument
+  is what puts the key in the browser bundle and changing it wants
+  `./scripts/start_selfhosted.sh --build`. It is *also* under `environment`,
+  because the gate that decides whether the form renders at all is server-side:
+  the contact page is `force-dynamic` and hands the key to the widget as a
+  prop, so a key supplied only at run time still produces a working form on a
+  `docker compose up -d`. `lib/contact/config.ts` reads it both ways and
+  explains why the runtime read is written the way it is. Everything else takes
+  effect on `docker compose up -d`.
 - **The secret key must never become a build argument.** Docker records build
   arguments in the image history, so a secret placed there is readable by anyone
   who can pull the image. Only the *site* key appears under `build.args` in
-  `docker-compose.selfhosted.yml`; the rest are under `environment`.
+  `docker-compose.selfhosted.yml`; `TURNSTILE_SECRET_KEY`, `SMTP_APP_PASSWORD`
+  and `CONTACT_RATE_LIMIT_SECRET` are runtime-only, and
+  `tests/integration/test_selfhosted_deployment.py` asserts it.
 
 ### It fails closed, and that is the whole design
 

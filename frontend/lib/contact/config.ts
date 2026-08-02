@@ -17,8 +17,13 @@
  * definition and is *inlined by `next build`*. It is referenced as a complete
  * literal expression below because that is the only form the compiler
  * substitutes - destructuring `process.env` or building the name dynamically
- * yields `undefined` in the browser. It follows that changing the site key
- * requires rebuilding the image, exactly as `NEXT_PUBLIC_DEMO_URL` does.
+ * yields `undefined` in the browser, so that literal is the only thing that can
+ * put the key in the bundle, and changing it there means rebuilding the image
+ * exactly as `NEXT_PUBLIC_DEMO_URL` does.
+ *
+ * `turnstileSiteKey()` reads the same variable a second time, from the live
+ * environment, and that read is what lets a container supply the key without a
+ * rebuild - see the note on the function for why it is written the way it is.
  */
 
 /** How the form is allowed to fail: absent configuration, never a partial one. */
@@ -63,6 +68,50 @@ export const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 3600;
 /** Requests per window per bucket when `CONTACT_RATE_LIMIT_MAX` is unset. */
 export const DEFAULT_RATE_LIMIT_MAX = 5;
 
+/**
+ * How long to wait for Cloudflare's `siteverify` when
+ * `CONTACT_SITEVERIFY_TIMEOUT_MS` is unset.
+ *
+ * Beyond this the visitor is waiting on a form that has already failed, and the
+ * request thread is held open by a third party's outage. Verification fails
+ * closed on timeout, so a shorter value costs a legitimate submission on a slow
+ * network and a longer one costs nothing but patience - five seconds is the
+ * compromise, and the variable exists so a deployment can move it without a
+ * rebuild.
+ */
+export const DEFAULT_SITEVERIFY_TIMEOUT_MS = 5000;
+
+/** The site-key variable, named once. */
+const SITE_KEY_VARIABLE = 'NEXT_PUBLIC_TURNSTILE_SITE_KEY';
+
+/**
+ * The live environment of the running process, reached the long way round.
+ *
+ * `next build` substitutes `NEXT_PUBLIC_*` reads far more thoroughly than
+ * "replaces the literal `process.env.NAME`" suggests, and the only way to know
+ * which forms survive is to build the site and read the emitted chunk. Two
+ * obvious attempts do not:
+ *
+ * * `process.env[SITE_KEY_VARIABLE]` - the constant is folded first, and the
+ *   result is the same inlined value;
+ * * a helper that returns `process.env` - the helper is inlined, and then
+ *   folded.
+ *
+ * Both compiled to `""` in `.next/standalone`, which is a *silent* failure: the
+ * code reads as a runtime fallback, the container has the variable, and the
+ * gate refuses anyway. Reaching the object through `globalThis` is the form
+ * that survives - verified in the emitted chunks for the contact page, the
+ * privacy page and the `/api/contact` route, all three of which call this.
+ *
+ * Non-public names such as `SMTP_USER` are untouched in the same output, so it
+ * is the `NEXT_PUBLIC_` prefix that triggers the substitution rather than the
+ * syntax, and nothing else in this file needs the detour.
+ */
+function runtimeEnv(): Record<string, string | undefined> {
+  const host = globalThis as { process?: { env?: Record<string, string | undefined> } };
+  return host.process?.env ?? {};
+}
+
 function trimmed(value: string | undefined): string {
   return value?.trim() ?? '';
 }
@@ -93,12 +142,40 @@ export function isContactFormRequested(): boolean {
 }
 
 /**
- * The public Turnstile site key, or `''` when the image was built without one.
+ * The public Turnstile site key, or `''` when neither the build nor the
+ * container supplied one.
  *
- * Build-time inlined - see the note at the top of this file.
+ * Read twice, because the variable arrives by two different routes and either
+ * one on its own is a working deployment:
+ *
+ * 1. The **compiled** read. `next build` substitutes this literal expression,
+ *    so a `--build-arg` reaches the browser bundle. This is the only form the
+ *    compiler recognises, and the only one that works client-side at all.
+ * 2. The **runtime** read, through a variable name the compiler cannot match.
+ *    An image built without the build argument carries `''` from step 1 for
+ *    ever, which fails the readiness gate on a container whose environment has
+ *    the key - the exact "set in the environment file, missing in the
+ *    container" state this fallback removes.
+ *
+ * The runtime read is server-side only: in the browser `process.env` holds
+ * nothing but what was compiled in, and it does not need to - the contact page
+ * is `force-dynamic` and hands the key to `ContactForm` as a prop.
  */
 export function turnstileSiteKey(): string {
-  return trimmed(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const compiled = trimmed(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  return compiled || trimmed(runtimeEnv()[SITE_KEY_VARIABLE]);
+}
+
+/**
+ * How long to wait for Cloudflare's `siteverify`, in milliseconds.
+ *
+ * Runtime only, and deliberately not a `NEXT_PUBLIC_` value: a browser has no
+ * use for it, and compiling it in would mean rebuilding the image to change a
+ * timeout. A blank or malformed value falls back to the default rather than to
+ * "wait for ever", for the same reason `positiveInt` exists.
+ */
+export function siteverifyTimeoutMs(): number {
+  return positiveInt(process.env.CONTACT_SITEVERIFY_TIMEOUT_MS, DEFAULT_SITEVERIFY_TIMEOUT_MS);
 }
 
 /**

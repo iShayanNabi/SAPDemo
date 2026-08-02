@@ -28,13 +28,12 @@
  * message. It is a bearer credential for one submission.
  */
 
+import { siteverifyTimeoutMs } from '@/lib/contact/config';
+
 const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 /** Cloudflare tokens are well under this; anything longer is not worth a round trip. */
 const MAX_TOKEN_LENGTH = 2048;
-
-/** Beyond this the visitor is waiting on a form that has already failed. */
-const VERIFY_TIMEOUT_MS = 8000;
 
 export type TurnstileResult = {
   readonly verified: boolean;
@@ -100,7 +99,10 @@ export async function verifyTurnstileToken(
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
-      signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
+      // Read per call rather than at module scope: this is a runtime variable,
+      // and freezing it at import time would mean the standalone server used
+      // whatever was set when the module was first loaded.
+      signal: AbortSignal.timeout(siteverifyTimeoutMs()),
       cache: 'no-store',
     });
   } catch {
