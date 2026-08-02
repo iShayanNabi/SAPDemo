@@ -39,9 +39,10 @@ export default function AboutPage() {
               carries a label saying how it was produced.
             </p>
             <p>
-              It is a portfolio project. It runs on a single machine, on fictional data, with no
-              user accounts and no SAP connection - and it says so on every page rather than in a
-              footnote.
+              It is an educational, technical and portfolio project. It runs on a single machine,
+              on fictional data, with no internal user accounts and no SAP connection - and it says
+              so on every page rather than in a footnote. It is not an official SAP product, and
+              everything it produces needs review by a qualified person before it is acted on.
             </p>
           </div>
         </Section>

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { ACCESS_NOTICE, UPLOAD_NOTICE } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Architecture',
   description:
-    'How Procurement Intelligence Demo is deployed: a Next.js website and a Streamlit demonstration reached through an outbound tunnel, a FastAPI backend and PostgreSQL that are never published, and the boundaries between them.',
+    'How Procurement Intelligence Demo is deployed: a public Next.js website and a Streamlit demonstration behind Cloudflare Access, reached through an outbound Cloudflare Tunnel, with a FastAPI backend and PostgreSQL that are never published.',
   alternates: { canonical: '/architecture' },
 };
 
@@ -33,7 +34,8 @@ export default function ArchitecturePage() {
   ┌──────────────────────┐
   │  edge network        │        outbound connection only -
   │  ┌────────────────┐  │        nothing listens on the router
-  │  │  tunnel client │──┼───────▶  (dials out to the edge provider)
+  │  │ Cloudflare     │──┼───────▶  (cloudflared dials out to Cloudflare)
+  │  │ Tunnel client  │  │
   │  └───────┬────────┘  │
   │          │           │
   │   ┌──────▼──────┐  ┌─▼───────────┐
@@ -61,6 +63,13 @@ export default function ArchitecturePage() {
             it has no route to the API or the database, because it never calls them. The
             demonstration UI is on both, because it is the only thing that talks to the API.
           </p>
+          <p className="mt-4 max-w-3xl text-slate-600 dark:text-slate-400">
+            Reading it from the outside in: a public Next.js website, a Streamlit demonstration
+            interface behind Cloudflare Access, a FastAPI backend holding every rule and
+            calculation, and a PostgreSQL database. The two hostnames are served by the same
+            outbound Cloudflare Tunnel; nothing about the tunnel, its credentials or the host it
+            runs on is published here or anywhere else on this site.
+          </p>
         </Section>
 
         <Section title="What is reachable, and what is not">
@@ -73,8 +82,8 @@ export default function ArchitecturePage() {
                 <ClaimList
                   variant="plain"
                   items={[
-                    'The marketing website, publicly.',
-                    'The interactive demonstration, behind an access policy with an explicit allow list.',
+                    'The public marketing website, which requires no authentication and asks for no account.',
+                    'The interactive demonstration, on its own hostname, behind Cloudflare Access with a policy that is an explicit allow list.',
                   ]}
                 />
               </div>
@@ -129,18 +138,50 @@ export default function ArchitecturePage() {
                 'A request identifier on every response and in every log line, so a report of "it failed" can be traced to the exact request.',
                 'An OpenAPI document generated from the code, with the error shapes documented per module.',
                 'Errors that never carry a filesystem path, a stack trace, a database URL or a provider payload. The detail goes to the log; the caller gets a safe message.',
-                'Authentication declared as a seam - a principal, roles and a tenant scope - and honestly reported as not enforced, because there are no accounts.',
+                'Authentication declared as a seam - a principal, roles and a tenant scope - and honestly reported as not enforced inside the application, because there are no internal accounts behind it yet.',
               ]}
             />
+          </div>
+        </Section>
+
+        <Section
+          title="How the demonstration is protected, and how far that goes"
+          lede="Worth stating precisely, because the perimeter and the application are two different questions and only one of them is answered today."
+        >
+          <div className="max-w-3xl space-y-4 text-slate-700 dark:text-slate-300">
+            <p>{ACCESS_NOTICE}</p>
+            <p>
+              Cloudflare Access is currently the perimeter control: it decides who reaches the
+              demonstration hostname at all. Verification of the Cloudflare access token
+              <em> inside</em> the Streamlit application has not been deployed, so the application
+              itself does not independently check who a request came from. The public marketing
+              website is deliberately not behind Access and requires no authentication.
+            </p>
+          </div>
+        </Section>
+
+        <Section title="What runs behind the demonstration">
+          <div className="max-w-3xl">
+            <ClaimList
+              variant="plain"
+              items={[
+                'Deterministic Python does every calculation: rules, thresholds, matching, weighted scoring, aggregation and rubric marking.',
+                'Statistical models produce the forecasts and stock projections, selected by backtesting and reported with the model that won.',
+                'The AI provider is an abstraction over Anthropic, OpenAI and a local mock. The public demonstration is configured to use the mock, and that is checked before any provider key is consulted.',
+                'Each module runs on its bundled fictional dataset, generated by a seeded script with its planted anomalies documented in a manifest.',
+              ]}
+            />
+            <p className="mt-6 text-slate-700 dark:text-slate-300">{UPLOAD_NOTICE}</p>
           </div>
         </Section>
 
         <Section>
           <Callout title="Stated limitations" tone="warning">
             <p>
-              There is no user authentication. Records created by one visitor to the demonstration
-              are visible to another through the API. Session-scoped views and an access policy in
-              front of the hostname reduce that exposure; they do not replace per-user ownership,
+              The application does not maintain internal user accounts, roles, organisations or
+              tenant administration, so records created by one visitor to the demonstration are
+              visible to another through the API. Cloudflare Access in front of the hostname and
+              session-scoped views reduce that exposure; they do not replace per-user ownership,
               and this project does not claim they do.
             </p>
             <p>

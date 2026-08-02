@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, Steps, TextLink } from '@/components/ui';
 import { origins } from '@/content/origins';
+import { UPLOAD_NOTICE } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'How it works',
@@ -22,7 +23,10 @@ export default function HowItWorksPage() {
       </PageHeader>
 
       <Container>
-        <Section title="How data moves">
+        <Section
+          title="How data moves"
+          lede="The path a dataset takes from arriving to being a labelled result. In the public demonstration the file that arrives is always a bundled fictional one."
+        >
           <div className="max-w-3xl">
             <Steps
               items={[
@@ -34,6 +38,11 @@ export default function HowItWorksPage() {
                 'Optionally, a language model is given the finished results and asked for prose. Its text goes into separate fields. If it fails, the analysis is still complete and the failure is reported.',
               ]}
             />
+            <p className="mt-6 text-slate-700 dark:text-slate-300">
+              {UPLOAD_NOTICE} The validation and mapping described in the first three steps is the
+              code that runs when the project is used privately with a dataset of your own; in the
+              public demonstration it runs against the bundled files.
+            </p>
           </div>
         </Section>
 
@@ -129,9 +138,10 @@ export default function HowItWorksPage() {
         <Section>
           <Callout title="What this is not">
             <p>
-              This is a demonstration platform on fictional data. It is not connected to any SAP
-              system, none of its output has been validated in a live SAP environment, and no
-              estimated saving it produces is a guarantee. Read the{' '}
+              This is a demonstration platform on fictional data. It is not an official SAP
+              product, it is not connected to any SAP system, none of its output has been validated
+              in a live SAP environment, and no estimated saving it produces is a guarantee. Every
+              result it produces needs review by a qualified person before it is acted on. Read the{' '}
               <TextLink href="/demo-disclaimer">demonstration disclaimer</TextLink> before drawing
               conclusions from anything you see in it.
             </p>

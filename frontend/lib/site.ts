@@ -201,6 +201,46 @@ export const DEMO_NOTICE =
   'sample data generated for demonstration. Nothing is connected to a live SAP system, and no ' +
   'output has been validated in one.';
 
+/**
+ * The date the privacy policy and the terms were last revised.
+ *
+ * One constant for both, because they are revised together and a reader
+ * comparing the two dates is entitled to conclude something from a difference.
+ * Written as a literal rather than derived from a build timestamp: a date that
+ * moves every time the image is rebuilt tells a visitor nothing about whether
+ * the wording changed.
+ */
+export const POLICY_LAST_UPDATED = 'August 2, 2026';
+
+/**
+ * How access to this project actually works, in one sentence pair.
+ *
+ * This exists as shared copy because the previous wording - "there is no user
+ * authentication" - was on the architecture page only, and was wrong in a way
+ * that read as reassuring on one page and alarming on another. There *is*
+ * authentication, at the network edge, in front of the demonstration hostname;
+ * what does not exist is anything inside the application.
+ *
+ * The two halves must travel together. The first on its own overstates what is
+ * protected; the second on its own understates it.
+ */
+export const ACCESS_NOTICE =
+  'Cloudflare Access authenticates approved visitors at the network edge. The application ' +
+  'currently does not maintain internal user accounts, roles, organisations, tenant permissions ' +
+  'or enterprise identity administration.';
+
+/**
+ * The standing statement about uploads.
+ *
+ * Uploads are refused server-side in demonstration mode, at the choke points
+ * every upload passes through, rather than by hiding a widget. The second
+ * sentence is a plan and is worded as one - a planned feature described in the
+ * present tense is the most common way a demonstration site ends up lying.
+ */
+export const UPLOAD_NOTICE =
+  'The public demonstration currently uses bundled fictional data. Secure uploads for approved ' +
+  'users are planned but are not currently enabled.';
+
 export function mailto(subject: string): string {
   return `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(subject)}`;
 }

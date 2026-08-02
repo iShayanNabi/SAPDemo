@@ -16,6 +16,12 @@
  * - `computed` and `aiWrites` are separate fields because they are separate
  *   claims, and conflating them is the single most misleading thing this site
  *   could do.
+ * - `limitation` is per-module rather than one shared sentence, because the
+ *   thing each tool must not be mistaken for is different: the contract module
+ *   must not read as legal review, the forecaster must not read as certainty,
+ *   the interview coach must not read as a hiring prediction, and the two
+ *   supplier modules must not imply an external news, financial or ESG feed
+ *   that is not connected. A single generic caveat would cover none of them.
  */
 
 export type OutputOrigin =
@@ -46,6 +52,11 @@ export interface ModuleContent {
   outputs: string[];
   /** The guided demonstration, step by step. */
   steps: string[];
+  /**
+   * What this specific tool must not be mistaken for. Rendered on the module
+   * page next to the demonstration-data warning.
+   */
+  limitation: string;
   /** Origins a result from this module can carry. */
   origins: OutputOrigin[];
   /** Export formats the module already supports. Empty where it has none. */
@@ -90,6 +101,10 @@ export const modules: readonly ModuleContent[] = [
       'Run the analysis.',
       'Filter the findings by severity, rule or supplier, and download the report.',
     ],
+    limitation:
+      'The findings are rule outputs over a fictional export, not an audit and not a guarantee ' +
+      'that a flagged order is wrong or an unflagged one is right. A buyer still has to review ' +
+      'each one.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -129,6 +144,10 @@ export const modules: readonly ModuleContent[] = [
       'Read the KPI row, then drill into a category or a supplier.',
       'Open an opportunity and inspect the transactions it was derived from.',
     ],
+    limitation:
+      'Every savings figure is an estimate stating the assumption it rests on, not money saved, ' +
+      'and the transactions underneath it are fictional. Acting on one is a decision for somebody ' +
+      'who knows the category.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -168,6 +187,10 @@ export const modules: readonly ModuleContent[] = [
       'Rank the suppliers and open a score breakdown.',
       'Change a weight and watch the ranking respond.',
     ],
+    limitation:
+      'The ranking reflects the configured weights and the bundled fictional catalogue. No ' +
+      'external supplier, financial, credit or news data source is connected, so this is a ' +
+      'method demonstration rather than a sourcing decision.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -205,6 +228,10 @@ export const modules: readonly ModuleContent[] = [
       'Run the validation.',
       'Open an exception and read the three documents side by side.',
     ],
+    limitation:
+      'The exceptions are matching results over fictional documents. A pay, hold or investigate ' +
+      'recommendation is a suggestion for a person to approve, not an approval, and no payment ' +
+      'system is connected to it.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -242,6 +269,10 @@ export const modules: readonly ModuleContent[] = [
       'Open a supplier and read the category breakdown.',
       'Ask the copilot a question and follow its citations back to the records.',
     ],
+    limitation:
+      'Scores come from the bundled fictional profiles and internal event records only. No live ' +
+      'news, financial, credit, sanctions or ESG feed is connected, so nothing here reflects the ' +
+      'real standing of any real supplier.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -282,6 +313,10 @@ export const modules: readonly ModuleContent[] = [
       'Follow a citation to the page and excerpt it came from.',
       'Ask a question about the contract.',
     ],
+    limitation:
+      'Extraction is not legal advice and does not replace review by a qualified lawyer. OCR is ' +
+      'not enabled here, so a scanned or image-only document is reported as needing it rather ' +
+      'than analysed.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -320,6 +355,10 @@ export const modules: readonly ModuleContent[] = [
       'Open a material and read which model was selected and on what evidence.',
       'Check the projected shortage date against the reorder trigger.',
     ],
+    limitation:
+      'A forecast is a projection from history with error attached, not a statement of what will ' +
+      'happen. The shortage dates and reorder recommendations follow from that projection, so ' +
+      'they inherit its uncertainty rather than resolving it.',
     origins: ['forecast', 'rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['XLSX', 'CSV', 'JSON'],
   },
@@ -358,6 +397,10 @@ export const modules: readonly ModuleContent[] = [
       'Generate the suite.',
       'Edit a case, approve it, record a result, and export.',
     ],
+    limitation:
+      'The suite is a drafting aid built from a fictional process description. It has not been ' +
+      'executed against any SAP system, and a tester still has to review and adapt it before it ' +
+      'is used.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['CSV', 'XLSX', 'JSON', 'PDF'],
   },
@@ -396,6 +439,10 @@ export const modules: readonly ModuleContent[] = [
       'Edit the scope section and watch the sections that depended on it flag as stale.',
       'Save a version, compare it with the previous one, and export.',
     ],
+    limitation:
+      'The document is a drafted starting point derived from a fictional project request, not a ' +
+      'validated implementation design. No part of it has been reviewed or approved by SAP, and ' +
+      'it needs a consultant to check it against the real project.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['Markdown', 'JSON', 'DOCX', 'PDF'],
   },
@@ -435,6 +482,10 @@ export const modules: readonly ModuleContent[] = [
       'Read the score, the matched keywords and the missing concepts.',
       'Complete the session and open the performance dashboard.',
     ],
+    limitation:
+      'Marking is keyword matching against a written rubric, which has a ceiling - the keyword ' +
+      'that credited each concept is printed so you can see it. Scores are practice feedback on ' +
+      'fictional questions and do not predict how any interview will go.',
     origins: ['rule_based', 'ai_generated', 'mock_ai', 'demo_data'],
     exports: ['CSV', 'XLSX', 'JSON', 'PDF'],
   },

@@ -5,7 +5,7 @@ import { ModuleGrid } from '@/components/ModuleCard';
 import { Callout, Card, ClaimList, Container, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
 import { origins } from '@/content/origins';
-import { DEMO_NOTICE, siteConfig } from '@/lib/site';
+import { DEMO_NOTICE, UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: siteConfig.title,
@@ -133,9 +133,14 @@ export default function HomePage() {
         <Section>
           <Callout title="What the interactive demonstration is" tone="warning">
             <p>
-              The demonstration runs the real modules on bundled fictional data. File uploads
-              are disabled, the AI runs in mock mode with no provider key, and nothing is
-              connected to an SAP system.
+              The demonstration runs the real modules on bundled fictional data. {UPLOAD_NOTICE}{' '}
+              The AI provider is a local mock, nothing is connected to an SAP system, and every
+              result needs review by a qualified person before it is acted on.
+            </p>
+            <p>
+              It is reached on a separate hostname behind Cloudflare Access, which authenticates
+              approved visitors at the network edge; this website itself is public and requires no
+              account.
             </p>
             <p>
               Please do not enter confidential information, personal information, or any real

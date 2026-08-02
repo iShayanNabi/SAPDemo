@@ -25,7 +25,7 @@ const reasons = [
   },
   {
     title: 'Access to the demonstration',
-    body: 'The interactive demonstration sits behind an access policy with an explicit allow list. If you have been asked to review it and cannot get in, this is the address to use.',
+    body: 'The interactive demonstration sits behind Cloudflare Access, whose policy is an explicit allow list. If you have been asked to review it and cannot get in, this is the address to use.',
     subject: `${siteConfig.name} — demonstration access`,
     action: 'Email about access',
   },
@@ -98,9 +98,13 @@ export default function ContactPage() {
               model.
             </p>
             <p>
-              Please do not email confidential data, personal data about other people, or real SAP
-              exports. If a conversation needs real data, that is a conversation to have before
-              any data moves. See the <TextLink href="/privacy">privacy page</TextLink>.
+              It does pass through and rest with the email providers on both sides, whose own
+              retention this project does not control.
+            </p>
+            <p>
+              Please do not email confidential data, personal data about other people, credentials,
+              or real SAP exports. If a conversation needs real data, that is a conversation to
+              have before any data moves. See the <TextLink href="/privacy">privacy page</TextLink>.
             </p>
           </div>
         </Section>
