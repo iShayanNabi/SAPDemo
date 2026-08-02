@@ -358,6 +358,185 @@ class TestTheContactMailSettings:
         assert "process.env.SMTP_APP_PASSWORD" in config
 
 
+class TestTheContactFormReachesTheContainer:
+    """A variable set in the environment file has to arrive where it is read.
+
+    This is the failure the whole class exists for, and it is invisible from
+    every direction that usually catches things. ``.env.selfhosted`` sets
+    ``NEXT_PUBLIC_TURNSTILE_SITE_KEY`` and ``CONTACT_SITEVERIFY_TIMEOUT_MS``;
+    the compose file interpolated neither name, so Docker supplied nothing, the
+    readiness gate counted the site key as missing configuration and the page
+    reverted to its ``mailto:`` links. Nothing errored, nothing logged a wrong
+    name, every container was healthy, and the operator could see both
+    variables set in their own file.
+
+    Two directions are asserted, because only the pair is meaningful: the
+    variables are *named* in the compose file, and every name the environment
+    template documents is *consumed* by something.
+    """
+
+    #: Read at run time only. A build argument is recorded in the image
+    #: history, so anyone who can pull the image can read it back out.
+    RUNTIME_ONLY_SECRETS = [
+        "TURNSTILE_SECRET_KEY",
+        "SMTP_APP_PASSWORD",
+        "CONTACT_RATE_LIMIT_SECRET",
+    ]
+
+    #: Every contact variable, and where the compose file must pass it.
+    CONTACT_RUNTIME_VARIABLES = [
+        "CONTACT_FORM_ENABLED",
+        "CONTACT_RECIPIENT_EMAIL",
+        "TURNSTILE_SECRET_KEY",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_SECURE",
+        "SMTP_USER",
+        "SMTP_APP_PASSWORD",
+        "CONTACT_RATE_LIMIT_MAX",
+        "CONTACT_RATE_LIMIT_WINDOW_SECONDS",
+        "CONTACT_RATE_LIMIT_SECRET",
+        "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+        "CONTACT_SITEVERIFY_TIMEOUT_MS",
+    ]
+
+    #: Names the compose file may interpolate without the template listing
+    #: them. Only the superseded site-key spelling, kept so a deployment
+    #: written against the earlier template keeps working.
+    UNDOCUMENTED_REFERENCES = {"PUBLIC_TURNSTILE_SITE_KEY"}
+
+    @pytest.fixture(scope="class")
+    def website(self, compose: dict) -> dict:
+        return compose["services"]["website"]
+
+    @pytest.fixture(scope="class")
+    def build_args(self, website: dict) -> dict:
+        return website["build"]["args"]
+
+    @pytest.fixture(scope="class")
+    def environment(self, website: dict) -> dict:
+        return website["environment"]
+
+    @pytest.mark.parametrize("variable", CONTACT_RUNTIME_VARIABLES)
+    def test_every_contact_variable_is_passed_at_run_time(
+        self, environment: dict, variable: str
+    ):
+        assert variable in environment, (
+            f"{variable} is read by the website at run time and the compose file "
+            f"does not pass it, so the container will never see it."
+        )
+
+    def test_the_site_key_is_a_build_argument_for_the_browser_bundle(self, build_args: dict):
+        """`next build` compiles it in; nothing else can put it in the bundle."""
+        assert "NEXT_PUBLIC_TURNSTILE_SITE_KEY" in build_args
+
+    def test_the_site_key_build_argument_and_runtime_value_come_from_one_source(
+        self, build_args: dict, environment: dict
+    ):
+        """Two spellings of one variable is how this broke; two *values* would
+        put a different key in the bundle from the one the gate approves."""
+        assert (
+            build_args["NEXT_PUBLIC_TURNSTILE_SITE_KEY"]
+            == environment["NEXT_PUBLIC_TURNSTILE_SITE_KEY"]
+        )
+
+    def test_the_site_key_accepts_the_name_the_code_reads(self, build_args: dict):
+        """`NEXT_PUBLIC_TURNSTILE_SITE_KEY` is the name in `config.ts`,
+        `frontend/.env.example` and the deployment's own environment file, so
+        it has to be the name the compose file looks up - not only the name it
+        assigns to."""
+        assert "${NEXT_PUBLIC_TURNSTILE_SITE_KEY" in build_args["NEXT_PUBLIC_TURNSTILE_SITE_KEY"]
+
+    def test_the_superseded_site_key_spelling_still_works(self, build_args: dict):
+        """The earlier template called it `PUBLIC_TURNSTILE_SITE_KEY`. Removing
+        it would silently revert a working form on any deployment file written
+        against that template."""
+        assert "PUBLIC_TURNSTILE_SITE_KEY:-" in build_args["NEXT_PUBLIC_TURNSTILE_SITE_KEY"]
+
+    def test_the_siteverify_timeout_defaults_to_five_seconds(self, environment: dict):
+        """A blank value must not mean "wait for ever" - the visitor is held on
+        a form that has already failed, and so is the request thread."""
+        assert (
+            environment["CONTACT_SITEVERIFY_TIMEOUT_MS"]
+            == "${CONTACT_SITEVERIFY_TIMEOUT_MS:-5000}"
+        )
+
+    def test_the_siteverify_timeout_is_not_public_and_not_compiled_in(
+        self, build_args: dict, environment: dict
+    ):
+        """A browser has no use for it, and a timeout that needs a rebuild to
+        change is a timeout nobody changes."""
+        assert "CONTACT_SITEVERIFY_TIMEOUT_MS" not in build_args
+        assert "NEXT_PUBLIC_CONTACT_SITEVERIFY_TIMEOUT_MS" not in environment
+
+    @pytest.mark.parametrize("secret", RUNTIME_ONLY_SECRETS)
+    def test_no_server_secret_is_a_build_argument(
+        self, build_args: dict, environment: dict, secret: str
+    ):
+        assert secret not in build_args, (
+            f"{secret} is a build argument. Docker records build arguments in the "
+            f"image history, so anyone who can pull the image can read it back."
+        )
+        assert secret in environment, f"{secret} is read at run time and is not passed"
+
+    @pytest.mark.parametrize("secret", RUNTIME_ONLY_SECRETS)
+    def test_no_server_secret_is_a_dockerfile_build_argument(self, secret: str):
+        """The other half of the same rule: the image must not accept one
+        either, or a hand-run `docker build --build-arg` bakes it in."""
+        dockerfile = FRONTEND_DOCKERFILE.read_text(encoding="utf-8")
+        declared = re.findall(r"^ARG\s+(\w+)", dockerfile, re.MULTILINE)
+        assert secret not in declared
+
+    def test_every_documented_variable_is_consumed_somewhere(self, compose_text: str):
+        """The direction that catches a variable nobody reads.
+
+        A name in the template that no compose file and no script interpolates
+        is a setting the operator can fill in to no effect, which is how both
+        of this branch's variables behaved.
+        """
+        consumers = compose_text + DEBUG_COMPOSE.read_text(encoding="utf-8")
+        for script in SELFHOSTED_SCRIPTS:
+            consumers += (SCRIPTS_DIR / script).read_text(encoding="utf-8")
+        consumers += (SCRIPTS_DIR / "lib" / "selfhosted.sh").read_text(encoding="utf-8")
+
+        documented = re.findall(
+            r"^([A-Z][A-Z0-9_]*)=", ENV_EXAMPLE.read_text(encoding="utf-8"), re.MULTILINE
+        )
+        assert documented, "no variables found; the template or the regex changed"
+        unread = [name for name in documented if name not in consumers]
+        assert unread == [], (
+            f"{unread} are documented in .env.selfhosted.example and read by nothing. "
+            f"An operator can set them and see no effect."
+        )
+
+    def test_every_interpolated_variable_is_documented(self, compose_text: str):
+        """And the direction that catches a variable nobody documents."""
+        documented = set(
+            re.findall(
+                r"^([A-Z][A-Z0-9_]*)=", ENV_EXAMPLE.read_text(encoding="utf-8"), re.MULTILINE
+            )
+        )
+        referenced = set(re.findall(r"\$\{([A-Z][A-Z0-9_]*)", compose_text))
+        undocumented = sorted(referenced - documented - self.UNDOCUMENTED_REFERENCES)
+        assert undocumented == [], (
+            f"{undocumented} are read by docker-compose.selfhosted.yml and absent from "
+            f".env.selfhosted.example, so nobody setting the stack up knows to supply them."
+        )
+
+    def test_the_code_reads_the_names_the_compose_file_passes(self):
+        """The guard's own guard.
+
+        Asserting on the compose file alone proves the deployment is
+        self-consistent, not that it agrees with the application - which is the
+        half that was wrong.
+        """
+        config = (PROJECT_ROOT / "frontend" / "lib" / "contact" / "config.ts").read_text(
+            encoding="utf-8"
+        )
+        assert "process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY" in config
+        assert "process.env.CONTACT_SITEVERIFY_TIMEOUT_MS" in config
+
+
 class TestTheEntrypointLifecycle:
     @pytest.fixture(scope="class")
     def entrypoint(self) -> str:

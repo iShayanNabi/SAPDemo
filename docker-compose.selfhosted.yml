@@ -246,7 +246,17 @@ services:
         # the bundle, so changing it needs `--build` rather than a restart. The
         # matching secret is a runtime variable below and must never appear as
         # a build argument, which would record it in the image history.
-        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${PUBLIC_TURNSTILE_SITE_KEY:-}
+        #
+        # Two accepted spellings, and the fallback is not decoration. The
+        # variable is named `NEXT_PUBLIC_TURNSTILE_SITE_KEY` everywhere the code
+        # reads it - `frontend/.env.example`, `lib/contact/config.ts`,
+        # `.env.selfhosted.example` - and that is the name to use. Earlier
+        # revisions of the environment template called it
+        # `PUBLIC_TURNSTILE_SITE_KEY`, so an existing deployment file still uses
+        # that; dropping it would turn a working contact form back into the
+        # mailto: page with the operator's variable visibly set, which is
+        # exactly the failure this line exists to prevent.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-${PUBLIC_TURNSTILE_SITE_KEY:-}}
     image: sapdemo-website:latest
     <<: *default-hardening
     environment:
@@ -284,9 +294,26 @@ services:
       # Implicit TLS, matching port 465. Blank would decide from the port and
       # select STARTTLS on 587; STARTTLS is required either way - see mailer.ts.
       SMTP_SECURE: ${SMTP_SECURE:-true}
+      # The site key again, this time at run time.
+      #
+      # It is a build argument above because `next build` compiles it into the
+      # browser bundle, and it is here as well because the readiness gate is
+      # server-side: `readContactConfig()` counts a blank site key as missing
+      # configuration and reverts the whole page to mailto:. An image built
+      # without the build argument carries a blank literal for ever, so without
+      # this line the form cannot be switched on by restarting - and the
+      # symptom is a variable the operator can see set in their environment
+      # file and absent from the container. Public by definition, so unlike the
+      # secret below it is safe in both places.
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-${PUBLIC_TURNSTILE_SITE_KEY:-}}
       # Verified server-side against Cloudflare on every submission. No key
       # means no delivery, in every environment - there is no bypass.
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      # How long that verification may take before the submission is refused.
+      # Runtime only and never a build argument: it is not public, and a
+      # timeout that needs a rebuild to change is a timeout nobody changes.
+      # Anything blank or malformed falls back to 5000 rather than to no limit.
+      CONTACT_SITEVERIFY_TIMEOUT_MS: ${CONTACT_SITEVERIFY_TIMEOUT_MS:-5000}
       # The hostnames a token may legitimately have been solved on, and the
       # action the widget declares. The site key is public, so anyone can embed
       # this widget on their own page and replay a genuinely-solved token here;

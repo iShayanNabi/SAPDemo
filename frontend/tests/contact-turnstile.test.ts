@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { verifyTurnstileToken } from '@/lib/contact/turnstile';
 
 const SECRET = 'test-secret';
@@ -258,6 +258,88 @@ describe('verifyTurnstileToken', () => {
         respondWith({ success: false, hostname: 'example.com' }),
       );
       expect(rejected.verified).toBe(false);
+    });
+  });
+
+  /**
+   * `CONTACT_SITEVERIFY_TIMEOUT_MS`, asserted through the request rather than
+   * through the configuration reader.
+   *
+   * The reader is tested on its own in `contact-config.test.ts`; what these
+   * cases prove is the wiring - that the value an operator sets in
+   * `.env.selfhosted` reaches the `signal` this module hands to `fetch`. A
+   * hard-coded constant passes every assertion about the reader and none of
+   * these.
+   */
+  describe('the siteverify timeout', () => {
+    /** A Cloudflare that answers after `ms`, and gives up when aborted. */
+    function respondAfter(ms: number, body: unknown) {
+      return vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((resolve, reject) => {
+            const timer = setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  status: 200,
+                  json: async () => body,
+                } as unknown as Response),
+              ms,
+            );
+            init.signal?.addEventListener('abort', () => {
+              clearTimeout(timer);
+              reject(new Error('aborted'));
+            });
+          }),
+      ) as unknown as typeof fetch;
+    }
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('abandons a verification that outlasts the configured value', async () => {
+      vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', '20');
+      const result = await verifyTurnstileToken(
+        TOKEN,
+        SECRET,
+        null,
+        NO_PINS,
+        respondAfter(400, { success: true }),
+      );
+      // Fails closed, and does not report the reason to the visitor.
+      expect(result.verified).toBe(false);
+      expect(result.reason).toBe('verification-unreachable');
+    });
+
+    it('waits the default when the variable is unset', async () => {
+      vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', '');
+      const result = await verifyTurnstileToken(
+        TOKEN,
+        SECRET,
+        null,
+        NO_PINS,
+        respondAfter(60, { success: true }),
+      );
+      expect(result.verified).toBe(true);
+    });
+
+    /**
+     * `'3.5'` is the case worth having. `Number.parseInt` reports success on
+     * the `3` it understood, so a hand-edited environment file would silently
+     * run a three-millisecond timeout and refuse every submission with nothing
+     * in the file to explain it.
+     */
+    it.each(['3.5', 'abc', '0'])('falls back to the default for %o', async (value) => {
+      vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', value);
+      const result = await verifyTurnstileToken(
+        TOKEN,
+        SECRET,
+        null,
+        NO_PINS,
+        respondAfter(60, { success: true }),
+      );
+      expect(result.verified).toBe(true);
     });
   });
 

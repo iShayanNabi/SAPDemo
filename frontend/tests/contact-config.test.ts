@@ -18,9 +18,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_RATE_LIMIT_MAX,
   DEFAULT_RATE_LIMIT_WINDOW_SECONDS,
+  DEFAULT_SITEVERIFY_TIMEOUT_MS,
   isContactFormAvailable,
   isContactFormRequested,
   readContactConfig,
+  siteverifyTimeoutMs,
+  turnstileSiteKey,
 } from '@/lib/contact/config';
 
 const COMPLETE = {
@@ -219,6 +222,99 @@ describe('readContactConfig', () => {
       configure({ SMTP_PORT: value });
       expect(readContactConfig().ready).toBe(false);
     });
+  });
+});
+
+/**
+ * The site key arrives by two routes, and this suite can only see one of them.
+ *
+ * `next build` replaces the literal `process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+ * with whatever the build argument held. Vitest does no such substitution, so
+ * both reads in `turnstileSiteKey()` resolve to the same live `process.env`
+ * here and no assertion can tell them apart. What is asserted instead is the
+ * behaviour that matters at run time - the value is read on every call rather
+ * than frozen - plus, structurally, that the second read really is written in
+ * the form the compiler cannot match.
+ */
+describe('turnstileSiteKey', () => {
+  it('reads the key the container was given', () => {
+    configure({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA' });
+    expect(turnstileSiteKey()).toBe('1x00000000000000000000AA');
+  });
+
+  it.each(['', '   ', undefined])('treats %o as absent', (value) => {
+    configure({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: value });
+    expect(turnstileSiteKey()).toBe('');
+    expect(readContactConfig().ready).toBe(false);
+  });
+
+  /**
+   * The deployment symptom this fixes: the container's environment has the
+   * key, so a restart must be enough. Reading at module scope would freeze
+   * whatever was set when the standalone server first imported this file.
+   */
+  it('is read on every call rather than at import time', () => {
+    configure({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: '' });
+    expect(turnstileSiteKey()).toBe('');
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '2x00000000000000000000BB');
+    expect(turnstileSiteKey()).toBe('2x00000000000000000000BB');
+  });
+
+  it('keeps one compiled read and one runtime read', () => {
+    /*
+     * Only `next build` can distinguish these, so the guard is structural.
+     *
+     * The compiled read has to stay a complete literal expression - it is the
+     * only form the compiler substitutes, and the browser bundle has no other
+     * source for the key.
+     *
+     * The runtime read has to keep going through `globalThis`. Writing it as
+     * `process.env[SITE_KEY_VARIABLE]`, or through a helper that returns
+     * `process.env`, both compile to the build-time value: the constant and
+     * the helper are folded first. That failure is silent - the source still
+     * reads as a fallback, and the gate still refuses on a container that has
+     * the variable - so the shape is asserted here and the emitted chunk was
+     * read to establish it.
+     */
+    const source = readFileSync(join(ROOT, 'lib/contact/config.ts'), 'utf8');
+    expect(source).toContain('process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY');
+    expect(source).toMatch(/SITE_KEY_VARIABLE\s*=\s*'NEXT_PUBLIC_TURNSTILE_SITE_KEY'/);
+    expect(source).toMatch(/runtimeEnv\(\)\[\s*SITE_KEY_VARIABLE\s*\]/);
+    expect(source).toMatch(/globalThis\s+as\s+\{\s*process\?/);
+  });
+});
+
+describe('siteverifyTimeoutMs', () => {
+  it('defaults to five seconds when unset', () => {
+    vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', '');
+    expect(siteverifyTimeoutMs()).toBe(DEFAULT_SITEVERIFY_TIMEOUT_MS);
+    expect(DEFAULT_SITEVERIFY_TIMEOUT_MS).toBe(5000);
+  });
+
+  it('uses the configured value', () => {
+    vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', '2500');
+    expect(siteverifyTimeoutMs()).toBe(2500);
+  });
+
+  /**
+   * A malformed value must not become "wait for ever". `'3.5'` is the one
+   * worth naming: `Number.parseInt` reports success on the `3` it understood,
+   * which would silently run a three-millisecond timeout - every submission
+   * refused, and nothing in the environment file to explain it.
+   */
+  it.each(['   ', 'abc', '0', '-1', '3.5', '5000ms', 'Infinity'])(
+    'falls back to the default for %o',
+    (value) => {
+      vi.stubEnv('CONTACT_SITEVERIFY_TIMEOUT_MS', value);
+      expect(siteverifyTimeoutMs()).toBe(DEFAULT_SITEVERIFY_TIMEOUT_MS);
+    },
+  );
+
+  it('is not readable through a NEXT_PUBLIC_ name', () => {
+    // It is not public, and compiling it in would mean a rebuild to change a
+    // timeout. Nothing may start reading a `NEXT_PUBLIC_` spelling of it.
+    const source = readFileSync(join(ROOT, 'lib/contact/config.ts'), 'utf8');
+    expect(source).not.toContain('NEXT_PUBLIC_CONTACT_SITEVERIFY_TIMEOUT_MS');
   });
 });
 
