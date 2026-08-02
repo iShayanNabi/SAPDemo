@@ -13,13 +13,20 @@ import { CONTACT_CTA_HREF, CONTACT_CTA_LABEL } from '@/lib/navigation';
  * The label lives in `lib/navigation.ts` so the navigation, the home page, the
  * services page and the footer cannot drift into three different wordings of
  * the same button.
+ *
+ * `href` is a prop for one caller: the Services page links to
+ * `CONSULTING_CTA_HREF`, which is the same contact page carrying the topic the
+ * visitor already told us by clicking it. Both destinations are internal, so
+ * this stays a `Link` - never a `mailto:` - and both keep the focus ring below.
  */
 export function ContactCta({
   children = CONTACT_CTA_LABEL,
+  href = CONTACT_CTA_HREF,
   variant = 'primary',
   className = '',
 }: {
   children?: React.ReactNode;
+  href?: string;
   variant?: 'primary' | 'secondary';
   className?: string;
 }) {
@@ -31,7 +38,7 @@ export function ContactCta({
       : 'bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50 focus-visible:outline-slate-600 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-700';
 
   return (
-    <Link href={CONTACT_CTA_HREF} className={`${base} ${styles} ${className}`}>
+    <Link href={href} className={`${base} ${styles} ${className}`}>
       {children}
       <span aria-hidden="true">→</span>
     </Link>

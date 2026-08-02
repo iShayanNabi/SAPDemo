@@ -18,6 +18,12 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import Script from 'next/script';
+import { useSearchParams } from 'next/navigation';
+import {
+  SERVICE_QUERY_PARAM,
+  TOPIC_OPTIONS,
+  topicForService,
+} from '@/lib/contact-topics';
 import { FIELD_LIMITS, HONEYPOT_FIELD, validateSubmission } from '@/lib/contact/validation';
 
 const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -56,7 +62,17 @@ const EMPTY = { name: '', email: '', organization: '', topic: '', message: '' };
 const TURNSTILE_ACTION = 'contact';
 
 export function ContactForm({ siteKey }: { siteKey: string }) {
-  const [values, setValues] = useState(EMPTY);
+  /**
+   * The topic a link asked for, or `''`.
+   *
+   * `topicForService` matches the parameter against the four published keys and
+   * returns the unselected state for everything else, so nothing the visitor
+   * can put in the address bar reaches the field - and nothing raw from the
+   * query is ever rendered.
+   */
+  const requestedTopic = topicForService(useSearchParams().get(SERVICE_QUERY_PARAM));
+
+  const [values, setValues] = useState(() => ({ ...EMPTY, topic: requestedTopic }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>('idle');
   const [notice, setNotice] = useState('');
@@ -66,6 +82,33 @@ export function ContactForm({ siteKey }: { siteKey: string }) {
   const widgetRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fieldId = useId();
+
+  /**
+   * Whether the visitor has chosen a topic themselves.
+   *
+   * A ref rather than state: nothing renders differently because of it, and it
+   * has to be readable by the effect below in the same tick it is set. Once it
+   * is true the query parameter stops being applied - arriving at
+   * `?service=consulting`, changing the topic to something else and then having
+   * the link's choice put back is the form overruling the person filling it in.
+   */
+  const topicChosenByVisitor = useRef(false);
+
+  /**
+   * Follow the query parameter, but only while it is still ours to set.
+   *
+   * The initial state above covers the ordinary case, where the visitor arrives
+   * on a fresh page. This covers a navigation from one `?service=` link to
+   * another without unmounting the form.
+   */
+  useEffect(() => {
+    if (topicChosenByVisitor.current) {
+      return;
+    }
+    setValues((current) =>
+      current.topic === requestedTopic ? current : { ...current, topic: requestedTopic },
+    );
+  }, [requestedTopic]);
 
   const idFor = (field: string) => `${fieldId}-${field}`;
   const errorIdFor = (field: string) => `${fieldId}-${field}-error`;
@@ -121,8 +164,11 @@ export function ContactForm({ siteKey }: { siteKey: string }) {
   }, []);
 
   const update = (field: keyof typeof EMPTY) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
+    if (field === 'topic') {
+      topicChosenByVisitor.current = true;
+    }
     setValues((current) => ({ ...current, [field]: event.target.value }));
     setErrors((current) => {
       if (!current[field]) return current;
@@ -277,19 +323,32 @@ export function ContactForm({ siteKey }: { siteKey: string }) {
           />
         </Field>
 
+        {/*
+          A list rather than free text, so a link can preselect one - see
+          `lib/contact-topics.ts`. The empty first option is the unselected
+          state, and it fails the same "Topic is required" rule an empty text
+          box did, on the client and again on the server. "Something else" is
+          the way out: a fixed list with no escape hatch makes an enquiry that
+          fits none of the four unsubmittable.
+        */}
         <Field id={idFor('topic')} errorId={errorIdFor('topic')} label="Topic" error={errors.topic}>
-          <input
+          <select
             id={idFor('topic')}
             name="topic"
-            type="text"
             required
-            maxLength={FIELD_LIMITS.topic.max}
             value={values.topic}
             onChange={update('topic')}
             aria-invalid={Boolean(errors.topic)}
             aria-describedby={errors.topic ? errorIdFor('topic') : undefined}
             className={fieldClass}
-          />
+          >
+            <option value="">Select a topic</option>
+            {TOPIC_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
 
