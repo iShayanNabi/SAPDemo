@@ -47,12 +47,20 @@ ARG NEXT_PUBLIC_LOCATION_LABEL=""
 # Not a NEXT_PUBLIC_ value: it is read while the pages are rendered, never in
 # the browser. Blank means enabled.
 ARG SERVICES_PAGE_ENABLED=""
+# The Cloudflare Turnstile *site* key. Public by definition - it is meant to be
+# read out of the page source - and therefore compiled in here, which means
+# changing it requires rebuilding this image. Its counterpart,
+# TURNSTILE_SECRET_KEY, is a runtime environment variable and must never be
+# added to this file: a build argument is recorded in the image's history, so
+# putting a secret here publishes it to anyone who can pull the image.
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=""
 
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
     NEXT_PUBLIC_DEMO_URL=${NEXT_PUBLIC_DEMO_URL} \
     NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL} \
     NEXT_PUBLIC_REPOSITORY_URL=${NEXT_PUBLIC_REPOSITORY_URL} \
     NEXT_PUBLIC_LOCATION_LABEL=${NEXT_PUBLIC_LOCATION_LABEL} \
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY} \
     SERVICES_PAGE_ENABLED=${SERVICES_PAGE_ENABLED}
 
 COPY --from=deps /app/node_modules ./node_modules

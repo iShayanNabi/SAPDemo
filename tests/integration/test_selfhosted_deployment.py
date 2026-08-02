@@ -289,6 +289,75 @@ class TestDemonstrationDefaults:
         assert "no api.[DOMAIN]" in compose_text
 
 
+class TestTheContactMailSettings:
+    """The Gmail SMTP variables, as one standard set.
+
+    Two different names for one credential is the failure this guards against:
+    the deployment's `.env.selfhosted` sets `SMTP_APP_PASSWORD`, so code reading
+    any other spelling finds nothing, and the form fails closed to `mailto:`
+    links with a variable the operator can see is set. Nothing errors and
+    nothing logs a wrong name - the page simply reverts.
+    """
+
+    #: Built rather than written, so the assertion below does not match this
+    #: file itself and the guard cannot pass by naming its own subject.
+    OLD_NAME = "SMTP_" + "PASSWORD"
+
+    @pytest.fixture(scope="class")
+    def website_env(self, compose: dict) -> dict:
+        return compose["services"]["website"]["environment"]
+
+    def test_the_app_password_has_no_default(self, website_env: dict):
+        """A blank credential means the form stays off. There is no fallback
+        that would let it run without one."""
+        assert website_env["SMTP_APP_PASSWORD"] == "${SMTP_APP_PASSWORD:-}"
+
+    @pytest.mark.parametrize(
+        ("variable", "expected"),
+        [
+            ("SMTP_HOST", "${SMTP_HOST:-smtp.gmail.com}"),
+            ("SMTP_PORT", "${SMTP_PORT:-465}"),
+            ("SMTP_SECURE", "${SMTP_SECURE:-true}"),
+            ("SMTP_USER", "${SMTP_USER:-solveaihub@gmail.com}"),
+            ("SMTP_FROM", "${SMTP_FROM:-}"),
+        ],
+    )
+    def test_the_gmail_defaults_are_the_deployed_ones(
+        self, website_env: dict, variable: str, expected: str
+    ):
+        assert website_env[variable] == expected
+
+    def test_the_mail_settings_are_not_public(self, website_env: dict):
+        """`NEXT_PUBLIC_` on any of these compiles the credential into the
+        bundle every visitor downloads."""
+        assert not [key for key in website_env if key.startswith("NEXT_PUBLIC_SMTP")]
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "docker-compose.selfhosted.yml",
+            ".env.selfhosted.example",
+            "frontend/.env.example",
+            "README.md",
+            "docs/PUBLIC_DEMO_DEPLOYMENT.md",
+            "docs/DEMO_SECURITY_CHECKLIST.md",
+            "frontend/lib/contact/config.ts",
+            "frontend/lib/contact/mailer.ts",
+        ],
+    )
+    def test_the_superseded_name_is_gone(self, path: str):
+        text = (PROJECT_ROOT / path).read_text(encoding="utf-8")
+        assert self.OLD_NAME not in text, f"{path} still names {self.OLD_NAME}"
+
+    def test_the_standard_name_is_the_one_the_code_reads(self):
+        """The guard's own guard: the name really is absent from the files
+        above because they use the new one, not because it was never there."""
+        config = (PROJECT_ROOT / "frontend" / "lib" / "contact" / "config.ts").read_text(
+            encoding="utf-8"
+        )
+        assert "process.env.SMTP_APP_PASSWORD" in config
+
+
 class TestTheEntrypointLifecycle:
     @pytest.fixture(scope="class")
     def entrypoint(self) -> str:
