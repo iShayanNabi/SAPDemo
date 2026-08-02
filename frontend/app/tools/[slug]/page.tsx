@@ -14,7 +14,7 @@ import {
   TextLink,
 } from '@/components/ui';
 import { moduleBySlug, modules } from '@/content/modules';
-import { siteConfig } from '@/lib/site';
+import { UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -152,10 +152,11 @@ export default async function ModulePage({ params }: PageProps) {
 
         <Section>
           <Callout title="Demonstration data only" tone="warning">
+            <p>{module.limitation}</p>
             <p>
-              Everything this module analyses in the demonstration is fictional sample data.
-              Uploads are disabled in the public demonstration, and no output has been validated
-              in a live SAP environment. See the{' '}
+              Everything this module analyses in the demonstration is fictional sample data.{' '}
+              {UPLOAD_NOTICE} No output has been validated in a live SAP environment, and results
+              need review by a qualified person before they are acted on. See the{' '}
               <TextLink href="/demo-disclaimer">demonstration disclaimer</TextLink>.
             </p>
           </Callout>

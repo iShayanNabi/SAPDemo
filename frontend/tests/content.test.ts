@@ -54,7 +54,16 @@ describe('module content', () => {
       expect(module.outputs.length, module.id).toBeGreaterThanOrEqual(2);
       expect(module.steps.length, module.id).toBeGreaterThanOrEqual(3);
       expect(module.origins.length, module.id).toBeGreaterThanOrEqual(2);
+      expect(module.limitation.length, module.id).toBeGreaterThan(40);
     }
+  });
+
+  it('gives every module its own limitation rather than one shared sentence', () => {
+    // The point of the field is that the misreading differs per tool - legal
+    // review, forecast certainty, a hiring prediction, a live risk feed. Ten
+    // copies of one caveat would pass the length check above and cover none of
+    // them.
+    expect(new Set(modules.map((module) => module.limitation)).size).toBe(modules.length);
   });
 
   it('always labels demonstration data as an origin', () => {
@@ -83,6 +92,7 @@ describe('claims the site must never make', () => {
       ...module.aiWrites,
       ...module.outputs,
       ...module.steps,
+      module.limitation,
     ]),
     ...origins.flatMap((entry) => [entry.summary, entry.detail]),
     siteConfig.description,

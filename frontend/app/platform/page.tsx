@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
-import { siteConfig } from '@/lib/site';
+import { UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Platform overview',
@@ -127,12 +127,14 @@ export default function PlatformPage() {
         <Section title="Scope" lede={`${modules.length} modules are implemented and exercised by the test suite.`}>
           <div className="max-w-3xl">
             <p className="text-slate-600 dark:text-slate-400">
-              What is deliberately <em>not</em> here is as informative as what is: there are no
-              user accounts, no live SAP connection, no billing, and no claim that any
-              recommendation has been validated in a production SAP system. Those absences are
-              stated in the API itself and on the{' '}
-              <TextLink href="/architecture">architecture page</TextLink>.
+              What is deliberately <em>not</em> here is as informative as what is: no internal user
+              accounts, roles or tenant administration, no live SAP connection, no billing, and no
+              claim that any recommendation has been validated in a production SAP system. Access to
+              the interactive demonstration is controlled at the network edge by Cloudflare Access
+              rather than by anything inside the application. Those absences are stated in the API
+              itself and on the <TextLink href="/architecture">architecture page</TextLink>.
             </p>
+            <p className="mt-4 text-slate-600 dark:text-slate-400">{UPLOAD_NOTICE}</p>
           </div>
         </Section>
       </Container>

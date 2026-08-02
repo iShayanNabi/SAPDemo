@@ -1,12 +1,19 @@
 import type { Metadata } from 'next';
 import { RepositoryLink } from '@/components/RepositoryLink';
 import { Callout, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
-import { hasRepository, mailto, siteConfig } from '@/lib/site';
+import {
+  ACCESS_NOTICE,
+  POLICY_LAST_UPDATED,
+  UPLOAD_NOTICE,
+  hasRepository,
+  mailto,
+  siteConfig,
+} from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Terms and disclaimer',
   description:
-    'Terms of use and disclaimer for the Procurement Intelligence Demo website and interactive demonstration. A placeholder statement pending formal terms.',
+    'Terms of use and disclaimer for the Procurement Intelligence Demo website and interactive demonstration: what the outputs are, what may not be submitted, and what is not claimed.',
   alternates: { canonical: '/terms' },
 };
 
@@ -16,29 +23,39 @@ export default function TermsPage() {
       <PageHeader
         eyebrow="Legal"
         title="Terms and disclaimer"
-        lede="What you can expect from this site and demonstration, and what you cannot. A placeholder, stated plainly."
+        lede="What you can expect from this website and the interactive demonstration, what you may not do with them, and what this project does not claim."
       />
 
       <Container>
-        <Section title="Status of this page">
-          <Callout title="This is a placeholder" tone="warning">
+        <Section title="Scope of this page">
+          <p className="max-w-3xl text-slate-700 dark:text-slate-300">
+            Last updated: {POLICY_LAST_UPDATED}
+          </p>
+          <div className="mt-6 max-w-3xl space-y-4 text-slate-700 dark:text-slate-300">
             <p>
-              These are the honest working terms of a personal demonstration project. They have
-              not been drafted or reviewed by a lawyer and are not a commercial agreement. Any
-              engagement would be governed by a separate written contract, not by this page.
+              These are the working terms for {siteConfig.name}, an educational, technical and
+              portfolio demonstration. They apply to the public website and to the interactive
+              demonstration hosted separately behind Cloudflare Access.
             </p>
-          </Callout>
+            <p>
+              They are written in plain language and are proportionate to what this project is.
+              They have not been drafted or reviewed by a lawyer and are not a commercial
+              agreement; any engagement would be governed by a separate written contract rather
+              than by this page.
+            </p>
+          </div>
         </Section>
 
-        <Section title="No warranty, and no production claim">
+        <Section title="What this project is">
           <div className="max-w-3xl">
             <ClaimList
               variant="plain"
               items={[
-                'This site and the demonstration are provided as-is, for demonstration and evaluation, with no warranty of any kind.',
-                'They are not offered as a commercially production-ready product, and no claim of production readiness is made anywhere in this project.',
-                'The demonstration runs on a single machine and may be unavailable, reset, changed or withdrawn at any time without notice.',
-                'Nothing here constitutes professional, financial, legal or procurement advice.',
+                'It is an educational, technical and portfolio demonstration, provided as-is for demonstration and evaluation, with no warranty of any kind.',
+                'It is not legal, financial, procurement, cybersecurity, medical, regulatory, tax or any other form of professional advice, and must not be relied on as a substitute for it.',
+                'Its outputs require review by a qualified person before being acted on. You remain responsible for reviewing anything it produces and for deciding whether it is appropriate for your situation.',
+                'Its results may be incomplete, simulated, derived from fictional data, or unsuitable for real operational decisions.',
+                'It is not offered as a commercially production-ready product, and no claim of production readiness is made anywhere in this project.',
               ]}
             />
           </div>
@@ -49,43 +66,96 @@ export default function TermsPage() {
             <ClaimList
               variant="plain"
               items={[
-                'Every figure, supplier, purchase order, invoice, contract and material is fictional sample data generated for demonstration.',
-                'No output has been validated in a live SAP environment, and nothing here is connected to any SAP system.',
+                'Every figure, supplier, purchase order, invoice, contract and material shown by default is fictional sample data generated for demonstration.',
+                'Nothing here is connected to a live SAP system, and no output has been validated in one.',
+                'Different modules work in different ways: some results are deterministic calculations, some are statistical or forecasting estimates, and some surrounding text is generated by a language model. Each result carries a label saying which.',
                 'Estimated savings are estimates that state the assumption behind them. They are not guaranteed savings and must not be reported as such.',
-                'Forecasts are statistical projections from historical data, carrying error. They are not predictions of fact.',
-                'AI-generated text is labelled wherever it appears and describes computed results. It must not be relied on as an independent statement of fact.',
-                'Do not make a business decision on the basis of anything produced by this demonstration.',
+                'Forecasts are statistical projections from historical data, carrying error. They are not predictions of what will happen.',
+                'Generated text describes computed results and must not be relied on as an independent statement of fact.',
+                'Do not make a business decision on the basis of anything produced by this demonstration without qualified human review.',
               ]}
             />
           </div>
         </Section>
 
-        <Section title="Acceptable use of the demonstration">
+        <Section title="What you may submit">
+          <div className="max-w-3xl">
+            <p className="text-slate-700 dark:text-slate-300">
+              Submit only fictional, sanitised or otherwise non-confidential information. Free-text
+              fields exist in the demonstration, and what you type into them is stored in a shared
+              database that is not partitioned by visitor.
+            </p>
+            <div className="mt-6">
+              <ClaimList
+                variant="plain"
+                items={[
+                  'Do not submit personal information about yourself or anyone else, or medical, financial or otherwise regulated information.',
+                  'Do not submit production SAP data, system names or clients, or real customer, supplier, purchase order, invoice or contract data.',
+                  'Do not submit proprietary or confidential company information of any kind.',
+                  'Do not submit credentials, keys, tokens or other secrets.',
+                ]}
+              />
+            </div>
+            <p className="mt-6 text-slate-700 dark:text-slate-300">{UPLOAD_NOTICE}</p>
+          </div>
+        </Section>
+
+        <Section title="Acceptable use">
           <div className="max-w-3xl">
             <ClaimList
               variant="plain"
               items={[
-                'Do not enter confidential information, personal information, real SAP data, real supplier, purchase order, invoice or contract data, or proprietary company data.',
+                'Do not attempt unauthorised access to any part of this project, its infrastructure or its accounts.',
+                'Do not attempt denial-of-service activity, automated attacks, credential abuse, or scraping that harms the availability of the service.',
+                'Do not carry out security testing without prior written permission.',
                 'Do not attempt to reach the platform API, the database or the host machine directly. Neither the API nor the database is published, and probing for them is not evaluation.',
                 'Do not use the demonstration to store anything. It holds fictional data and may be reset without notice.',
                 'Do not present output from this demonstration as a validated SAP result, an audited figure or a business outcome.',
               ]}
             />
             <p className="mt-6 text-slate-700 dark:text-slate-300">
-              The full statement is on the{' '}
+              The full statement about the demonstration is on the{' '}
               <TextLink href="/demo-disclaimer">demonstration disclaimer</TextLink>.
             </p>
           </div>
         </Section>
 
-        <Section title="Trademarks">
+        <Section title="Access and availability">
+          <div className="max-w-3xl">
+            <p className="text-slate-700 dark:text-slate-300">{ACCESS_NOTICE}</p>
+            <div className="mt-6">
+              <ClaimList
+                variant="plain"
+                items={[
+                  'Access to the interactive demonstration may be modified, suspended, restricted or withdrawn at any time, for any visitor, without notice.',
+                  'Availability and uninterrupted operation are not guaranteed. The demonstration runs on a single machine and may be unavailable for maintenance, updates or a restart.',
+                  'The content of this website and the behaviour of the demonstration may change at any time.',
+                ]}
+              />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Relationship to SAP">
           <p className="max-w-3xl text-slate-700 dark:text-slate-300">
-            SAP and SAP product names are trademarks of SAP SE or its affiliates and are used here
-            only descriptively, to identify the domain this project works in. {siteConfig.name} is
-            an independent demonstration project and is not endorsed by, certified by, sponsored
-            by, partnered with or affiliated with SAP. No SAP logo, trademark, proprietary graphic,
-            website layout or brand asset is reproduced in this project. Other trademarks belong
-            to their respective owners.
+            {siteConfig.name} is not an official SAP product. It is an independent demonstration
+            project and is not endorsed by, certified by, sponsored by, partnered with or affiliated
+            with SAP, unless a verified relationship is established and stated here in future. SAP
+            and SAP product names are trademarks of SAP SE or its affiliates and are used here only
+            descriptively, to identify the domain this project works in. No SAP logo, trademark,
+            proprietary graphic, website layout or brand asset is reproduced in this project. Other
+            trademarks remain the property of their respective owners.
+          </p>
+        </Section>
+
+        <Section title="Liability">
+          <p className="max-w-3xl text-slate-700 dark:text-slate-300">
+            To the extent permitted by applicable law, this project accepts no liability for loss
+            or damage arising from reliance on anything it produces. That limit is stated as it is
+            because no document can eliminate every liability in every jurisdiction, and one
+            claiming to would be telling you something about the rest of its contents. The practical
+            protection is the one stated throughout this page: the outputs are demonstrations on
+            fictional data and require qualified human review before they are acted on.
           </p>
         </Section>
 
@@ -105,6 +175,17 @@ export default function TermsPage() {
               </>
             )}
           </p>
+        </Section>
+
+        <Section>
+          <Callout title="Read this alongside the other two pages">
+            <p>
+              What happens to information is on the <TextLink href="/privacy">privacy page</TextLink>
+              , and what the interactive demonstration is and is not is on the{' '}
+              <TextLink href="/demo-disclaimer">demonstration disclaimer</TextLink>. The three are
+              written to agree with each other.
+            </p>
+          </Callout>
         </Section>
 
         <Section title="Questions">
