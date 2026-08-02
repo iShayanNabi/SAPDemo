@@ -5,7 +5,7 @@ import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } fr
 export const metadata: Metadata = {
   title: 'Architecture',
   description:
-    'How SAPDemo is deployed: a Next.js website and a Streamlit demonstration reached through an outbound tunnel, a FastAPI backend and PostgreSQL that are never published, and the boundaries between them.',
+    'How Procurement Intelligence Demo is deployed: a Next.js website and a Streamlit demonstration reached through an outbound tunnel, a FastAPI backend and PostgreSQL that are never published, and the boundaries between them.',
   alternates: { canonical: '/architecture' },
 };
 

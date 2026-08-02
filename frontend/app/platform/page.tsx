@@ -7,7 +7,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Platform overview',
   description:
-    'How SAPDemo is built: a FastAPI backend of ten modules with deterministic business logic, a shared services layer, labelled output origins, and an interface that holds no business logic of its own.',
+    'How Procurement Intelligence Demo is built: a FastAPI backend of ten modules with deterministic business logic, a shared services layer, labelled output origins, and an interface that holds no business logic of its own.',
   alternates: { canonical: '/platform' },
 };
 

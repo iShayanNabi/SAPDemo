@@ -14,6 +14,7 @@ import {
   TextLink,
 } from '@/components/ui';
 import { moduleBySlug, modules } from '@/content/modules';
+import { siteConfig } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `${module.tagline} ${module.problem}`.slice(0, 300),
     alternates: { canonical: `/tools/${module.slug}` },
     openGraph: {
-      title: `${module.name} — SAPDemo`,
+      title: `${module.name} — ${siteConfig.name}`,
       description: module.tagline,
     },
   };

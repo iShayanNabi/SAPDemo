@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Footer } from '@/components/Footer';
 import { Nav } from '@/components/Nav';
+import { getNavItems } from '@/lib/navigation';
 import { siteConfig } from '@/lib/site';
 import './globals.css';
 
@@ -61,7 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to main content
         </a>
-        <Nav />
+        {/* Resolved here, in a server component, because SERVICES_PAGE_ENABLED
+            is not a NEXT_PUBLIC_ variable and never reaches the browser. */}
+        <Nav items={getNavItems(siteConfig.servicesPageEnabled)} />
         <main id="main" className="flex-1">
           {children}
         </main>

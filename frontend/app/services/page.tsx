@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { ContactCta } from '@/components/ContactCta';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
-import { mailto, siteConfig } from '@/lib/site';
+import { hasRepository, mailto, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Consulting services',
@@ -64,6 +65,25 @@ const areas = [
   },
 ] as const;
 
+/**
+ * Three things a reader can check for themselves.
+ *
+ * Two of them used to say "read the source" and "the repository records...".
+ * The repository is private, so with the link removed those sentences would
+ * still be inviting somebody to open something they cannot open - which is the
+ * claim, not the anchor, doing the damage. When there is no public repository
+ * the same two points are made as an offer rather than an instruction.
+ */
+const evaluationSteps: readonly string[] = [
+  'Open the interactive demonstration and run any module end to end on its bundled fictional data.',
+  hasRepository
+    ? 'Read the source. Every rule, threshold and scoring weight is in the repository, and each module states what it does not do as clearly as what it does.'
+    : 'Ask about a specific calculation. Every rule, threshold and scoring weight is configuration rather than hidden behaviour, so a specific question has a specific answer - and a walkthrough of the code behind any number here can be arranged.',
+  hasRepository
+    ? 'Read the project notes. The repository records the bugs that a fully passing test suite did not catch, and what was changed to catch them next time - which is a more useful signal than a list of successes.'
+    : 'Ask about the project notes. The bugs a fully passing test suite did not catch are written down, together with what changed to catch the next one - which is a more useful signal than a list of successes.',
+];
+
 export default function ServicesPage() {
   return (
     <>
@@ -72,12 +92,7 @@ export default function ServicesPage() {
         title="SAP-focused analysis, built to be checked"
         lede="This site is a portfolio project. The tools in it are the working examples - every one of them runs, on data whose flaws are documented, with the calculations open to inspection."
       >
-        <a
-          href={mailto(`${siteConfig.name} — consulting enquiry`)}
-          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-sky-700"
-        >
-          Start a conversation
-        </a>
+        <ContactCta />
         <DemoCta variant="secondary" />
       </PageHeader>
 
@@ -105,14 +120,7 @@ export default function ServicesPage() {
           lede="Rather than a list of claims, three things you can check yourself."
         >
           <div className="max-w-3xl">
-            <ClaimList
-              variant="plain"
-              items={[
-                'Open the interactive demonstration and run any module end to end on its bundled fictional data.',
-                'Read the source. Every rule, threshold and scoring weight is in the repository, and each module states what it does not do as clearly as what it does.',
-                'Read the project notes. The repository records the bugs that a fully passing test suite did not catch, and what was changed to catch them next time - which is a more useful signal than a list of successes.',
-              ]}
-            />
+            <ClaimList variant="plain" items={evaluationSteps} />
             <p className="mt-6 text-slate-600 dark:text-slate-400">
               The <TextLink href="/architecture">architecture page</TextLink> describes how it is
               deployed, and the <TextLink href="/platform">platform overview</TextLink> describes

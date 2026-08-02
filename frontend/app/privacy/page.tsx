@@ -5,7 +5,7 @@ import { mailto, siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Privacy',
   description:
-    'What SAPDemo collects, what it does not, and how to get in touch about it. A placeholder statement pending a full policy.',
+    'What Procurement Intelligence Demo collects, what it does not, and how to get in touch about it. A placeholder statement pending a full policy.',
   alternates: { canonical: '/privacy' },
 };
 

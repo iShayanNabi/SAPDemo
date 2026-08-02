@@ -467,13 +467,41 @@ class TestTheFrontendImage:
     def test_it_declares_a_health_check(self, dockerfile: str):
         assert "HEALTHCHECK" in dockerfile
 
+    #: Build arguments that are not `NEXT_PUBLIC_` and are allowed anyway.
+    #:
+    #: The rule that matters is "no secret may be a build argument" - they are
+    #: readable in the image history and, for `NEXT_PUBLIC_`, compiled into the
+    #: browser bundle. The `NEXT_PUBLIC_` prefix was a convenient proxy for that
+    #: until the site needed a value that is deliberately *not* public: the
+    #: pages are statically generated, so a server-side switch consumed while
+    #: they render still has to arrive at build time.
+    #:
+    #: An allow list rather than a widened pattern, so adding a build argument
+    #: is still a decision somebody has to write down here.
+    NON_PUBLIC_BUILD_ARGS = {
+        # Whether the Services page is linked. Read while the pages render,
+        # never sent to the browser. Not a secret; just not public API surface.
+        "SERVICES_PAGE_ENABLED",
+    }
+
     def test_it_takes_only_public_values_as_build_arguments(self, dockerfile: str):
         args = re.findall(r"^ARG\s+(\w+)", dockerfile, re.MULTILINE)
+        assert args, "no build arguments found; the regex or the Dockerfile changed"
         for arg in args:
-            assert arg.startswith("NEXT_PUBLIC_"), (
-                f"{arg} is a build argument. Build arguments are compiled into the "
-                f"browser bundle, so only NEXT_PUBLIC_ values may be passed."
+            assert arg.startswith("NEXT_PUBLIC_") or arg in self.NON_PUBLIC_BUILD_ARGS, (
+                f"{arg} is a build argument. Build arguments are readable in the image "
+                f"history and NEXT_PUBLIC_ values are compiled into the browser bundle, "
+                f"so no secret may be passed this way. Add it to NON_PUBLIC_BUILD_ARGS "
+                f"with a reason if it is genuinely not a secret."
             )
+
+    def test_no_build_argument_is_secret_shaped(self, dockerfile: str):
+        """The rule the prefix check is a proxy for, asserted directly."""
+        args = re.findall(r"^ARG\s+(\w+)", dockerfile, re.MULTILINE)
+        for arg in args:
+            assert not re.search(
+                r"(SECRET|TOKEN|PASSWORD|CREDENTIAL|PRIVATE_KEY|API_KEY)", arg
+            ), f"{arg} is named like a secret and must never be a build argument"
 
     def test_the_dockerignore_keeps_environment_files_out_of_the_context(self):
         text = (PROJECT_ROOT / "frontend" / ".dockerignore").read_text(encoding="utf-8")
