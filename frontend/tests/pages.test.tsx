@@ -17,6 +17,7 @@ import TermsPage from '@/app/terms/page';
 import ToolsPage from '@/app/tools/page';
 import ModulePage from '@/app/tools/[slug]/page';
 import { modules } from '@/content/modules';
+import { buildDemoUrl } from '@/lib/demo';
 import { getNavItems } from '@/lib/navigation';
 import { siteConfig } from '@/lib/site';
 
@@ -79,12 +80,12 @@ describe('the ten module detail pages', () => {
     );
   });
 
-  it('every module detail page offers a demo link', async () => {
+  it('every module detail page offers a demo link, into its own module', async () => {
     for (const module of modules) {
       const { unmount } = render(await ModulePage({ params: Promise.resolve({ slug: module.slug }) }));
       const demoLinks = screen
         .getAllByRole('link')
-        .filter((link) => link.getAttribute('href') === siteConfig.demoUrl);
+        .filter((link) => link.getAttribute('href') === buildDemoUrl(module.demoModule));
       expect(demoLinks.length, module.slug).toBeGreaterThan(0);
       unmount();
     }
@@ -145,7 +146,7 @@ describe('the demo call to action', () => {
   it('points at the configured demo URL and opens safely in a new tab', () => {
     render(<DemoCta />);
     const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(link.getAttribute('href')).toBe(buildDemoUrl());
     expect(link.getAttribute('target')).toBe('_blank');
     // Without noopener the opened page can reach back through window.opener.
     expect(link.getAttribute('rel')).toContain('noopener');
@@ -161,7 +162,7 @@ describe('the demo call to action', () => {
     render(<HomePage />);
     const demoLinks = screen
       .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === siteConfig.demoUrl);
+      .filter((link) => link.getAttribute('href') === buildDemoUrl());
     expect(demoLinks.length).toBeGreaterThan(0);
   });
 });

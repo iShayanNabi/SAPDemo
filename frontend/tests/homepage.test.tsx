@@ -6,6 +6,7 @@ import { COMPACT_GRID_COLUMNS } from '@/components/ModuleCard';
 import { modules } from '@/content/modules';
 import { methodOrigins } from '@/content/origins';
 import { problemAreas } from '@/content/problems';
+import { buildDemoUrl } from '@/lib/demo';
 import { CONTACT_CTA_LABEL } from '@/lib/navigation';
 import { UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
@@ -190,7 +191,7 @@ describe('the ten tools on the home page', () => {
   it('routes no tool card at the demonstration directly', () => {
     const { container } = render(<HomePage />);
     const demoLinks = [...container.querySelectorAll('a')].filter(
-      (anchor) => anchor.getAttribute('href') === siteConfig.demoUrl,
+      (anchor) => anchor.getAttribute('href') === buildDemoUrl(),
     );
     expect(demoLinks.length).toBeGreaterThan(0);
     for (const link of demoLinks) {
@@ -204,7 +205,7 @@ describe('the calls to action', () => {
   it('offers Launch interactive demo, pointing at the configured demonstration', () => {
     render(<HomePage />);
     const [demo] = screen.getAllByRole('link', { name: /launch interactive demo/i });
-    expect(demo?.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(demo?.getAttribute('href')).toBe(buildDemoUrl());
     expect(demo?.getAttribute('target')).toBe('_blank');
     expect(demo?.getAttribute('rel')).toContain('noopener');
   });

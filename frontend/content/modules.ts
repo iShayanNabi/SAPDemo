@@ -24,6 +24,8 @@
  *   that is not connected. A single generic caveat would cover none of them.
  */
 
+import type { DemoModuleId } from '@/lib/demo';
+
 export type OutputOrigin =
   | 'rule_based'
   | 'forecast'
@@ -58,6 +60,19 @@ export interface ModuleContent {
   id: string;
   /** URL segment under /tools/. */
   slug: string;
+  /**
+   * The identifier this module is opened by in the protected demonstration.
+   *
+   * A fourth identifier on purpose, and none of the other three would do:
+   * `id` is the API's (`po_risk`), `slug` is this site's URL segment
+   * (`purchase-order-risk-checker`), and `name` is prose. This one appears in
+   * a link a visitor may keep - `demo.solveaihub.com/?module=po-risk` - so it
+   * has to be free to stay the same while the other three change.
+   *
+   * The type is the ten-value union from `lib/demo.ts`, so a typo here is a
+   * compile error rather than a button that opens the wrong page.
+   */
+  demoModule: DemoModuleId;
   number: number;
   name: string;
   /** One line, used on the card. */
@@ -91,6 +106,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'po_risk',
     slug: 'purchase-order-risk-checker',
+    demoModule: 'po-risk',
     number: 1,
     name: 'Purchase Order Risk Checker',
     tagline: 'Twenty transparent rules over a purchase order export.',
@@ -140,6 +156,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'spend_analytics',
     slug: 'spend-analytics-dashboard',
+    demoModule: 'spend-analytics',
     number: 2,
     name: 'Spend Analytics Dashboard',
     tagline: 'Where the money went, and which patterns look like leakage.',
@@ -188,6 +205,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'supplier_recommendation',
     slug: 'supplier-recommendation-engine',
+    demoModule: 'supplier-recommendation',
     number: 3,
     name: 'Supplier Recommendation Engine',
     tagline: 'Rank the suppliers that can actually serve a requirement.',
@@ -236,6 +254,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'invoice_validator',
     slug: 'invoice-validator',
+    demoModule: 'invoice-validator',
     number: 4,
     name: 'Invoice Validator',
     tagline: 'Three-way matching with configurable tolerances.',
@@ -282,6 +301,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'supplier_risk_copilot',
     slug: 'supplier-risk-copilot',
+    demoModule: 'supplier-risk',
     number: 5,
     name: 'Supplier Risk Copilot',
     tagline: 'Ten risk categories, scored transparently, answerable in prose.',
@@ -328,6 +348,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'contract_assistant',
     slug: 'contract-assistant',
+    demoModule: 'contract-assistant',
     number: 6,
     name: 'Contract Assistant',
     tagline: 'Every extracted claim cites the page it came from.',
@@ -377,6 +398,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'inventory_predictor',
     slug: 'inventory-predictor',
+    demoModule: 'inventory-predictor',
     number: 7,
     name: 'Inventory Predictor',
     tagline: 'Five statistical models, chosen by backtesting. No AI touches a number.',
@@ -424,6 +446,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'test_case_generator',
     slug: 'sap-test-case-generator',
+    demoModule: 'test-case-generator',
     number: 8,
     name: 'SAP Test Case Generator',
     tagline: 'AI writes the wording. Code writes the skeleton.',
@@ -471,6 +494,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'blueprint_generator',
     slug: 'sap-blueprint-generator',
+    demoModule: 'blueprint-generator',
     number: 9,
     name: 'SAP Blueprint Generator',
     tagline: 'Thirty sections, versioned, with staleness tracked across them.',
@@ -518,6 +542,7 @@ export const modules: readonly ModuleContent[] = [
   {
     id: 'interview_coach',
     slug: 'sap-interview-coach',
+    demoModule: 'interview-coach',
     number: 10,
     name: 'SAP Interview Coach',
     tagline: 'The rubric marks the answer. A model only writes the prose around it.',

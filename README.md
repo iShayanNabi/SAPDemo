@@ -1601,6 +1601,7 @@ Full detail, including the data flow of one analysis and where a new module goes
 | --- | --- |
 | [`docs/PUBLIC_DEMO_DEPLOYMENT.md`](docs/PUBLIC_DEMO_DEPLOYMENT.md) | Public demonstration mode: what each switch changes, guided demonstrations, seeding and reset |
 | [`docs/MACBOOK_SELF_HOSTING.md`](docs/MACBOOK_SELF_HOSTING.md) | Running it from a MacBook: Docker resources, sleep, heat, FileVault, updates, scheduling |
+| [`docs/DEMO_MODULE_ROUTING.md`](docs/DEMO_MODULE_ROUTING.md) | How a public tool page opens its own module in the protected demonstration, and why the parameter is navigation rather than access |
 | [`docs/CLOUDFLARE_TUNNEL_SETUP.md`](docs/CLOUDFLARE_TUNNEL_SETUP.md) | The tunnel, the three routes, and the Access policy on the demonstration |
 | [`docs/GODADDY_NAMESERVER_SETUP.md`](docs/GODADDY_NAMESERVER_SETUP.md) | Moving DNS without breaking mail |
 | [`docs/DEMO_SECURITY_CHECKLIST.md`](docs/DEMO_SECURITY_CHECKLIST.md) | What to verify before anyone else can reach it |

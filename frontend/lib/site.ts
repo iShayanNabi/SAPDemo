@@ -9,13 +9,20 @@
  *
  * The address defaults are placeholders on purpose. A site that ships with a
  * real domain baked in is a site that quietly links somewhere wrong the first
- * time it is deployed under a different one. There are two exceptions, and both
- * are exceptions because a placeholder would be *worse* than a wrong domain:
+ * time it is deployed under a different one. There are three exceptions, and
+ * each is an exception because a placeholder would be *worse* than a wrong
+ * domain:
  *
  * * the *contact* default is deliberately the real address - a placeholder
  *   recipient that escapes into a build is a visitor writing to nobody, which
  *   is worse than a link pointing at localhost that anyone can see is
  *   unconfigured;
+ * * the *demonstration* default is deliberately `PUBLIC_DEMO_ORIGIN`. A
+ *   loopback placeholder here does not read as unconfigured to the visitor who
+ *   follows it - it reads as a link to *their own computer*, which either
+ *   refuses the connection or, worse, opens whatever they happen to be running
+ *   on that port. A public build that forgot one variable must still send
+ *   people to the real demonstration;
  * * the *site* default is deliberately `PUBLIC_ORIGIN`. This value is what
  *   canonical URLs, the sitemap and Open Graph are built from, and a canonical
  *   URL is a claim to a search engine about where a page really lives.
@@ -132,6 +139,23 @@ function flagFromEnv(value: string | undefined, fallback: boolean): boolean {
  */
 export const PUBLIC_ORIGIN = 'https://solveaihub.com';
 
+/**
+ * The one origin the protected demonstration is published under.
+ *
+ * Separate from `PUBLIC_ORIGIN` and never interchangeable with it: this
+ * hostname sits behind Cloudflare Access, serves no marketing page, and must
+ * never appear as a canonical URL or in the sitemap. `lib/metadata.ts` refuses
+ * it outright for exactly that reason.
+ *
+ * It is a real domain rather than a placeholder, and that is a deliberate
+ * exception to the rule at the top of this file. The failure a placeholder
+ * causes here is not "a link somebody can see is unconfigured" - it is a public
+ * page sending every visitor to `localhost` on *their own machine*. See
+ * `lib/demo.ts`, which validates the configured value and falls back here when
+ * it cannot be used.
+ */
+export const PUBLIC_DEMO_ORIGIN = 'https://demo.solveaihub.com';
+
 export const siteConfig = {
   /** The product. What the site is about. */
   name: 'Procurement Intelligence Demo',
@@ -163,8 +187,18 @@ export const siteConfig = {
   /**
    * Where every Launch Demo call to action points. Configured rather than
    * hardcoded so the same image serves a local run and a published one.
+   *
+   * Read through `lib/demo.ts` rather than used directly: that module validates
+   * it, normalises it and appends the module identifier for the ten tool pages.
+   *
+   * The default is the *production* demonstration origin, not a loopback
+   * placeholder. A local run reaches `http://localhost:8501` by setting this
+   * variable - which `frontend/.env.example` does - and localhost is therefore
+   * only ever a destination somebody asked for. A deployment that forgot the
+   * variable links to the real demonstration instead of to the visitor's own
+   * computer.
    */
-  demoUrl: fromEnv(process.env.NEXT_PUBLIC_DEMO_URL, 'http://localhost:8501'),
+  demoUrl: fromEnv(process.env.NEXT_PUBLIC_DEMO_URL, PUBLIC_DEMO_ORIGIN),
 
   /**
    * The single public contact address, used by every `mailto:` on the site.

@@ -82,6 +82,24 @@ different from the product is a demonstration of a different product.
 
 ---
 
+## Arriving at one module
+
+The public website links to individual tools rather than to the demonstration
+home page: `https://demo.solveaihub.com/?module=invoice-validator` opens the
+Invoice Validator, and `https://demo.solveaihub.com/` still opens the home page.
+
+The parameter is matched against a fixed list of ten identifiers and is used for
+nothing else - anything unrecognised lands on the home page with a short
+message. It is navigation only: **Cloudflare Access still authenticates every
+request to this origin**, with or without a query string, before the application
+sees it.
+
+The route format, the ten identifiers, the rerun and back-button behaviour, and
+the manual test matrix that still has to be worked through after deployment are
+in [`DEMO_MODULE_ROUTING.md`](DEMO_MODULE_ROUTING.md).
+
+---
+
 ## Guided demonstrations
 
 With uploads gone, each module needs a way to get data in. That is

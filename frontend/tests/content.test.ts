@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { moduleBySlug, moduleSlugs, modules } from '@/content/modules';
 import { origins, originByKey } from '@/content/origins';
-import { DEMO_NOTICE, TRADEMARK_NOTICE, mailto, siteConfig } from '@/lib/site';
+import {
+  DEMO_NOTICE,
+  PUBLIC_DEMO_ORIGIN,
+  PUBLIC_ORIGIN,
+  TRADEMARK_NOTICE,
+  mailto,
+  siteConfig,
+} from '@/lib/site';
 
 /**
  * These assert the *content contract*, not a count. A test that only checked
@@ -139,11 +146,16 @@ describe('claims the site must never make', () => {
 });
 
 describe('site configuration', () => {
-  it('reads the demo destination from the environment rather than a hardcoded domain', () => {
-    // The default is a localhost placeholder. A real domain compiled in here is
-    // how a build ends up linking at the wrong deployment.
+  it('reads the demo destination from the environment, and defaults to the real one', () => {
+    // This value is the exception to the placeholder rule the rest of this file
+    // follows, and the reason is in `lib/site.ts`: a loopback default does not
+    // read as unconfigured to the visitor who clicks it, it reads as a link to
+    // their own computer. So a build that forgot the variable still points at
+    // the demonstration - never at localhost, and never at the marketing site.
     expect(siteConfig.demoUrl).toBeTruthy();
-    expect(siteConfig.demoUrl).not.toMatch(/\.(com|net|io|dev|app)\b(?!.*localhost)/);
+    expect(siteConfig.demoUrl).toBe(PUBLIC_DEMO_ORIGIN);
+    expect(siteConfig.demoUrl).not.toContain('localhost');
+    expect(siteConfig.demoUrl).not.toBe(PUBLIC_ORIGIN);
   });
 
   it('publishes the product under the parent brand, and never as the internal name', () => {
@@ -259,6 +271,11 @@ describe('site configuration built from a blank environment', () => {
     // reloads the page the visitor is already on.
     expect(config.demoUrl).not.toBe('');
     expect(() => new URL(config.demoUrl)).not.toThrow();
+    // And the fallback is the real demonstration. A loopback default here would
+    // send a public visitor to port 8501 on their own machine, which is a
+    // failure nobody sees in a build log.
+    expect(config.demoUrl).toBe(PUBLIC_DEMO_ORIGIN);
+    expect(config.demoUrl).not.toContain('localhost');
   });
 
   it.each(ABSENT_CASES)(
