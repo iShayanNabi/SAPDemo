@@ -118,7 +118,10 @@ describe('responsive layout primitives', () => {
    */
   it('the primary navigation collapses below the desktop breakpoint', () => {
     const { container } = render(<Nav items={navItems} />);
-    const header = container.querySelector('nav[aria-label="Primary"]')?.parentElement;
+    // The whole banner, not the navigation's parent: the links and the toggle
+    // are in different regions of the row now, so the toggle is a sibling of
+    // the region rather than of the navigation.
+    const header = container.querySelector('header');
     expect(header?.innerHTML).toContain(MOBILE_ONLY);
     expect(container.querySelector('nav[aria-label="Primary"]')?.className).toBe(DESKTOP_ONLY);
   });

@@ -5,6 +5,7 @@ import { ModuleGrid } from '@/components/ModuleCard';
 import { Callout, Card, ClaimList, Container, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
 import { origins } from '@/content/origins';
+import { CONTACT_CTA_HREF, CONTACT_CTA_LABEL } from '@/lib/navigation';
 import { DEMO_NOTICE, UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -32,7 +33,16 @@ export default function HomePage() {
           </p>
           <div className="mt-9 flex flex-wrap gap-4">
             <DemoCta />
-            <ContactCta variant="secondary" />
+            {/*
+              Beside Launch interactive demo, and visibly a different action:
+              the demo is the filled button, this one is the outlined one, and
+              it goes to the contact page rather than opening a compose window.
+              The label is the site-wide one; it is passed rather than defaulted
+              so this line says what the button says.
+            */}
+            <ContactCta href={CONTACT_CTA_HREF} variant="secondary">
+              {CONTACT_CTA_LABEL}
+            </ContactCta>
             <a
               href="/tools"
               className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-base font-semibold text-slate-900 ring-1 ring-slate-300 transition-colors hover:bg-slate-50 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-700"
