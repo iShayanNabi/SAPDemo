@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Callout, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { ContactForm } from '@/components/ContactForm';
 import { DemoCta } from '@/components/DemoCta';
 import { EMAIL_CARD_LABEL, EmailCard, emailCardLabel } from '@/components/EmailCard';
 import { isContactFormAvailable, turnstileSiteKey } from '@/lib/contact/config';
+import { pageMetadata } from '@/lib/metadata';
 import { mailto, siteConfig } from '@/lib/site';
 
 /**
@@ -19,12 +19,7 @@ import { mailto, siteConfig } from '@/lib/site';
  */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description:
-    'How to get in touch about Procurement Intelligence Demo: consulting enquiries, questions about the platform, and access to the interactive demonstration.',
-  alternates: { canonical: '/contact' },
-};
+export const metadata = pageMetadata('/contact');
 
 /**
  * The three things worth writing about, each a card that *is* the email action.

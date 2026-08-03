@@ -31,6 +31,28 @@ export type OutputOrigin =
   | 'mock_ai'
   | 'demo_data';
 
+/**
+ * The three short phrases a card shows at a glance.
+ *
+ * Separate fields rather than an excerpt of `problem` or `demoInput`, because
+ * the home page has to answer three questions about ten tools in a space where
+ * a paragraph does not fit, and truncating a paragraph produces a fragment that
+ * reads as a different claim than the sentence it came from.
+ *
+ * What must **not** go in here is as much the point as what does: no test
+ * counts, no endpoint counts, no table names, no framework names, no row
+ * counts. A card is read by somebody deciding whether a tool is about their
+ * problem, and none of those help them decide.
+ */
+export interface ModuleOverview {
+  /** What the user gives it. */
+  input: string;
+  /** What comes back. */
+  output: string;
+  /** Why somebody in procurement would want it. */
+  purpose: string;
+}
+
 export interface ModuleContent {
   /** Matches the module id used by the API. */
   id: string;
@@ -40,6 +62,8 @@ export interface ModuleContent {
   name: string;
   /** One line, used on the card. */
   tagline: string;
+  /** The compact three-line summary, for the home page overview. */
+  overview: ModuleOverview;
   /** The business problem, in the words of somebody who has it. */
   problem: string;
   /** What the fictional demonstration input actually is. */
@@ -70,6 +94,11 @@ export const modules: readonly ModuleContent[] = [
     number: 1,
     name: 'Purchase Order Risk Checker',
     tagline: 'Twenty transparent rules over a purchase order export.',
+    overview: {
+      input: 'A purchase order export',
+      output: 'Ranked findings with the evidence behind each one',
+      purpose: 'Catch duplicates, split orders and off-contract prices before release',
+    },
     problem:
       'A buyer releasing hundreds of purchase order lines a week cannot read all of them. ' +
       'The ones that matter - a duplicate, an order split to stay under a release threshold, ' +
@@ -114,6 +143,11 @@ export const modules: readonly ModuleContent[] = [
     number: 2,
     name: 'Spend Analytics Dashboard',
     tagline: 'Where the money went, and which patterns look like leakage.',
+    overview: {
+      input: 'A procurement transaction file',
+      output: 'Spend and leakage figures you can drill into',
+      purpose: 'See where the money actually goes, and where it leaks',
+    },
     problem:
       'Category managers are asked where the money goes and answer with a spreadsheet that ' +
       'took a week. The questions underneath - how much spend is under contract, how ' +
@@ -157,6 +191,11 @@ export const modules: readonly ModuleContent[] = [
     number: 3,
     name: 'Supplier Recommendation Engine',
     tagline: 'Rank the suppliers that can actually serve a requirement.',
+    overview: {
+      input: 'A requirement and a supplier catalogue',
+      output: 'A ranked shortlist with every score broken down',
+      purpose: 'Make a sourcing choice somebody else can reproduce',
+    },
     problem:
       'Choosing a supplier for a specific requirement mixes price, delivery reliability, ' +
       'quality history, capacity, risk and whether a contract exists. Done in a meeting, the ' +
@@ -200,6 +239,11 @@ export const modules: readonly ModuleContent[] = [
     number: 4,
     name: 'Invoice Validator',
     tagline: 'Three-way matching with configurable tolerances.',
+    overview: {
+      input: 'Invoices, purchase orders and goods receipts',
+      output: 'Exceptions with a pay, hold or investigate suggestion',
+      purpose: 'Stop paying for what was never ordered or received',
+    },
     problem:
       'Accounts payable pays what it is billed unless somebody proves otherwise. Proving ' +
       'otherwise means comparing three documents per line - the invoice, the purchase order ' +
@@ -241,6 +285,11 @@ export const modules: readonly ModuleContent[] = [
     number: 5,
     name: 'Supplier Risk Copilot',
     tagline: 'Ten risk categories, scored transparently, answerable in prose.',
+    overview: {
+      input: 'Supplier profiles and dated risk events',
+      output: 'Category scores, and the events that moved them',
+      purpose: 'Answer why a supplier is high risk, specifically',
+    },
     problem:
       'Supplier risk is usually a spreadsheet updated once a year and a set of opinions held ' +
       'by whoever has been there longest. Neither survives the question "why is this supplier ' +
@@ -282,6 +331,11 @@ export const modules: readonly ModuleContent[] = [
     number: 6,
     name: 'Contract Assistant',
     tagline: 'Every extracted claim cites the page it came from.',
+    overview: {
+      input: 'Contract documents in PDF, DOCX or TXT',
+      output: 'Clauses, dates and obligations, each citing its page',
+      purpose: 'Know what was committed to without rereading the contract',
+    },
     problem:
       'Somebody has to know when the contract renews, what the notice period is, whether ' +
       'liability is capped and what was actually committed to. That answer usually lives in a ' +
@@ -326,6 +380,11 @@ export const modules: readonly ModuleContent[] = [
     number: 7,
     name: 'Inventory Predictor',
     tagline: 'Five statistical models, chosen by backtesting. No AI touches a number.',
+    overview: {
+      input: 'Demand history by material and plant',
+      output: 'Forecasts, shortage dates and reorder timing',
+      purpose: 'Order early enough for the lead time to matter',
+    },
     problem:
       'Planners are asked which materials will run short and when. The honest answer needs a ' +
       'forecast, a stock projection and a lead time - and a forecast that fits last year ' +
@@ -368,6 +427,11 @@ export const modules: readonly ModuleContent[] = [
     number: 8,
     name: 'SAP Test Case Generator',
     tagline: 'AI writes the wording. Code writes the skeleton.',
+    overview: {
+      input: 'A description of a business process',
+      output: 'A structured test suite across eight test types',
+      purpose: 'Start SAP testing from a draft rather than a blank page',
+    },
     problem:
       'Writing a test suite for an SAP process is days of work that mostly produces structure: ' +
       'how many cases, of which types, covering which steps, at which priority. The structure ' +
@@ -410,6 +474,11 @@ export const modules: readonly ModuleContent[] = [
     number: 9,
     name: 'SAP Blueprint Generator',
     tagline: 'Thirty sections, versioned, with staleness tracked across them.',
+    overview: {
+      input: 'A project request and its constraints',
+      output: 'A versioned blueprint, with stale sections flagged',
+      purpose: 'Keep a long document honest as its scope changes',
+    },
     problem:
       'An implementation blueprint is a long document whose sections describe each other. ' +
       'Edit the scope and the executive summary that described it is now describing something ' +
@@ -452,6 +521,11 @@ export const modules: readonly ModuleContent[] = [
     number: 10,
     name: 'SAP Interview Coach',
     tagline: 'The rubric marks the answer. A model only writes the prose around it.',
+    overview: {
+      input: 'Your own answer to a practice question',
+      output: 'A rubric score, with the concepts you missed',
+      purpose: 'Practise SAP interviews with feedback that does not move',
+    },
     problem:
       'Practising for an SAP interview without feedback teaches you to repeat your own gaps. ' +
       'Feedback from a model that scores as well as it writes gives a different mark on a ' +
@@ -493,6 +567,22 @@ export const modules: readonly ModuleContent[] = [
 
 export function moduleBySlug(slug: string): ModuleContent | undefined {
   return modules.find((module) => module.slug === slug);
+}
+
+/**
+ * A module by its API id.
+ *
+ * Throws rather than returning `undefined`, because the only caller is
+ * `content/problems.ts`, where an id that resolves to nothing means a problem
+ * area silently lists one tool fewer than it claims. Failing at render time is
+ * how that gets noticed.
+ */
+export function moduleById(id: string): ModuleContent {
+  const found = modules.find((module) => module.id === id);
+  if (!found) {
+    throw new Error(`Unknown module id: ${id}`);
+  }
+  return found;
 }
 
 export const moduleSlugs = modules.map((module) => module.slug);

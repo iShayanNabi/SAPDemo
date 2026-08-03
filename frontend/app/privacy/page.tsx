@@ -1,14 +1,9 @@
-import type { Metadata } from 'next';
 import { Callout, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { isContactFormAvailable } from '@/lib/contact/config';
+import { pageMetadata } from '@/lib/metadata';
 import { ACCESS_NOTICE, POLICY_LAST_UPDATED, UPLOAD_NOTICE, mailto, siteConfig } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Privacy',
-  description:
-    'What the Procurement Intelligence Demo website and interactive demonstration do with information: operational logging, Cloudflare services, email contact, and the current disabled upload state.',
-  alternates: { canonical: '/privacy' },
-};
+export const metadata = pageMetadata('/privacy');
 
 /**
  * Rendered per request so the policy describes the deployment it is served

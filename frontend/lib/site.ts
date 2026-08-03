@@ -9,10 +9,20 @@
  *
  * The address defaults are placeholders on purpose. A site that ships with a
  * real domain baked in is a site that quietly links somewhere wrong the first
- * time it is deployed under a different one. The *contact* default is the
- * exception and is deliberately the real address: a placeholder recipient that
- * escapes into a build is a visitor writing to nobody, which is worse than a
- * link pointing at localhost that anyone can see is unconfigured.
+ * time it is deployed under a different one. There are two exceptions, and both
+ * are exceptions because a placeholder would be *worse* than a wrong domain:
+ *
+ * * the *contact* default is deliberately the real address - a placeholder
+ *   recipient that escapes into a build is a visitor writing to nobody, which
+ *   is worse than a link pointing at localhost that anyone can see is
+ *   unconfigured;
+ * * the *site* default is deliberately `PUBLIC_ORIGIN`. This value is what
+ *   canonical URLs, the sitemap and Open Graph are built from, and a canonical
+ *   URL is a claim to a search engine about where a page really lives.
+ *   `<link rel="canonical" href="http://localhost:3000/about">` is not a
+ *   visibly-unconfigured link somebody notices, it is a page asking to be
+ *   de-indexed. See `lib/metadata.ts`, which refuses a non-public origin
+ *   outright rather than trusting this value.
  */
 
 /**
@@ -103,6 +113,25 @@ function flagFromEnv(value: string | undefined, fallback: boolean): boolean {
   return !['false', '0', 'no', 'off'].includes(trimmed);
 }
 
+/**
+ * The one public origin this site is published under.
+ *
+ * Not a placeholder, and not `www`. Both halves matter:
+ *
+ * * every canonical URL, every Open Graph URL and every sitemap entry is built
+ *   from this, so it has to be the address a visitor actually reaches rather
+ *   than the address a particular container happens to be answering on;
+ * * `https://www.solveaihub.com` serves the same pages, and two origins serving
+ *   the same page is the definition of duplicate content. The non-`www` form is
+ *   the one every canonical points at, whichever hostname the page was fetched
+ *   from - see `normalizePublicOrigin` in `lib/metadata.ts`.
+ *
+ * `https://demo.solveaihub.com` is the *protected* Streamlit demonstration
+ * behind Cloudflare Access. It is deliberately not this value, is not a
+ * marketing page, and never appears as a canonical or in the sitemap.
+ */
+export const PUBLIC_ORIGIN = 'https://solveaihub.com';
+
 export const siteConfig = {
   /** The product. What the site is about. */
   name: 'Procurement Intelligence Demo',
@@ -120,8 +149,16 @@ export const siteConfig = {
     'transparent, deterministic logic. Every calculation is ordinary code; AI only explains ' +
     'results. Not affiliated with SAP.',
 
-  /** The public site address. Used for canonical URLs and Open Graph. */
-  url: fromEnv(process.env.NEXT_PUBLIC_SITE_URL, 'http://localhost:3000'),
+  /**
+   * The public site address, as configured.
+   *
+   * Read through `lib/metadata.ts` rather than used directly: that module
+   * validates it and falls back to `PUBLIC_ORIGIN` when what arrives is not an
+   * address the public can reach. `docker-compose.debug.yml` really does set
+   * `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000`, and a debug build must not be
+   * able to emit a loopback canonical.
+   */
+  url: fromEnv(process.env.NEXT_PUBLIC_SITE_URL, PUBLIC_ORIGIN),
 
   /**
    * Where every Launch Demo call to action points. Configured rather than

@@ -1,15 +1,10 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
+import { pageMetadata } from '@/lib/metadata';
 import { UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Platform overview',
-  description:
-    'How Procurement Intelligence Demo is built: a FastAPI backend of ten modules with deterministic business logic, a shared services layer, labelled output origins, and an interface that holds no business logic of its own.',
-  alternates: { canonical: '/platform' },
-};
+export const metadata = pageMetadata('/platform');
 
 export default function PlatformPage() {
   return (

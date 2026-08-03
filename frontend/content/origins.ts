@@ -15,6 +15,16 @@ export interface OriginDescription {
   label: string;
   summary: string;
   detail: string;
+  /**
+   * Two or three examples of what this origin actually covers.
+   *
+   * The home page shows the four *method* origins side by side and needs a few
+   * words each; `detail` is written for somebody reading one at a time and is
+   * far too long for that. Keeping them here rather than in a second list on
+   * the home page is what stops the two descriptions of the same origin from
+   * drifting apart.
+   */
+  examples: readonly string[];
   /** Tailwind classes for the badge. Kept next to the meaning they encode. */
   className: string;
 }
@@ -29,6 +39,11 @@ export const origins: readonly OriginDescription[] = [
       'input. Reproducible: the same file always gives the same answer. Thresholds live in ' +
       'JSON configuration, so changing what counts as risky is an edit rather than a code ' +
       'change.',
+    examples: [
+      'Configurable calculations and business rules',
+      'Matching, validation and scoring',
+      'Rankings and aggregations',
+    ],
     className:
       'bg-sky-100 text-sky-900 ring-sky-600/20 dark:bg-sky-950 dark:text-sky-200 dark:ring-sky-400/30',
   },
@@ -40,6 +55,10 @@ export const origins: readonly OriginDescription[] = [
       'Produced by a model chosen through backtesting on held-out periods. It reports which ' +
       'model won and why. A projection is an estimate with error attached, and it is labelled ' +
       'separately from a rule result so nobody reads one as the other.',
+    examples: [
+      'Demand forecasting and stock projection',
+      'Model selection by backtesting on held-out periods',
+    ],
     className:
       'bg-violet-100 text-violet-900 ring-violet-600/20 dark:bg-violet-950 dark:text-violet-200 dark:ring-violet-400/30',
   },
@@ -51,6 +70,11 @@ export const origins: readonly OriginDescription[] = [
       'Explanation, summary and drafting only. AI text lives in its own fields and never ' +
       'overwrites a computed value. Where AI drafts an artefact - a test case, a blueprint ' +
       'section - the structure around it was decided by code first.',
+    examples: [
+      'Explanations of results code produced',
+      'Controlled drafting inside a structure code decided',
+      'Coaching prose around a finished score',
+    ],
     className:
       'bg-amber-100 text-amber-900 ring-amber-600/20 dark:bg-amber-950 dark:text-amber-200 dark:ring-amber-400/30',
   },
@@ -62,6 +86,10 @@ export const origins: readonly OriginDescription[] = [
       'The default. With no API key configured, the platform composes narrative text from the ' +
       'rule output instead of contacting a provider, so every module runs end to end with no ' +
       'credentials and no cost. The public demonstration always runs in this mode.',
+    examples: [
+      'The default provider, and the only one the public demonstration uses',
+      'Composed locally from the computed results, with no external call',
+    ],
     className:
       'bg-slate-200 text-slate-900 ring-slate-600/20 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-400/30',
   },
@@ -74,10 +102,29 @@ export const origins: readonly OriginDescription[] = [
       'seeded script. The anomalies in each dataset are deliberate and documented in a ' +
       'manifest, so a result can be checked against a known expectation. None of it came from ' +
       'a real company or a real SAP system.',
+    examples: [
+      'Seeded fictional suppliers, orders, invoices and contracts',
+      'Deliberate anomalies, documented in a manifest',
+    ],
     className:
       'bg-emerald-100 text-emerald-900 ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-400/30',
   },
 ] as const;
+
+/**
+ * The four origins that describe a *method*, in the order the home page shows
+ * them: deterministic, statistical, AI-written, and the mock provider that
+ * stands in for the last of them.
+ *
+ * `demo_data` is excluded because it answers a different question. It says
+ * where the *input* came from, not how the output was produced, and putting it
+ * alongside the other four turns "here is how each answer was reached" into a
+ * list with one item that is not an answer at all. It is still described in
+ * full on How it works, and it is still the label every module carries.
+ */
+export const methodOrigins: readonly OriginDescription[] = origins.filter(
+  (entry) => entry.origin !== 'demo_data',
+);
 
 export function originByKey(key: OutputOrigin): OriginDescription {
   const found = origins.find((entry) => entry.origin === key);

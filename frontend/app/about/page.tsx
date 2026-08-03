@@ -1,16 +1,11 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { RepositoryLink } from '@/components/RepositoryLink';
 import { Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
 import { modules } from '@/content/modules';
+import { pageMetadata } from '@/lib/metadata';
 import { hasRepository, siteConfig } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'About',
-  description:
-    'What Procurement Intelligence Demo is, why it was built, and the principles it follows: deterministic calculation, labelled output origins, documented fictional data, and honest statements of what has not been done.',
-  alternates: { canonical: '/about' },
-};
+export const metadata = pageMetadata('/about');
 
 export default function AboutPage() {
   return (

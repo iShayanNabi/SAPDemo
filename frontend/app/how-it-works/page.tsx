@@ -1,15 +1,10 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, Steps, TextLink } from '@/components/ui';
 import { origins } from '@/content/origins';
+import { pageMetadata } from '@/lib/metadata';
 import { UPLOAD_NOTICE } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'How it works',
-  description:
-    'How Procurement Intelligence Demo separates deterministic calculation from AI-generated text, how data moves from an uploaded file to a labelled result, and what each of the five result origins means.',
-  alternates: { canonical: '/how-it-works' },
-};
+export const metadata = pageMetadata('/how-it-works');
 
 export default function HowItWorksPage() {
   return (

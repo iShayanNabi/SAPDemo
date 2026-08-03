@@ -1,0 +1,20 @@
+<!--
+  The site icon.
+
+  Deliberately a mark rather than a letterform: the header wordmark is
+  typographic and "S" at 16 pixels is every other site's favicon. Three
+  ascending bars in the site's own sky palette on the slate the header and
+  footer already use - it reads as analysis, it survives being scaled to a
+  browser tab, and it carries no third-party brand.
+
+  SVG rather than a bitmap so one file is crisp at every size a browser asks
+  for. `app/apple-icon.tsx` renders the same mark as a PNG, because iOS home
+  screens need a raster.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Procurement Intelligence Demo by Solve AI Hub</title>
+  <rect width="64" height="64" rx="14" fill="#0f172a" />
+  <rect x="14" y="34" width="8" height="16" rx="3" fill="#7dd3fc" />
+  <rect x="28" y="24" width="8" height="26" rx="3" fill="#38bdf8" />
+  <rect x="42" y="14" width="8" height="36" rx="3" fill="#0ea5e9" />
+</svg>
