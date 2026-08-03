@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
 import { RepositoryLink } from '@/components/RepositoryLink';
 import { Callout, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { pageMetadata } from '@/lib/metadata';
 import {
   ACCESS_NOTICE,
   POLICY_LAST_UPDATED,
@@ -10,12 +10,7 @@ import {
   siteConfig,
 } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Terms and disclaimer',
-  description:
-    'Terms of use and disclaimer for the Procurement Intelligence Demo website and interactive demonstration: what the outputs are, what may not be submitted, and what is not claimed.',
-  alternates: { canonical: '/terms' },
-};
+export const metadata = pageMetadata('/terms');
 
 export default function TermsPage() {
   return (

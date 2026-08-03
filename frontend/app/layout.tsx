@@ -1,19 +1,41 @@
 import type { Metadata, Viewport } from 'next';
 import { Footer } from '@/components/Footer';
 import { Nav } from '@/components/Nav';
+import { TITLE_SEPARATOR, canonicalOrigin } from '@/lib/metadata';
 import { getNavItems } from '@/lib/navigation';
 import { siteConfig } from '@/lib/site';
 import './globals.css';
 
+/**
+ * The defaults every page inherits, and deliberately **no canonical**.
+ *
+ * This object used to carry `alternates: { canonical: '/' }`. Next resolves
+ * metadata by merging a segment's object over its parents', so any page that
+ * did not set its own canonical inherited that one - and the pages that do not
+ * set their own are exactly the ones that must not claim to be the home page:
+ * the 404, and an unknown `/tools/<slug>`. Every real page now gets its
+ * canonical from `pageMetadata()`, and the absence of one here is what makes a
+ * missing canonical visible instead of silently wrong.
+ *
+ * `metadataBase` is the public origin rather than the configured one, resolved
+ * through `lib/metadata.ts`. Every relative URL in a page's metadata - the
+ * social image most of all - is made absolute against it, so a debug build
+ * pointed at `127.0.0.1` would otherwise publish an `og:image` no crawler can
+ * fetch.
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL(canonicalOrigin),
   title: {
     default: siteConfig.title,
-    template: `%s — ${siteConfig.name}`,
+    template: `%s${TITLE_SEPARATOR}${siteConfig.name}`,
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.parentBrand }],
+  creator: siteConfig.parentBrand,
+  publisher: siteConfig.parentBrand,
   keywords: [
+    'procurement intelligence',
     'SAP demonstration',
     'procurement analytics',
     'supply chain analytics',
@@ -23,24 +45,9 @@ export const metadata: Metadata = {
     'supplier risk',
     'SAP consulting portfolio',
   ],
-  openGraph: {
-    type: 'website',
-    siteName: siteConfig.name,
-    title: siteConfig.title,
-    description: siteConfig.description,
-    url: siteConfig.url,
-  },
-  twitter: {
-    card: 'summary',
-    title: siteConfig.title,
-    description: siteConfig.shortDescription,
-  },
   robots: {
     index: true,
     follow: true,
-  },
-  alternates: {
-    canonical: '/',
   },
 };
 

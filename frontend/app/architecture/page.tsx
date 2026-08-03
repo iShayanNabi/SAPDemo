@@ -1,14 +1,9 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { pageMetadata } from '@/lib/metadata';
 import { ACCESS_NOTICE, UPLOAD_NOTICE } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Architecture',
-  description:
-    'How Procurement Intelligence Demo is deployed: a public Next.js website and a Streamlit demonstration behind Cloudflare Access, reached through an outbound Cloudflare Tunnel, with a FastAPI backend and PostgreSQL that are never published.',
-  alternates: { canonical: '/architecture' },
-};
+export const metadata = pageMetadata('/architecture');
 
 export default function ArchitecturePage() {
   return (

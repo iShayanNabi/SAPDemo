@@ -1,14 +1,9 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { pageMetadata } from '@/lib/metadata';
 import { ACCESS_NOTICE, UPLOAD_NOTICE, siteConfig } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Demonstration disclaimer',
-  description:
-    'What the Procurement Intelligence Demo interactive demonstration is, what data it uses, what it does not do, and what you must not enter into it.',
-  alternates: { canonical: '/demo-disclaimer' },
-};
+export const metadata = pageMetadata('/demo-disclaimer');
 
 export default function DemoDisclaimerPage() {
   return (

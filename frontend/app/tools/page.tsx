@@ -1,15 +1,10 @@
-import type { Metadata } from 'next';
 import { DemoCta } from '@/components/DemoCta';
 import { ModuleGrid } from '@/components/ModuleCard';
 import { Container, PageHeader, Section } from '@/components/ui';
 import { modules } from '@/content/modules';
+import { pageMetadata } from '@/lib/metadata';
 
-export const metadata: Metadata = {
-  title: 'Tools',
-  description:
-    'The ten procurement and supply-chain demonstration tools in Procurement Intelligence Demo: purchase order risk, spend analytics, supplier recommendation, invoice validation, supplier risk, contract analysis, inventory forecasting, test case generation, blueprint generation and interview coaching.',
-  alternates: { canonical: '/tools' },
-};
+export const metadata = pageMetadata('/tools');
 
 export default function ToolsPage() {
   return (

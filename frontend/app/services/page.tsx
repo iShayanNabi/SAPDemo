@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
 import { ContactCta } from '@/components/ContactCta';
 import { DemoCta } from '@/components/DemoCta';
 import { EmailCard } from '@/components/EmailCard';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { pageMetadata } from '@/lib/metadata';
 import {
   CONSULTING_CTA_HREF,
   CONSULTING_CTA_LABEL,
@@ -11,12 +11,7 @@ import {
 } from '@/lib/navigation';
 import { hasRepository, siteConfig } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Consulting services',
-  description:
-    'SAP-focused consulting: procurement and supply-chain analysis, deterministic rule engines, document extraction, and pragmatic use of language models where they genuinely help.',
-  alternates: { canonical: '/services' },
-};
+export const metadata = pageMetadata('/services');
 
 const areas = [
   {

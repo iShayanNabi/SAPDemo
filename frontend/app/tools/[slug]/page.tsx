@@ -14,7 +14,8 @@ import {
   TextLink,
 } from '@/components/ui';
 import { moduleBySlug, modules } from '@/content/modules';
-import { UPLOAD_NOTICE, siteConfig } from '@/lib/site';
+import { NOT_FOUND_METADATA, toolMetadata } from '@/lib/metadata';
+import { UPLOAD_NOTICE } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -28,21 +29,20 @@ export function generateStaticParams() {
   return modules.map((module) => ({ slug: module.slug }));
 }
 
+/**
+ * Ten distinct titles, descriptions and canonicals, from the one typed content
+ * list the page body renders.
+ *
+ * An unknown slug gets `NOT_FOUND_METADATA` rather than a bare title: it is a
+ * 404, so it must not be indexed and must not carry a canonical. Returning
+ * `{ title: 'Tool not found' }` - which is what this did - left the canonical
+ * to be inherited, and every mistyped tool address announced itself to a
+ * crawler as the home page.
+ */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const module = moduleBySlug(slug);
-  if (!module) {
-    return { title: 'Tool not found' };
-  }
-  return {
-    title: module.name,
-    description: `${module.tagline} ${module.problem}`.slice(0, 300),
-    alternates: { canonical: `/tools/${module.slug}` },
-    openGraph: {
-      title: `${module.name} — ${siteConfig.name}`,
-      description: module.tagline,
-    },
-  };
+  return module ? toolMetadata(module) : NOT_FOUND_METADATA;
 }
 
 export default async function ModulePage({ params }: PageProps) {

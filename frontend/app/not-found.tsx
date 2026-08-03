@@ -1,5 +1,17 @@
 import Link from 'next/link';
 import { Container, PageHeader, Section, TextLink } from '@/components/ui';
+import { NOT_FOUND_METADATA } from '@/lib/metadata';
+
+/**
+ * A useful title, `noindex`, and deliberately no canonical.
+ *
+ * The address a visitor mistyped is not a page, so there is nothing for a
+ * canonical to point at - and the root layout no longer supplies one to
+ * inherit, which is what used to make every 404 claim to be the home page.
+ * This page is not in `content/pages.ts` and therefore not in the sitemap:
+ * a 404 offered to a crawler as a destination is worse than no entry at all.
+ */
+export const metadata = NOT_FOUND_METADATA;
 
 export default function NotFound() {
   return (
