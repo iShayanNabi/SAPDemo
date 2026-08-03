@@ -3,7 +3,12 @@ import { ContactCta } from '@/components/ContactCta';
 import { DemoCta } from '@/components/DemoCta';
 import { EmailCard } from '@/components/EmailCard';
 import { Callout, Card, ClaimList, Container, PageHeader, Section, TextLink } from '@/components/ui';
-import { CONSULTING_CTA_HREF, CONSULTING_CTA_LABEL } from '@/lib/navigation';
+import {
+  CONSULTING_CTA_HREF,
+  CONSULTING_CTA_LABEL,
+  CONTACT_CTA_HREF,
+  CONTACT_CTA_LABEL,
+} from '@/lib/navigation';
 import { hasRepository, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -94,7 +99,7 @@ export default function ServicesPage() {
         title="SAP-focused analysis, built to be checked"
         lede="This site is a portfolio project. The tools in it are the working examples - every one of them runs, on data whose flaws are documented, with the calculations open to inspection."
       >
-        <ContactCta />
+        <ContactCta href={CONTACT_CTA_HREF}>{CONTACT_CTA_LABEL}</ContactCta>
         <DemoCta variant="secondary" />
       </PageHeader>
 

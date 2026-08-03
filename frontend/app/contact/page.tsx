@@ -71,17 +71,27 @@ export default function ContactPage() {
         }
       >
         {/*
-          The address itself is the button. `aria-label` names the action -
-          an accessible name of "solveaihub@gmail.com" says what it is and not
-          what pressing it does - and the focus ring matches every other call to
-          action, because a keyboard user has to be able to see where they are.
+          A direct-email action, labelled as one.
+
+          The button used to print `solveaihub@gmail.com` as its own text,
+          sitting beside Launch interactive demo - so the pair of buttons at the
+          top of this page read as an address and a demo rather than as two
+          actions, and on a machine with no mail client configured the first one
+          appeared to do nothing when pressed. A button's label says what
+          pressing it does; the address itself belongs in the cards below, which
+          exist to print it, and in the footer.
+
+          `aria-label` still names the action *and* the address, so a screen
+          reader announces where the message is going before it is opened. The
+          focus ring matches every other call to action, because a keyboard user
+          has to be able to see where they are.
         */}
         <a
           href={mailto(`${siteConfig.name} enquiry`)}
           aria-label={EMAIL_CARD_LABEL}
           className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
         >
-          {siteConfig.contactEmail}
+          Email us directly
         </a>
         <DemoCta variant="secondary" />
       </PageHeader>

@@ -31,8 +31,16 @@ export interface NavItem {
  *
  * `xl` rather than `lg`: eight links, a demo button and the contact call to
  * action do not fit a 1024px window without wrapping.
+ *
+ * `DESKTOP_ONLY_FLEX` is the same breakpoint for an element that has to be a
+ * flex container when it is shown. `hidden xl:block` on a flex row would win
+ * over the `flex` it needs - both are `display` - so the two cannot be
+ * composed, and a second literal is the only way Tailwind will emit the class.
+ * `tests/public-links.test.tsx` asserts the two agree on the breakpoint: a
+ * mismatch shows one half of the header at a width the other half is hidden at.
  */
 export const DESKTOP_ONLY = 'hidden xl:block';
+export const DESKTOP_ONLY_FLEX = 'hidden xl:flex';
 export const MOBILE_ONLY = 'xl:hidden';
 
 /**

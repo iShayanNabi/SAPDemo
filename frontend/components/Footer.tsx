@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ContactCta } from '@/components/ContactCta';
 import { Logo } from '@/components/Logo';
 import { RepositoryLink } from '@/components/RepositoryLink';
+import { CONTACT_CTA_HREF, CONTACT_CTA_LABEL } from '@/lib/navigation';
 import { DEMO_NOTICE, TRADEMARK_NOTICE, hasRepository, mailto, siteConfig } from '@/lib/site';
 
 /**
@@ -51,8 +52,15 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
+            {/*
+              The same lockup component as the header, rather than a second
+              hand-built copy of the wordmark - which is how a footer ends up
+              reading `Solve AIHubProcurement Intelligence Demo` while the
+              header is fine. `withProductName` adds the product line below the
+              brand, separated in the markup as well as on screen.
+            */}
             <Logo className="text-lg" withProductName />
-            <p className="mt-3 max-w-sm text-sm text-slate-600 dark:text-slate-400">
+            <p className="mt-4 max-w-sm text-sm text-slate-600 dark:text-slate-400">
               {siteConfig.shortDescription}
             </p>
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
@@ -68,7 +76,9 @@ export function Footer() {
               <RepositoryLink>Source on GitHub</RepositoryLink>
             </div>
             <div className="mt-6">
-              <ContactCta className="px-4 py-2 text-sm" />
+              <ContactCta href={CONTACT_CTA_HREF} className="px-4 py-2 text-sm">
+                {CONTACT_CTA_LABEL}
+              </ContactCta>
             </div>
           </div>
 

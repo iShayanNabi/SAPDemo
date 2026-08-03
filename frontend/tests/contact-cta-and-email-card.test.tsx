@@ -18,11 +18,15 @@
  * relationships below are not.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 import ContactPage from '@/app/contact/page';
+import HomePage from '@/app/page';
 import ServicesPage from '@/app/services/page';
+import { ContactCta } from '@/components/ContactCta';
 import { ContactForm } from '@/components/ContactForm';
 import { EMAIL_CARD_LABEL } from '@/components/EmailCard';
 import {
@@ -38,6 +42,7 @@ import {
 import {
   CONSULTING_CTA_HREF,
   CONSULTING_CTA_LABEL,
+  CONTACT_CTA_HREF,
   CONTACT_CTA_LABEL,
 } from '@/lib/navigation';
 import { siteConfig } from '@/lib/site';
@@ -369,7 +374,204 @@ describe('the email card', () => {
 });
 
 /* ------------------------------------------------------------------------ */
-/* 5. The fallback that must survive all of this                             */
+/* 5. The call to action is navigation, not an address                       */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * The label a caller passes, unchanged, and the address nowhere near it.
+ *
+ * The failure this section exists for is a call to action that renders
+ * `solveaihub@gmail.com` where its label should be. Two things make that
+ * possible and both are asserted below: a component that can *read* the
+ * address, and a label that comes from a default rather than from the caller -
+ * so every button on the site moves together and no page asserts what its own
+ * button says.
+ */
+
+/** The label of a call to action, with the decorative arrow removed. */
+function visibleLabel(link: Element): string {
+  return (link.textContent ?? '').replace(/→/g, '').trim();
+}
+
+/**
+ * The module specifiers a file actually imports.
+ *
+ * Comments are stripped first, for the reason `tests/contact-config.test.ts`
+ * documents at length: `ContactCta.tsx` names `@/lib/site` in the comment
+ * explaining why it must never import it, so a substring search over the raw
+ * text reports the file as an offender and the assertion fails on prose.
+ */
+function importedModules(file: string): string[] {
+  const source = readFileSync(file, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  return [
+    ...source.matchAll(/(?:^|\n)\s*(?:import|export)[\s\S]*?from\s*['"]([^'"]+)['"]/g),
+    ...source.matchAll(/(?:^|\n)\s*import\s*['"]([^'"]+)['"]/g),
+    ...source.matchAll(/\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g),
+    ...source.matchAll(/\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g),
+  ]
+    .map((match) => match[1])
+    .filter((specifier): specifier is string => Boolean(specifier));
+}
+
+describe('the call to action is navigation, not an address', () => {
+  it('renders exactly the children it is given', () => {
+    render(
+      <ContactCta href="/somewhere">
+        A label nothing else on this site uses
+      </ContactCta>,
+    );
+    const link = screen.getByRole('link', { name: 'A label nothing else on this site uses' });
+    expect(visibleLabel(link)).toBe('A label nothing else on this site uses');
+    expect(link.getAttribute('href')).toBe('/somewhere');
+  });
+
+  it('hardcodes no single label for every instance', () => {
+    // Two instances, two labels, one component. A default that filled either of
+    // these in would make this pass while saying nothing.
+    const { container } = render(
+      <>
+        <ContactCta href="/one">First label</ContactCta>
+        <ContactCta href="/two">Second label</ContactCta>
+      </>,
+    );
+    const links = [...container.querySelectorAll('a')];
+    expect(links.map(visibleLabel)).toEqual(['First label', 'Second label']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/one', '/two']);
+  });
+
+  it('cannot read the contact address at all', () => {
+    // The import graph, not the text: the file documents this boundary in the
+    // comment above the component, so a substring search matches the prose.
+    const file = join(__dirname, '..', 'components/ContactCta.tsx');
+    expect(readFileSync(file, 'utf8')).toContain('@/lib/site');
+    expect(importedModules(file)).not.toContain('@/lib/site');
+    expect(importedModules(file)).toEqual(['next/link']);
+  });
+
+  it('is an internal link, never a compose window and never a new tab', () => {
+    render(<ContactCta href={CONTACT_CTA_HREF}>{CONTACT_CTA_LABEL}</ContactCta>);
+    const link = screen.getByRole('link', { name: CONTACT_CTA_LABEL });
+    expect(link.tagName).toBe('A');
+    expect(link.getAttribute('href')).toBe('/contact');
+    expect(link.getAttribute('href')?.startsWith('mailto:')).toBe(false);
+    expect(link.getAttribute('target')).toBeNull();
+    // Keyboard reachable, and visibly so.
+    expect(link.getAttribute('tabindex')).toBeNull();
+    link.focus();
+    expect(document.activeElement).toBe(link);
+    expect(link.className).toContain('focus-visible:outline-2');
+  });
+
+  it('renders the home page action as "Start a Conversation" to /contact', () => {
+    render(<HomePage />);
+    const cta = screen.getByRole('link', { name: CONTACT_CTA_LABEL });
+
+    expect(visibleLabel(cta)).toBe('Start a Conversation');
+    expect(cta.getAttribute('href')).toBe('/contact');
+    expect(cta.getAttribute('target')).toBeNull();
+    expect(cta.textContent).not.toContain(CONTACT_EMAIL);
+  });
+
+  it('renders the services action as "Start a consulting conversation" to the topic link', () => {
+    render(<ServicesPage />);
+    const cta = screen.getByRole('link', { name: CONSULTING_CTA_LABEL });
+
+    expect(visibleLabel(cta)).toBe('Start a consulting conversation');
+    expect(cta.getAttribute('href')).toBe('/contact?service=consulting');
+    expect(cta.textContent).not.toContain(CONTACT_EMAIL);
+  });
+
+  it.each([
+    ['home', HomePage],
+    ['services', ServicesPage],
+    ['contact', ContactPage],
+  ] as const)('prints no address in any call to action on the %s page', (_name, Page) => {
+    const { container } = render(<Page />);
+    // Every internal link on the page: none of them may display the address.
+    // The mailto: links are allowed to - that is what they are for - and they
+    // are excluded by their own href rather than by name.
+    const internal = [...container.querySelectorAll('a')].filter(
+      (anchor) => !(anchor.getAttribute('href') ?? '').startsWith('mailto:'),
+    );
+    expect(internal.length).toBeGreaterThan(0);
+    for (const anchor of internal) {
+      expect(anchor.textContent ?? '', anchor.getAttribute('href') ?? '').not.toContain(
+        CONTACT_EMAIL,
+      );
+    }
+  });
+
+  /**
+   * The one that catches the bug this section was written for.
+   *
+   * The assertion above excludes `mailto:` links, so it cannot see the failure
+   * that actually shipped: the contact page's page-header action was a
+   * *button* - filled, beside Launch interactive demo, the same shape as every
+   * other call to action - whose label was `solveaihub@gmail.com`. It read as
+   * an address rather than an action, and on a machine with no mail client it
+   * appeared to do nothing when pressed.
+   *
+   * So the rule is about the shape rather than the destination: anything
+   * rendered as a button says what pressing it does. A direct-email action is
+   * still allowed to *be* a mailto and still names the address in its
+   * accessible name - see the email card section - it just does not use the
+   * address as its label. Email cards are `rounded-xl` and are not buttons;
+   * this matches the shared button styling only.
+   */
+  it.each([
+    ['home', HomePage],
+    ['services', ServicesPage],
+    ['contact', ContactPage],
+  ] as const)('labels every button-shaped action on the %s page with an action', (_name, Page) => {
+    const { container } = render(<Page />);
+    const buttons = [...container.querySelectorAll('a')].filter(
+      (anchor) =>
+        anchor.className.includes('rounded-lg') && anchor.className.includes('font-semibold'),
+    );
+
+    // Guards the guard: a selector that matches nothing passes silently.
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) {
+      const label = visibleLabel(button);
+      expect(label, button.getAttribute('href') ?? '').not.toMatch(/@/);
+      expect(label.length, button.getAttribute('href') ?? '').toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps the contact page header offering direct email, named for what it does', () => {
+    render(<ContactPage />);
+    const direct = screen.getByRole('link', { name: EMAIL_CARD_LABEL });
+
+    // The action survives the relabelling: same address, same accessible name.
+    expect(direct.getAttribute('href')?.startsWith(`mailto:${CONTACT_EMAIL}`)).toBe(true);
+    expect(direct.getAttribute('aria-label')).toBe(EMAIL_CARD_LABEL);
+    expect(EMAIL_CARD_LABEL).toContain(CONTACT_EMAIL);
+    // And the address is still readable on the page, in the cards below.
+    expect(screen.getAllByText(CONTACT_EMAIL).length).toBeGreaterThan(0);
+  });
+
+  it('keeps Launch interactive demo beside it, pointing at the configured demonstration', () => {
+    const { container } = render(<HomePage />);
+    const [demo] = screen.getAllByRole('link', { name: /launch interactive demo/i });
+
+    expect(demo?.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(demo?.getAttribute('href')).toBeTruthy();
+    expect(demo?.getAttribute('target')).toBe('_blank');
+    expect(demo?.getAttribute('rel')).toContain('noopener');
+
+    // The two actions are siblings and visually distinct: one filled, one not.
+    const cta = screen.getByRole('link', { name: CONTACT_CTA_LABEL });
+    expect(demo?.parentElement).toBe(cta.parentElement);
+    expect(demo?.className).not.toBe(cta.className);
+    expect(container.querySelectorAll('a a')).toHaveLength(0);
+  });
+});
+
+/* ------------------------------------------------------------------------ */
+/* 6. The fallback that must survive all of this                             */
 /* ------------------------------------------------------------------------ */
 
 describe('the direct-email fallback', () => {
