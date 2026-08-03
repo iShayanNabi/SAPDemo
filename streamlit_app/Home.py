@@ -20,13 +20,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from streamlit_app.components.api_client import ApiClient, ApiError  # noqa: E402
 from streamlit_app.components.demo import demo_banner, is_demo_mode  # noqa: E402
+from streamlit_app.components.routing import (  # noqa: E402
+    UNRECOGNISED_MODULE_MESSAGE,
+    apply_module_route,
+)
 from streamlit_app.components.ui import disclaimer, origin_badge  # noqa: E402
 
 st.set_page_config(page_title="SAP AI Application Lab", page_icon="🧪", layout="wide")
 
+# A link from the public website may name one module - `/?module=po-risk` - and
+# this is where that is honoured. It runs before anything else on the page, so a
+# visitor who asked for a module does not pay for a home page they never see:
+# `st.switch_page` stops this script run and the module page runs instead.
+#
+# Everything below therefore only ever renders for a visitor who asked for the
+# home page, or who asked for something this application does not have. The
+# identifier chooses a page and nothing more - Cloudflare Access, in front of
+# this hostname, is what decides whether the request arrives.
+route = apply_module_route()
+
 client = ApiClient()
 
 st.title("SAP AI Application Lab")
+if route.should_warn:
+    st.info(UNRECOGNISED_MODULE_MESSAGE, icon="🧭")
 demo_banner(client)
 
 if is_demo_mode(client):

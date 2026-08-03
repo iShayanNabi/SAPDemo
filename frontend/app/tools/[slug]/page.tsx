@@ -63,7 +63,11 @@ export default async function ModulePage({ params }: PageProps) {
         title={module.name}
         lede={module.tagline}
       >
-        <DemoCta />
+        {/* This tool's own module, not the demonstration home page: the
+            visitor is on its page, so the button opens it. The canonical URL
+            for this page is unaffected - it is the public marketing address
+            above, never the protected demonstration one. */}
+        <DemoCta module={module.demoModule} />
         <Link
           href="/tools"
           className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-base font-semibold text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-700"
@@ -145,7 +149,7 @@ export default async function ModulePage({ params }: PageProps) {
           <div className="max-w-3xl">
             <Steps items={module.steps} />
             <div className="mt-8">
-              <DemoCta />
+              <DemoCta module={module.demoModule} />
             </div>
           </div>
         </Section>

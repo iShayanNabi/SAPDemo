@@ -213,3 +213,145 @@ class TestTheGuidedDemonstration:
         app = [b for b in app.button if b.label == "Run analysis"][0].click().run()
         owned = app.session_state["_demo_owned_ids"]
         assert owned["po_analysis"], owned
+
+
+#: What ``?module=<id>`` must open, by the title the page prints.
+#:
+#: Titles rather than file names, because a title is what a visitor sees. A
+#: routing table that pointed the contract link at the inventory page would be
+#: perfectly self-consistent and would fail here.
+ROUTED_TITLES = {
+    "po-risk": "Purchase Order Risk Checker",
+    "spend-analytics": "Spend Analytics Dashboard",
+    "supplier-recommendation": "Supplier Recommendation Engine",
+    "invoice-validator": "Invoice Validator",
+    "supplier-risk": "Supplier Risk Copilot",
+    "contract-assistant": "Contract Assistant",
+    "inventory-predictor": "Inventory Predictor",
+    "test-case-generator": "SAP Test Case Generator",
+    "blueprint-generator": "SAP Blueprint Generator",
+    "interview-coach": "SAP Interview Coach",
+}
+
+HOME_TITLE = "SAP AI Application Lab"
+
+
+def _run_home(module: str | None = None, values: list[str] | None = None):
+    """Open the entrypoint the way a browser would, with a query string.
+
+    ``AppTest`` runs the real multipage application, so ``st.switch_page`` in
+    ``Home.py`` really navigates and the object returned is sitting on whatever
+    page the visitor ended up on. That is the whole reason these are here rather
+    than in the unit tests: the pure resolver says which page *should* open, and
+    only this says which one *did*.
+    """
+    from streamlit.testing.v1 import AppTest
+
+    app = AppTest.from_file(str(HOME), default_timeout=180)
+    if values is not None:
+        app.query_params["module"] = values
+    elif module is not None:
+        app.query_params["module"] = module
+    return app.run()
+
+
+def _titles(app) -> list[str]:
+    return [element.value for element in app.title]
+
+
+class TestModuleLinksFromThePublicWebsite:
+    """`demo.solveaihub.com/?module=<id>` has to open that module.
+
+    The public site links to individual tools, and each of those links is a
+    string arriving from outside. These drive the real application: the ten that
+    must work, and the ones that must not.
+    """
+
+    @pytest.mark.parametrize(("identifier", "title"), sorted(ROUTED_TITLES.items()))
+    def test_each_identifier_opens_its_own_module(
+        self, live_api: str, identifier: str, title: str
+    ):
+        app = _run_home(identifier)
+        assert not app.exception, app.exception
+        assert title in _titles(app), (identifier, _titles(app))
+
+    def test_no_parameter_opens_the_demonstration_home_page(self, live_api: str):
+        app = _run_home()
+        assert not app.exception, app.exception
+        assert _titles(app) == [HOME_TITLE]
+        assert not [info.value for info in app.info if "not recognized" in info.value]
+
+    @pytest.mark.parametrize(
+        "value",
+        ["", "   ", "unknown-module", "../../etc/passwd", "pages/1_PO_Risk_Checker.py",
+         "javascript:alert(1)", "https://evil.example.com", "%2e%2e%2f", "po_risk"],
+    )
+    def test_anything_else_stays_on_the_home_page(self, live_api: str, value: str):
+        app = _run_home(value)
+        assert not app.exception, app.exception
+        assert _titles(app) == [HOME_TITLE], (value, _titles(app))
+
+    def test_an_unrecognised_module_is_explained_without_naming_anything(self, live_api: str):
+        app = _run_home("unknown-module")
+        messages = [info.value for info in app.info]
+        assert any("was not recognized" in text for text in messages), messages
+        for text in messages:
+            # Not the value that was asked for, and not the file layout of an
+            # application whose hostname is meant to be private.
+            assert "unknown-module" not in text
+            assert ".py" not in text
+            assert "pages/" not in text
+
+    def test_a_blank_value_says_nothing_at_all(self, live_api: str):
+        """Nothing was named, so there is nothing to explain."""
+        app = _run_home("")
+        assert not [info.value for info in app.info if "not recognized" in info.value]
+
+    def test_two_modules_in_one_link_open_neither(self, live_api: str):
+        app = _run_home(values=["po-risk", "spend-analytics"])
+        assert _titles(app) == [HOME_TITLE]
+
+    def test_the_parameter_is_cleared_once_it_has_been_used(self, live_api: str):
+        """So a bookmark of where the visitor *ended up* is a page, not a redirect."""
+        app = _run_home("po-risk")
+        assert dict(app.query_params) == {}
+
+
+class TestRoutingSurvivesRerunsAndManualNavigation:
+    """The three ways a router like this usually goes wrong."""
+
+    def test_going_back_to_the_home_page_does_not_bounce_forward_again(self, live_api: str):
+        """The back button has to work.
+
+        `st.switch_page` clears the query string, but the browser's history
+        entry still has it - so going back re-runs `Home.py` with `?module=`
+        present. Without the once-per-session flag this would switch straight
+        forward again and the back button would be dead.
+        """
+        app = _run_home("po-risk")
+        assert "Purchase Order Risk Checker" in _titles(app)
+
+        app.switch_page("Home.py")
+        app.query_params["module"] = "po-risk"
+        app.run()
+        assert _titles(app) == [HOME_TITLE], _titles(app)
+
+    def test_a_fresh_visit_to_the_same_link_opens_the_module_again(self, live_api: str):
+        """Refreshing the link, or opening it in a new tab, is a new session."""
+        for _ in range(2):
+            app = _run_home("spend-analytics")
+            assert "Spend Analytics Dashboard" in _titles(app)
+
+    def test_a_widget_rerun_does_not_move_the_visitor(self, live_api: str):
+        """An ordinary interaction on the home page stays on the home page."""
+        app = _run_home("unknown-module")
+        assert _titles(app) == [HOME_TITLE]
+        app.run()
+        assert _titles(app) == [HOME_TITLE]
+
+    def test_manual_navigation_still_reaches_any_module(self, live_api: str):
+        """The link decides where a visitor starts, never where they may go."""
+        app = _run_home("po-risk")
+        app.switch_page("pages/6_Contract_Assistant.py").run()
+        assert not app.exception, app.exception
+        assert "Contract Assistant" in _titles(app)

@@ -45,6 +45,7 @@ import {
   CONTACT_CTA_HREF,
   CONTACT_CTA_LABEL,
 } from '@/lib/navigation';
+import { buildDemoUrl } from '@/lib/demo';
 import { siteConfig } from '@/lib/site';
 
 /**
@@ -557,7 +558,7 @@ describe('the call to action is navigation, not an address', () => {
     const { container } = render(<HomePage />);
     const [demo] = screen.getAllByRole('link', { name: /launch interactive demo/i });
 
-    expect(demo?.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(demo?.getAttribute('href')).toBe(buildDemoUrl());
     expect(demo?.getAttribute('href')).toBeTruthy();
     expect(demo?.getAttribute('target')).toBe('_blank');
     expect(demo?.getAttribute('rel')).toContain('noopener');

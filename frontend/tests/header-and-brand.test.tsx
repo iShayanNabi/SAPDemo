@@ -33,6 +33,7 @@ import {
   MOBILE_ONLY,
   getNavItems,
 } from '@/lib/navigation';
+import { buildDemoUrl } from '@/lib/demo';
 import { siteConfig } from '@/lib/site';
 
 const navItems = getNavItems(siteConfig.servicesPageEnabled);
@@ -182,7 +183,7 @@ describe('the header', () => {
     // header uses the short label because the full one costs 84px it does not
     // have. The action is the demonstration either way.
     expect(buttons[0]?.textContent).toMatch(/launch/i);
-    expect(buttons[0]?.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(buttons[0]?.getAttribute('href')).toBe(buildDemoUrl());
     expect(buttons[0]?.getAttribute('target')).toBe('_blank');
     expect(buttons[0]?.getAttribute('rel')).toContain('noopener');
   });
@@ -220,7 +221,7 @@ describe('the header', () => {
     );
     expect(actions).toHaveLength(1);
     expect(actions[0]?.textContent).toMatch(/launch interactive demo/i);
-    expect(actions[0]?.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(actions[0]?.getAttribute('href')).toBe(buildDemoUrl());
   });
 
   it('keeps the row aligned with the page container', () => {
@@ -369,7 +370,7 @@ describe('the mobile menu', () => {
       { name: /launch interactive demo/i },
     );
     expect(action.className).toContain('w-full');
-    expect(action.getAttribute('href')).toBe(siteConfig.demoUrl);
+    expect(action.getAttribute('href')).toBe(buildDemoUrl());
     expect(action.getAttribute('target')).toBe('_blank');
   });
 });
@@ -416,7 +417,7 @@ describe('the served markup', () => {
     const html = renderToStaticMarkup(<Nav items={navItems} />);
 
     // The one button in the header, in the markup a browser is handed.
-    expect(html).toContain(`href="${siteConfig.demoUrl}"`);
+    expect(html).toContain(`href="${buildDemoUrl()}"`);
     expect(html).toMatch(/target="_blank"/);
     expect(asText(html)).toMatch(/Launch demo/);
     // Contact is still an ordinary link, and the call to action is not here.
